@@ -5,18 +5,22 @@ Repository for our Fall 2009 capstone project.
 ## Resources ##
 
 Python language reference:
+
 * [Official docs](http://docs.python.org/)
 * [Rosetta Code](http://rosettacode.org/wiki/Category:Python) comparisons to other languages.
 
 Django reference:
+
 * [Django official site](http://www.djangoproject.com/)
 * [Official docs](http://docs.djangoproject.com/)
 
 Sites built in Python/Django:
+
 * [The Maneater](http://www.themaneater.com/)
 * [The Spokesman-Review](http://www.spokesman.com/)
 
 Other code libraries or APIs:
+
 * [jQuery](http://docs.jquery.com/Main_Page)
 * [OpenLayers](http://trac.openlayers.org/wiki) ([example sites](http://openlayers.org/dev/examples/))
 * [Mapnik](http://trac.mapnik.org/) ([example sites](http://mapnik.org/demo/))
