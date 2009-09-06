@@ -1,0 +1,15 @@
+.svn/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+*.swp
+*.lock
+*~
+*.tmp
+*.bak
+access.log
+error.log
+*.pid
+local_settings.py
+.pid
