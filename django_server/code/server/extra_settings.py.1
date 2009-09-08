@@ -1,0 +1,16 @@
+# Overrides for some server settings (for live deployment)
+
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    ('Mike Tigas', 'mike.tigas+Debug@gmail.com'),
+)
+MANAGERS = ADMINS
+
+DATABASE_ENGINE = 'postgresql_psycopg2'
+DATABASE_NAME = 'cs4970_capstone'
+DATABASE_USER = 'cs4970_capstone'
+DATABASE_PASSWORD = r''
+
+CACHE_BACKEND = 'memcached://172.21.0.41:11211/?timeout=120&max_entries=1000'

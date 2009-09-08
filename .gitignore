@@ -11,5 +11,5 @@ Thumbs.db
 access.log
 error.log
 *.pid
-local_settings.py
+extra_settings.py
 .pid
