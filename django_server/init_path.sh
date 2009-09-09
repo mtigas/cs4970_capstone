@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export DJANGO_SERVER_DIR=`pwd`
 
@@ -10,3 +10,7 @@ export PYTHONPATH=$DJANGO_SERVER_DIR/server:$DJANGO_SERVER_DIR/third_party:$PYTH
 export PYTHONOPTIMIZE=2
 
 export DJANGO_SETTINGS_MODULE=capstone.settings
+
+# Kill outdated Python temp files 
+alias cleanpy='find $DJANGO_SERVER_DIR -name "*.pyc" -delete;find $DJANGO_SERVER_DIR -name "*.pyo" -delete'
+cleanpy
