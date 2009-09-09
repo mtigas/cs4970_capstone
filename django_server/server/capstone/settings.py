@@ -43,7 +43,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'server.urls'
+ROOT_URLCONF = 'capstone.urls'
 
 TEMPLATE_DIRS = (
     os.path.join(DJANGO_SERVER_DIR, 'templates'),
