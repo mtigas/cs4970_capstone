@@ -15,9 +15,9 @@
 	<Layer name="state_base" srs="+proj=latlong +datum=WGS84" status="1" clear_label_cache="0">
         <StyleName>State Base</StyleName>
         <Datasource>
-            <Parameter name="dbname">nationbrowse_200920828</Parameter>
+            <Parameter name="dbname">nationbrowse_20090828</Parameter>
             <Parameter name="host">127.0.0.1</Parameter>
-            <Parameter name="password"></Parameter><!--TODO-->
+            <Parameter name="password"></Parameter><!--intentionally left blank due to public repo; server will trust connection from localhost on this DB-->
             <Parameter name="table">fe_2007_us_state00</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="user">mtigas</Parameter>

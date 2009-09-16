@@ -56,9 +56,9 @@
 
 			);
 			var state_pop = new OpenLayers.Layer.WMS(
-				"2000 Census State Population",
+				"Basic State Shape",
 				"http://tile.capstone.nationbrowse.com/?",
-				{layers:'state_pop',format:"image/png"}
+				{layers:'state_base',format:"image/png"}
             );
 
             map.addLayers([osm,state_pop]);
