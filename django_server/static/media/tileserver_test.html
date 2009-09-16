@@ -46,22 +46,13 @@
 
 			//------------------------- base layers
 
-			var osm = new OpenLayers.Layer.WMS(
-				"Basic",
-				[	"http://osm1.hypercube.telascience.org/tiles/",
-					"http://osm2.hypercube.telascience.org/tiles/",
-					"http://osm3.hypercube.telascience.org/tiles/"	],
-				{layers: 'basic'},
-                {attribution:'Base layer provided<br />by <a href="http://openstreetmap.org/">OpenStreetMap</a>'}
-
-			);
 			var state_pop = new OpenLayers.Layer.WMS(
 				"Basic State Shape",
 				"http://tile.capstone.nationbrowse.com/?",
 				{layers:'state_base',format:"image/png"}
             );
 
-            map.addLayers([osm,state_pop]);
+            map.addLayers([state_pop]);
 			map.setCenter(new OpenLayers.LonLat(-92.28516,39.02344));
 			map.zoomTo(4);
 			//alert(map.getExtent());
