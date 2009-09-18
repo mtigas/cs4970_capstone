@@ -2,7 +2,7 @@
 *.pyc
 *.pyo
 .DS_Store
-Thumbs.db
+*.db
 *.swp
 *.lock
 *~

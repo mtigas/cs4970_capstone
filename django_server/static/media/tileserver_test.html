@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
+  <head>
+    <title>NationBrowse</title>
+    <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css" />
+    <link rel="stylesheet" href="http://openlayers.org/dev/examples/style.css" type="text/css" />
+	<style type="text/css">
+	.smallmap {
+    width: 700px;
+    height: 400px;
+    border: 2px solid #ccc;
+	}
+	</style>
+    <!--
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.2/jquery.min.js" type="text/javascript"></script>
+    <script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAFqOBQZEkQrzdpAXWWh2PJxRzH7i7LLepmy-1xT221P9h0jSXWxSAlNRKyVI0EoReK8ID48cJ-LBjsw'></script>
+	-->
+    <script src="http://openlayers.org/api/OpenLayers.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        OpenLayers.IMAGE_RELOAD_ATTEMPTS = 2;
+        OpenLayers.Util.onImageLoadErrorColor = "transparent";
+        var map = null;
+		var extent = new OpenLayers.Bounds(-180, 0, -50, 90);
+
+		function init(){
+
+            map = new OpenLayers.Map('map' , {
+				maxExtent: extent,
+				controls: [
+					new OpenLayers.Control.PanZoomBar(),
+					new OpenLayers.Control.MouseDefaults(),
+					new OpenLayers.Control.LayerSwitcher(),
+					new OpenLayers.Control.Permalink(),
+					new OpenLayers.Control.ScaleLine()
+					//new OpenLayers.Control.Permalink('permalink'),
+					//new OpenLayers.Control.MousePosition(),
+					//new OpenLayers.Control.OverviewMap(),
+					//new OpenLayers.Control.KeyboardDefaults()
+				],
+
+			});
+
+
+
+			//------------------------- base layers
+
+			var state_pop = new OpenLayers.Layer.WMS(
+				"Basic State Shape",
+				"http://tile.capstone.nationbrowse.com/?",
+				{layers:'state_base',format:"image/png"}
+            );
+
+            map.addLayers([state_pop]);
+			map.setCenter(new OpenLayers.LonLat(-92.28516,39.02344));
+			map.zoomTo(4);
+			//alert(map.getExtent());
+			//alert(map.getResolutionForZoom(8));
+        };
+        window.onload = init;
+    </script>
+  </head>
+
+  <body>
+    <h1 id="title">NationBrowse Demo</h1>
+    <div id="tags"></div>
+    <p id="shortdesc">
+        Simple test of the TileCache/Mapnik server.
+    </p>
+    <div id="map" class="smallmap"></div>
+  </body>
+
+</html>
+
