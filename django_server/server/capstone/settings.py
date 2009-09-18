@@ -56,7 +56,26 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 )
 
+# Sqlite (the DB we use when we develop locally) is not GIS-aware, but our live
+# server's database will be.
+USE_GIS = False
+
+# this one is valid for http://127.0.0.1:8000/
+GOOGLE_MAPS_API_KEY = "ABQIAAAAFqOBQZEkQrzdpAXWWh2PJxTpH3CbXHjuCVmaTc5MkkU4wO1RRhQ4mYt9kZUlP0K8QbxrAaAdQVudOw"
+
+# ----------
+
+# See if there's an "extra_settings.py" file, containing server-specific settings.
+# If there is, override settings here with the settings from there.
 try:
     from extra_settings import *
 except:
     pass
+
+# ----------
+
+# Enable Django's GIS extensions if we're on a server with a GIS-aware database.
+if USE_GIS:
+	INSTALLED_APPS += (
+		'django.contrib.gis',
+	)
