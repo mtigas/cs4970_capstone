@@ -1,5 +1,6 @@
 import os
-DJANGO_SERVER_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ../..
+DJANGO_SERVER_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -50,10 +51,13 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+	'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    
+	'places',
 )
 
 # Sqlite (the DB we use when we develop locally) is not GIS-aware, but our live
