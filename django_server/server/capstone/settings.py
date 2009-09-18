@@ -51,13 +51,13 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-	'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     
-	'places',
+    'places',
 )
 
 # Sqlite (the DB we use when we develop locally) is not GIS-aware, but our live
@@ -80,6 +80,6 @@ except:
 
 # Enable Django's GIS extensions if we're on a server with a GIS-aware database.
 if USE_GIS:
-	INSTALLED_APPS += (
-		'django.contrib.gis',
-	)
+    INSTALLED_APPS += (
+        'django.contrib.gis',
+    )
