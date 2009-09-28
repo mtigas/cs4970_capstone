@@ -23,7 +23,9 @@ USE_I18N = False
 
 MEDIA_ROOT = os.path.join(DJANGO_SERVER_DIR, 'static')
 MEDIA_URL = '/static/'
-ADMIN_MEDIA_PREFIX = MEDIA_URL + 'admin/'
+
+ADMIN_MEDIA_ROOT = os.path.join(DJANGO_SERVER_DIR, 'third_party/django/contrib/admin/media')
+ADMIN_MEDIA_PREFIX = '/admin_static/'
 
 SECRET_KEY = '&(r^)05jawv58_e4hs2t@n(j&)tr@a6t_25xaq&e^+efy1e=zy'
 INTERNAL_IPS = ('127.0.0.1',)
