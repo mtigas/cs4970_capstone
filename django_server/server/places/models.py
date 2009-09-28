@@ -97,8 +97,8 @@ class PolyModel(models.Model):
 
 class State(PolyModel):
     if USE_GEODJANGO:
-        objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
+        objects = GeoCachingManager()
+        dobjects = PolyDeferGeoManager()
     else:
         objects = CachingManager()
     
@@ -114,8 +114,8 @@ class State(PolyModel):
         
 class County(PolyModel):
     if USE_GEODJANGO:
-        objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
+        objects = GeoCachingManager()
+        dobjects = PolyDeferGeoManager()
     else:
         objects = CachingManager()
     
@@ -134,8 +134,8 @@ class County(PolyModel):
 
 class ZipCode(PolyModel):
     if USE_GEODJANGO:
-        objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
+        objects = GeoCachingManager()
+        dobjects = PolyDeferGeoManager()
     else:
         objects = CachingManager()
 	
