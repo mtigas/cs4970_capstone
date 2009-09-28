@@ -75,11 +75,3 @@ try:
     from extra_settings import *
 except:
     pass
-
-# ----------
-
-# Enable Django's GIS extensions if we're on a server with a GIS-aware database.
-if USE_GIS:
-    INSTALLED_APPS += (
-        'django.contrib.gis',
-    )

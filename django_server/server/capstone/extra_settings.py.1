@@ -17,6 +17,16 @@ DATABASE_PASSWORD = r''
 CACHE_BACKEND = 'memcached://172.21.0.41:11211/?timeout=120&max_entries=1000'
 
 USE_GIS = True
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.gis',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    
+    'places',
+)
 
 # for http://capstone.nationbrowse.com/
 GOOGLE_MAPS_API_KEY = "ABQIAAAAFqOBQZEkQrzdpAXWWh2PJxS1ucgEIH7lTKF6FsbZpgasMpd0gRQqyPou4aZqwGq_KEFdEJj6QnLd6Q"
