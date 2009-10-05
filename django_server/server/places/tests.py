@@ -4,7 +4,6 @@ Unit tests for Places.
 """
 
 from django.test import TestCase
-from django.conf import settings
 
 # Make HTTP requests inside tests never time out.
 import socket

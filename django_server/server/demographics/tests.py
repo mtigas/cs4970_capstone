@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Unit tests for Graphs.
+Unit tests for Demographics.
 """
 
 from django.test import TestCase
@@ -9,7 +9,7 @@ from django.test import TestCase
 import socket
 socket.setdefaulttimeout(1000)
 
-class GraphsTest(TestCase):
+class DemographicsTest(TestCase):
     def test_dummy(self):
         """
         TODO
