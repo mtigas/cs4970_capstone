@@ -13,3 +13,10 @@ error.log
 *.pid
 extra_settings.py
 .pid
+1-state.xml.bz2
+2-county.xml.bz2
+3-zipcode-A.xml.bz2
+3-zipcode-B.xml.bz2
+3-zipcode-C.xml.bz2
+3-zipcode-D.xml.bz2
+3-zipcode-E.xml.bz2

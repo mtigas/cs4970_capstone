@@ -131,7 +131,7 @@ if ('django.contrib.gis' in settings.INSTALLED_APPS):
         because the .defer() method MUST only be called on the parent class.
         """
         def get_query_set(self):
-			GeoCachingQuerySet(self.model).defer('poly',)
+			return GeoCachingQuerySet(self.model).defer('poly',)
 
     class GeoCachingQuerySet(geo_models.query.GeoQuerySet):
         def iterator(self):

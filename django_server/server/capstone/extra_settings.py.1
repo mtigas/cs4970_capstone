@@ -14,7 +14,7 @@ DATABASE_NAME = 'cs4970_capstone'
 DATABASE_USER = 'cs4970_capstone'
 DATABASE_PASSWORD = r''
 
-CACHE_BACKEND = 'memcached://172.21.0.41:11211/?timeout=120&max_entries=1000'
+CACHE_BACKEND = 'memcached://172.21.0.41:11211/?timeout=300&max_entries=100000&cull_frequency=5'
 
 USE_GIS = True
 INSTALLED_APPS = (
@@ -27,6 +27,17 @@ INSTALLED_APPS = (
     
     'places',
 )
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
+)
+CACHE_MIDDLEWARE_SECONDS = 15
+CACHE_MIDDLEWARE_KEY_PREFIX = "capstone_mware"
+CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 
 # for http://capstone.nationbrowse.com/
 GOOGLE_MAPS_API_KEY = "ABQIAAAAFqOBQZEkQrzdpAXWWh2PJxS1ucgEIH7lTKF6FsbZpgasMpd0gRQqyPou4aZqwGq_KEFdEJj6QnLd6Q"
