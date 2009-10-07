@@ -1,6 +1,8 @@
 from django.core.management.base import NoArgsCommand
 
-from demographics.models import PlacePopulation
+from demographics.models import DataSource,PlacePopulation
+from django.contrib.contenttypes.models import ContentType
+
 from django.core import serializers
 import os
 import gc
@@ -46,5 +48,15 @@ class Command(NoArgsCommand):
     help = "Creates fixtures for important Demographics tables."
 
     def handle_noargs(self, **options):
-        create_export("4-demographics_stateonly.xml",PlacePopulation.objects.iterator())
+        state_type = ContentType.objects.get(app_label="places",model="state")
+        county_type = ContentType.objects.get(app_label="places",model="county")
+        zipcode_type = ContentType.objects.get(app_label="places",model="zipcode")
         
+        create_export("4-demographics-A_datasources-state.xml",
+            list(DataSource.objects.all()) + list(PlacePopulation.objects.filter(place_type=state_type))
+        )
+        gc.collect()
+        
+        create_export("4-demographics-B_county.xml",PlacePopulation.objects.filter(place_type=county_type).iterator())
+        gc.collect()
+        create_export("4-demographics-C_zipcode.xml",PlacePopulation.objects.filter(place_type=zipcode_type).iterator())

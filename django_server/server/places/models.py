@@ -49,20 +49,7 @@ class PolyModel(models.Model):
         poly    = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
     else:
         poly    = models.TextField(verbose_name="geographic area data (non-GIS)",blank=True,null=True)
-    
-    pop_demographic_fkey = generic.GenericRelation(PlacePopulation, content_type_field='place_type', object_id_field='place_id')
-    
-    def population_demographics(self):
-        """
-        Returns the Point that corresponds to the center of this object's shape.
-        """
-        if self.pop_demographic_fkey and self.pop_demographic_fkey.count() > 0:
-            try:
-                return self.pop_demographic_fkey.all()[0]
-            except:
-                return None
-    population_demographics = cached_property(population_demographics, 15552000)
-    
+
     def center(self):
         """
         Returns the Point that corresponds to the center of this object's shape.
@@ -106,6 +93,21 @@ class PolyModel(models.Model):
         return self.poly.contains(point)
     contains_coordinate = cached_clsmethod(contains_coordinate, 15552000)
     
+    # Special fake foreign key that checks the PlacePopulation table for a record
+    # that corresponds with this Place.
+    demographic_fkey = generic.GenericRelation(PlacePopulation, content_type_field='place_type', object_id_field='place_id')
+    
+    def population_demographics(self):
+        """
+        If this place has a record in PlacePopulation, retrieve and return that.
+        """
+        if self.demographic_fkey and self.demographic_fkey.count() > 0:
+            try:
+                return self.demographic_fkey.all()[0]
+            except:
+                return None
+    population_demographics = cached_property(population_demographics, 15552000)
+
     class Meta:
         abstract = True
 

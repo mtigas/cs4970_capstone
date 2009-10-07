@@ -10,18 +10,43 @@ from django.contrib.contenttypes import generic
 
 from datetime import date
 
+class DataSource(CachedModel):
+    """ Stores metadata regarding a particular source of demographic information """
+    objects = CachingManager()
+    
+    source = models.CharField(max_length=255)
+    date = models.DateField(help_text="Note that for some data sources, only the year is valid.")
+    url = models.URLField(blank=True,null=True,max_length=255,verify_exists=False)
+    
+    @property
+    def name(self):
+        return u"%s" % (self.source)
+    
+    def __unicode__(self):
+        return u"%s, %s" % (self.source, self.date.year)
+    
+    class Meta:
+        ordering = ('date','source')
+        unique_together = (('source','date'),)
+
 class PlacePopulation(CachedModel):
+    """
+    Each record represents data from one source, for one particular place.
+    
+    For example, PlacePopulation.objects.get(pk=24703) gets you the Census 2000 population data
+    for ZipCode 65201.
+    """
     objects = CachingManager()
     
     # Internal Django fields that handles the GenericForeignKey below
     place_type = models.ForeignKey(ContentType)
     place_id = models.PositiveIntegerField(db_index=True)
     
+    # References one of the models (State, County, ZipCode) in our Places app
     place = generic.GenericForeignKey(ct_field='place_type',fk_field='place_id')
     
     # To future-proof for things like Census 2010
-    source = models.CharField(default="United States Census",max_length=255)
-    year = models.DateField(default=date(2000,1,1)) # stores month & day, but we're only interested in yr.
+    source = models.ForeignKey(DataSource,db_index=True)
     
     # Census P1 = Total Population
     total = models.PositiveIntegerField(default=0,db_index=True)
@@ -152,13 +177,13 @@ class PlacePopulation(CachedModel):
     __unicode__ = cached_clsmethod(__unicode__, 1800)
 
 
-
-
 """
-Used for converting data from tl_2008_us_county.shp, imported via:
- * Create model, do syncdb to create table.
+Used for converting data from tl_2008_us_county.shp. Process:
+ * Create model
+ * Perform syncdb to create table.
  * Remove top two lines of dc_dec_2000_sf1_u_data1.txt
  * Replace all || with |0| in dc_dec_2000_sf1_u_data1.txt
+ * For counties, non-ASCII characters needed to be replaced (in Puerto Rican region names)
  * in dbshell,
    * COPY dc_dec_2000_sf1 (geo_id,geo_id2,sumlevel,geo_name,p001001,p002001,p002002,p002003,p002004,p002005,
      p002006,p003001,p003002,p003003,p003004,p003005,p003006,p003007,p003008,p003009,p003010,p003011,p003012,
@@ -173,11 +198,16 @@ Used for converting data from tl_2008_us_county.shp, imported via:
      p012039,p012040,p012041,p012042,p012043,p012044,p012045,p012046,p012047,p012048,p012049,p015001,p016001,
      p017001,p031001,p032001,p033001) from '/tmp/dc_dec_2000_sf1_u_data1.txt' WITH DELIMITER '|';
 
-See management/commands/convert_state_data.py to see how this was converted into PlacePopulation.
+State, County, and ZipCode demographic data were done one at a time (and this table dropped after each import,
+because this table was used for each import.
+
+See the scripts under management/commands/convert_*_data.py to see how this was converted into PlacePopulation.
+
+
 
 class PopulationImport(models.Model):
-    geo_id = models.CharField(max_length=9)
-    fips_code = models.PositiveIntegerField(db_column="geo_id2")
+    geo_id = models.CharField(max_length=255)
+    fips_code = models.CharField(max_length=5,db_column="geo_id2")
     sumlevel = models.PositiveIntegerField(default=0)
     name = models.CharField(max_length=255,db_column="geo_name")
     p001001 = models.PositiveIntegerField(default=0)
