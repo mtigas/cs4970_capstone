@@ -36,7 +36,7 @@ class ZipCodeAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
     fieldsets = (
-        (None, {'fields': (('name', 'slug'), 'state')}),
+        (None, {'fields': (('name', 'slug'))}),
         ('Location', {'fields': ('poly',)}),
     )
     prepopulated_fields = {"slug": ("name",)}
