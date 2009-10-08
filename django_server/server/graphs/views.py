@@ -3,7 +3,6 @@ from __future__ import division
 from django.http import HttpResponse
 from datetime import datetime, timedelta
 import random
-from django.contrib.contenttypes.models import ContentType
 
 import matplotlib
 matplotlib.use('Agg')
@@ -105,29 +104,31 @@ def TEST3(request):
     from demographics.models import PlacePopulation
     from places.models import State,County,ZipCode
 
-    try:
-        place_type = ContentType.objects.get(app_label="places",model=request.REQUEST['place_type'])
-    except:
+    if (not request.REQUEST.has_key('place_type')) or (not request.REQUEST['place_type'] in ['state','county','zipcode']):
         return HttpResponse('"place_type" needs to be set', mimetype="text/plain")
 
     place = None
+    errstr = ""
     if request.REQUEST['place_type'] == "zipcode":
+        errstr += "zipcode\n"
         if request.REQUEST.has_key('place_id'):
-            print "zipcode, place_id"
+            errstr += "zipcode, place_id\n"
             place = ZipCode.objects.get(id=request.REQUEST['place_id'])
     elif request.REQUEST['place_type'] == "state":
+        errstr += "state\n"
         if request.REQUEST.has_key('abbr'):
-            print "state, abbr"
+            errstr += "state, abbr\n"
             place = State.objects.get(abbr=request.REQUEST['abbr'])
         elif request.REQUEST.has_key('name'):
-            print "state, name"
+            errstr += "state, name\n"
             place = State.objects.get(name__iexact=request.REQUEST['name'])
     elif request.REQUEST['place_type'] == "county":
+        errstr += "county\n"
         if request.REQUEST.has_key('state__abbr') and request.REQUEST.has_key('name'):
-            print "county, name, state__abbr"
+            errstr += "county, name, state__abbr\n"
             place = County.objects.get(name__iexact=request.REQUEST['name'],state__abbr__iexact=request.REQUEST['state__abbr'])
     if not place:
-        return HttpResponse("wat", mimetype="text/plain")
+        return HttpResponse(errstr, mimetype="text/plain")
     
     # Check if we have a cache of this render, with the same parameters ...
     cache_key = "cache_page_2 place_type=%s place_id=%s" % (request.REQUEST['place_type'], place.pk)
