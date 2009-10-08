@@ -12,7 +12,7 @@ import bz2
 def create_export(filename,model_qs_or_iterator):
     s = serializers.get_serializer("xml")()
     f = bz2.BZ2File(filename+".bz2",'w')
-    s.serialize(model_qs_or_iterator, ensure_ascii=False, stream=f, encoding="utf8", indent=4)
+    s.serialize(model_qs_or_iterator, ensure_ascii=False, stream=f, indent=4)
     f.close()
     gc.collect()
 
