@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import random
 from django.contrib.contenttypes.models import ContentType
 
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.dates import DateFormatter
@@ -136,7 +137,7 @@ def TEST3(request):
         d = place.population_demographics
         
         bg = "#ffffff"
-        fig = plt.figure(figsize=(7,7), facecolor=bg)
+        fig = Figure(figsize=(7,7), facecolor=bg)
         ax = fig.add_subplot(111, axis_bgcolor=bg)
         
         labels = "White","Black","Native American","Asian","Pacific Islander","Other"
@@ -166,7 +167,6 @@ def TEST3(request):
 
 def TEST4(request):
     from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
     import numpy as np
     
     cache_key = "cache_test4-a"
@@ -176,7 +176,7 @@ def TEST4(request):
 
     if not response:
 
-        fig = plt.figure()
+        fig = Figure()
         ax = Axes3D(fig)
         x, y = np.random.rand(2, 100) * 4
         hist, xedges, yedges = np.histogram2d(x, y, bins=4)
