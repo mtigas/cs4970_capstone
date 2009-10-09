@@ -24,22 +24,25 @@ def race_piechart(request):
         return HttpResponse('"place_type" needs to be set', mimetype="text/plain")
 
     place = None
-    if request.REQUEST['place_type'] == "zipcode":
-        # Getting zipcode from the 'place_id' request var
-        if request.REQUEST.has_key('place_id'):
-            place = ZipCode.objects.get(id=request.REQUEST['place_id'])
-    elif request.REQUEST['place_type'] == "state":
-        # Getting state from 'abbr'
-        if request.REQUEST.has_key('abbr'):
-            place = State.objects.get(abbr=request.REQUEST['abbr'])
-        # Getting state by 'name'
-        elif request.REQUEST.has_key('name'):
-            place = State.objects.get(name__iexact=request.REQUEST['name'])
-    elif request.REQUEST['place_type'] == "county":
-        # County requires both 'state_abbr' and 'name'
-        if request.REQUEST.has_key('state__abbr') and request.REQUEST.has_key('name'):
-            place = County.objects.get(name__iexact=request.REQUEST['name'],state__abbr__iexact=request.REQUEST['state__abbr'])
-    if not place:
+    try:
+        if request.REQUEST['place_type'] == "zipcode":
+            # Getting zipcode from the 'place_id' request var
+            if request.REQUEST.has_key('id'):
+                place = ZipCode.objects.get(id=request.REQUEST['id'])
+        elif request.REQUEST['place_type'] == "state":
+            # Getting state from 'abbr'
+            if request.REQUEST.has_key('abbr'):
+                place = State.objects.get(abbr__iexact=request.REQUEST['abbr'])
+            # Getting state by 'name'
+            elif request.REQUEST.has_key('name'):
+                place = State.objects.get(name__iexact=request.REQUEST['name'])
+        elif request.REQUEST['place_type'] == "county":
+            # County requires both 'state_abbr' and 'name'
+            if request.REQUEST.has_key('state__abbr') and request.REQUEST.has_key('name'):
+                place = County.objects.get(name__iexact=request.REQUEST['name'],state__abbr__iexact=request.REQUEST['state__abbr'])
+        if not place:
+            raise Exception
+    except:
         return HttpResponse("A place object with the given request string could not be found.", mimetype="text/plain")
     
     # Check if we have a cache of this render, with the same parameters ...
