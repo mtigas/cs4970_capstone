@@ -1,0 +1,34 @@
+<html>
+<head>
+  <link type="text/css" href="./js/css/ui-lightness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <script type="text/javascript" src="./js/js/jQuery.js"></script>
+  <script type="text/javascript" src="./js/js/jquery-ui-1.7.2.custom.min.js"></script>
+  
+  <script type="text/javascript" src="Workspace.js"></script>
+  
+  <style type="text/css">
+    .ofTable { width: 100px; height: 70px; background: silver; }
+        .ofWorkspace{
+      width:256px;
+      height:256px;
+      background-color:#3333ff;
+      
+      border:1px solid black;
+    }
+  </style>
+  
+  <script type="text/javascript">
+  var ws;
+  $(document).ready(function(){
+    ws = new Workspace( document.getElementById("ws") ); 
+  });
+      
+  </script>
+</head>
+<body style="font-size:62.5%;">
+  <div id="ws" style="float:left;"></div>
+  <div> <input type="button" onclick="ws.addNewTable('Sailor');" value="Push to Close"> <br>
+        <input type="button" onclick="ws.clear_ws();" value="Clear">
+  </div>
+</body>
+</html>
