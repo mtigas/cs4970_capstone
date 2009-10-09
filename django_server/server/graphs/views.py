@@ -22,7 +22,7 @@ def race_piechart(request):
     # Needs a 'place_type' request var.
     if (not request.REQUEST.has_key('place_type')) or (not request.REQUEST['place_type'] in ['state','county','zipcode']):
         return HttpResponse('"place_type" needs to be set', mimetype="text/plain")
-
+    
     place = None
     if request.REQUEST['place_type'] == "zipcode":
         # Getting zipcode from the 'place_id' request var
@@ -59,6 +59,9 @@ def race_piechart(request):
         
         # save this to the cache.
         safe_set_cache(cache_key,response,86400)
+        print "Saved to cache: %s" % cache_key
+    else:    
+        print "Got from cache: %s" % cache_key
     
     # Return the response that was either cached OR generated just now.
     return response
