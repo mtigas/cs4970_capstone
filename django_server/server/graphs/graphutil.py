@@ -1,18 +1,21 @@
 # coding=utf-8
 from __future__ import division
-from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.figure import Figure
 
 
-def generate_race_piechart(place):
+def generate_race_piechart(place,place_type=""):
     if not place.population_demographics:
         return False
     
     # Give this a shorter var name for the calcuations below
     d = place.population_demographics
+    
+    # Explicitly reset DB connection
+    connection.close()
     
     bg = "#ffffff"
     fig = Figure(figsize=(7,7), facecolor=bg)
@@ -32,14 +35,13 @@ def generate_race_piechart(place):
     ax.pie(fracs, explode=explode, labels=labels, autopct='%1.2f%%', labeldistance=1.15, shadow=True)
     
     # For ZIP codes, also show the county it's in, if possible.
-    place_type = ContentType.objects.get_for_model(place).name
-    if place_type == u"zip code":
+    if place_type == "zipcode":
         try:
             ax.set_title('Race in ZIP %s, %s, %s\n(total pop %s)' % (place, place.county.long_name,place.county.state.abbr,d.total))
         except:
             raise
             ax.set_title('Race in %s\n(total pop %s)' % (place,d.total))
-    elif place_type == u"county":
+    elif place_type == "county":
         try:
             ax.set_title('Race in %s, %s\n(total pop %s)' % (place.long_name,place.state.abbr,d.total))
         except:
@@ -47,4 +49,8 @@ def generate_race_piechart(place):
             ax.set_title('Race in %s\n(total pop %s)' % (place,d.total))
     else:
         ax.set_title('Race in %s\n(total pop %s)' % (place,d.total))
+        
+    # Explicitly reset DB connection
+    connection.close()
+
     return fig

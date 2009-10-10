@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-
+from django.db import connection
 from django.views.decorators.cache import cache_page
 from cacheutil import safe_get_cache,safe_set_cache
 
@@ -20,9 +20,12 @@ def race_piechart(request):
     """    
     # Check the 'place_type' GET variable.
     place_type = request.GET.get('place_type',None)
+    if isinstance(place_type,basestring):
+        place_type = str(place_type.lower())
+    
     if (not place_type) or (not place_type in ['state','county','zipcode']):
         return HttpResponse('"place_type" needs to be set', mimetype="text/plain")
-
+    
     # Get the rest of the request variables that we want.
     place_id = request.GET.get('place_id',None)
     abbr = request.GET.get('abbr',None)
@@ -37,6 +40,9 @@ def race_piechart(request):
     )
     response = safe_get_cache(cache_key)
 
+    # Explicitly reset DB connection
+    connection.close()
+    
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
         place = None
@@ -64,13 +70,16 @@ def race_piechart(request):
                     place = County.objects.get(name__iexact=name,state__name__iexact=state_name)
             except County.DoesNotExist:
                 place = None
-    
+        
         # If we failed to get a location
         if not place:
             return HttpResponse("A %s object with the given request string could not be found." % place_type, mimetype="text/plain")
 
+        # Explicitly reset DB connection
+        connection.close()
+            
         # Generate the chart
-        fig = generate_race_piechart(place)
+        fig = generate_race_piechart(place,place_type)
         
         # Add it to the HTTP response
         canvas=FigureCanvas(fig)
