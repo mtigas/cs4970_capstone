@@ -6,6 +6,6 @@ urlpatterns = patterns('',
     url(
         regex   = '^$',
         view    = views.race_piechart,
-        name    = 'graphs_race_piechart',
+        name    = 'race_piechart',
     ),
 )
