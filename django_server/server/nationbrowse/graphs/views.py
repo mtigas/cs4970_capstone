@@ -3,11 +3,12 @@ from __future__ import division
 from django.http import HttpResponse
 from django.db import connection
 from cacheutil import safe_get_cache,safe_set_cache
-
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from django.shortcuts import get_object_or_404
 
 from nationbrowse.demographics.models import PlacePopulation
-from nationbrowse.places.models import State,County,ZipCode
+from django.contrib.contenttypes.models import ContentType
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from graph_maker import generate_race_pie
 
 def age_bar(request):
@@ -16,80 +17,66 @@ def age_bar(request):
 gender_pie = age_bar
 
 
-def race_pie(request):
+def race_pie(request,place_type,slug):
     """
     Generates a png pie chart of the given location's racial breakdown. See
     graph_maker.generate_race_pie for the chart-generation bits.
-    """    
-    # Check the 'place_type' GET variable.
-    place_type = request.GET.get('place_type',None)
-    if isinstance(place_type,basestring):
-        place_type = str(place_type.lower())
+    /graphs/race_pie/state/missouri/
+    /graphs/race_pie/zipcode/65201/
+    /graphs/race_pie/county/boone-missouri/
     
-    if (not place_type) or (not place_type in ['state','county','zipcode']):
-        return HttpResponse('"place_type" needs to be set', mimetype="text/plain")
-    
-    # Get the rest of the request variables that we want.
-    place_id = request.GET.get('place_id',None)
-    abbr = request.GET.get('abbr',None)
-    name = request.GET.get('name',None)
-    state_abbr = request.GET.get('state__abbr',None)
-    state_name = request.GET.get('state__name',None)
-
+    See race_pie_county, below, for a version with nicer URL arguments.
+    """
     # Check if we have a cache of this render, with the same request parameters ...
     # Set the cache based on the specific object we got (place_type + place_id)
-    cache_key = "race_pie place_type=%s place_id=%s abbr=%s name=%s state_abbr=%s state_name=%s" % (
-        place_type, place_id, abbr, name, state_abbr, state_name
-    )
+    cache_key = "race_pie place_type=%s slug=%s" % (place_type, slug)
     response = safe_get_cache(cache_key)
-
-    # Explicitly reset DB connection
     connection.close()
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
-        place = None
-        if (place_type == "zipcode") and place_id:
-            # Get zipcode by place_id (which is the ZIP #)
-            try:
-                place = ZipCode.objects.get(id=place_id)
-            except ZipCode.DoesNotExist:
-                place = None
-        elif place_type == "state":
-            # State requires either name or abbr
-            try:
-                if abbr:
-                    place = State.objects.get(abbr__iexact=abbr)
-                elif name:
-                    place = State.objects.get(name__iexact=name)
-            except State.DoesNotExist:
-                place = None
-        elif (place_type == "county") and name:
-            # County requires name and either state__name or state__abbr
-            try:
-                if state_abbr:
-                    place = County.objects.get(name__iexact=name,state__abbr__iexact=state_abbr)
-                elif state_name:
-                    place = County.objects.get(name__iexact=name,state__name__iexact=state_name)
-            except County.DoesNotExist:
-                place = None
+        ctype = get_object_or_404(ContentType,app_label="places",model=place_type)
         
-        # If we failed to get a location
-        if not place:
-            return HttpResponse("A %s object with the given request string could not be found." % place_type, mimetype="text/plain")
-
-        # Explicitly reset DB connection
-        connection.close()
+        # Querying ZipCode by numeric ID is *MUCH* quicker than string
+        if place_type.lower() == "zipcode":
+            place = get_object_or_404(ctype.model_class(),id=slug)
+        else:
+            place = get_object_or_404(ctype.model_class(),slug=slug)
         
-        # Generate the chart
-        fig = generate_race_pie(place,place_type)
-        
-        # Add it to the HTTP response
+        # Generate the chart & render it as a PNG to the HTTP response
+        fig = generate_race_pie(place)
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
         canvas.print_png(response)
         
-        # save this to the cache.
+        # Save the response to cache
+        safe_set_cache(cache_key,response,86400)
+        print "\nSaved to cache:\n\t%s\n" % cache_key
+    else:        
+        print "\nGot from cache:\n\t%s\n" % cache_key
+    
+    # Return the response that was either cached OR generated just now.
+    return response
+
+def race_pie_county(request,state_abbr,name):
+    """
+    An alternative view to above, with nicer URL structure for county browsing:
+    /graphs/race_pie/county/mo/boone/
+    """
+    cache_key = "race_pie_county state_abbr=%s name=%s" % (state_abbr, name)
+    response = safe_get_cache(cache_key)
+    connection.close()
+    
+    if not response:
+        County = ContentType.objects.get(app_label="places",model="county").model_class()
+        place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
+
+        fig = generate_race_pie(place)
+        canvas=FigureCanvas(fig)
+        response=HttpResponse(content_type='image/png')
+        canvas.print_png(response)
+        
+        # Save the response to cache
         safe_set_cache(cache_key,response,86400)
         print "\nSaved to cache:\n\t%s\n" % cache_key
     else:        

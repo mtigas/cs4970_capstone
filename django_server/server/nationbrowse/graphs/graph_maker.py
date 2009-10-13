@@ -2,10 +2,13 @@
 from __future__ import division
 from django.db import connection
 from matplotlib.figure import Figure
+from django.contrib.contenttypes.models import ContentType
 
-def generate_race_pie(place,place_type=""):
+def generate_race_pie(place):
     if not place.population_demographics:
         return False
+    
+    place_type = unicode(ContentType.objects.get_for_model(place).model)
     
     # Give this a shorter var name for the calcuations below
     d = place.population_demographics

@@ -14,8 +14,13 @@ urlpatterns = patterns('',
         name    = 'gender_pie',
     ),
     url(
-        regex   = '^race_pie/$',
+        regex   = '^race_pie/(?P<place_type>[-\w]+)/(?P<slug>[-\w]+)/$',
         view    = views.race_pie,
         name    = 'race_pie',
+    ),
+    url(
+        regex   = '^race_pie/county/(?P<state_abbr>[-\w]+)/(?P<name>[-\w]+)/$',
+        view    = views.race_pie_county,
+        name    = 'race_pie_county',
     ),
 )
