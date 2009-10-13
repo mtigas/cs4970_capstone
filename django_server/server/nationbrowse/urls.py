@@ -13,6 +13,7 @@ urlpatterns = patterns('',
         'document_root': settings.MEDIA_ROOT,
         'show_indexes': True
     }),
-    (r'^graphtest/', include('nationbrowse.graphs.urls',namespace="graphs")),
+    (r'^graphs/', include('nationbrowse.graphs.urls',namespace="graphs")),
+    (r'^places/', include('nationbrowse.places.urls',namespace="places")),
     (r'^admin/', include(admin.site.urls)),
 )

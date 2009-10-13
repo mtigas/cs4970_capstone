@@ -1,13 +1,9 @@
 # coding=utf-8
 from __future__ import division
 from django.db import connection
-
-import matplotlib
-matplotlib.use('Agg')
 from matplotlib.figure import Figure
 
-
-def generate_race_piechart(place,place_type=""):
+def generate_race_pie(place,place_type=""):
     if not place.population_demographics:
         return False
     

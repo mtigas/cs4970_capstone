@@ -2,21 +2,24 @@
 from __future__ import division
 from django.http import HttpResponse
 from django.db import connection
-from django.views.decorators.cache import cache_page
 from cacheutil import safe_get_cache,safe_set_cache
 
-import matplotlib
-matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from nationbrowse.demographics.models import PlacePopulation
 from nationbrowse.places.models import State,County,ZipCode
-from graphutil import generate_race_piechart
+from graph_maker import generate_race_pie
 
-def race_piechart(request):
+def age_bar(request):
+    return HttpResponse("Not yet implemented", mimetype="text/plain")
+
+gender_pie = age_bar
+
+
+def race_pie(request):
     """
     Generates a png pie chart of the given location's racial breakdown. See
-    graphutil.generate_race_piechart for the chart-generation bits.
+    graph_maker.generate_race_pie for the chart-generation bits.
     """    
     # Check the 'place_type' GET variable.
     place_type = request.GET.get('place_type',None)
@@ -35,7 +38,7 @@ def race_piechart(request):
 
     # Check if we have a cache of this render, with the same request parameters ...
     # Set the cache based on the specific object we got (place_type + place_id)
-    cache_key = "race_piechart place_type=%s place_id=%s abbr=%s name=%s state_abbr=%s state_name=%s" % (
+    cache_key = "race_pie place_type=%s place_id=%s abbr=%s name=%s state_abbr=%s state_name=%s" % (
         place_type, place_id, abbr, name, state_abbr, state_name
     )
     response = safe_get_cache(cache_key)
@@ -77,9 +80,9 @@ def race_piechart(request):
 
         # Explicitly reset DB connection
         connection.close()
-            
+        
         # Generate the chart
-        fig = generate_race_piechart(place,place_type)
+        fig = generate_race_pie(place,place_type)
         
         # Add it to the HTTP response
         canvas=FigureCanvas(fig)

@@ -4,8 +4,18 @@ import views
 
 urlpatterns = patterns('',
     url(
-        regex   = '^$',
-        view    = views.race_piechart,
-        name    = 'race_piechart',
+        regex   = '^age_bar/$',
+        view    = views.age_bar,
+        name    = 'age_bar',
+    ),
+    url(
+        regex   = '^gender_pie/$',
+        view    = views.gender_pie,
+        name    = 'gender_pie',
+    ),
+    url(
+        regex   = '^race_pie/$',
+        view    = views.race_pie,
+        name    = 'race_pie',
     ),
 )
