@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from places.models import State,County,ZipCode
+from nationbrowse.places.models import State,County,ZipCode
 from string import ascii_uppercase
 from django.core import serializers
 import os

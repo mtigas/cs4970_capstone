@@ -17,7 +17,7 @@ class PlacesTest(TestCase):
         self.assert_(True)
 
 """
-from places.models import ZipCode,County
+from nationbrowse.places.models import ZipCode,County
 from django.contrib.gis.geos import fromstr
 County.objects.get(poly__contains=fromstr("POINT(-73.9706039428711 40.67399850415069)")) # Brooklyn
 ZipCode.objects.get(poly__contains=fromstr("POINT(-90.31285285949707 38.83549569788695)")) # Florissant, MO (63031)

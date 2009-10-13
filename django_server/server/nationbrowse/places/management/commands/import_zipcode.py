@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from places.models import ConversionZipCode,State,ZipCode
+from nationbrowse.places.models import ConversionZipCode,State,ZipCode
 from django.db import IntegrityError, transaction
 import gc
 

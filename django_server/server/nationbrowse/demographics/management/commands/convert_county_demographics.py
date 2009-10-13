@@ -1,7 +1,7 @@
 from django.core.management.base import NoArgsCommand
 
-from demographics.models import PopulationImport,PlacePopulation
-from places.models import County,State
+from nationbrowse.demographics.models import PopulationImport,PlacePopulation
+from nationbrowse.places.models import County,State
 from django.db import IntegrityError, transaction
 import gc
 

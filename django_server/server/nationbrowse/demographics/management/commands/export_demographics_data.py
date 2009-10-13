@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from demographics.models import DataSource,PlacePopulation
+from nationbrowse.demographics.models import DataSource,PlacePopulation
 from django.contrib.contenttypes.models import ContentType
 
 from string import ascii_uppercase

@@ -9,8 +9,8 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-from demographics.models import PlacePopulation
-from places.models import State,County,ZipCode
+from nationbrowse.demographics.models import PlacePopulation
+from nationbrowse.places.models import State,County,ZipCode
 from graphutil import generate_race_piechart
 
 def race_piechart(request):

@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from places.models import ConversionCounty,State,County
+from nationbrowse.places.models import ConversionCounty,State,County
 from django.template.defaultfilters import slugify
 from django.db import IntegrityError, connection, transaction
     

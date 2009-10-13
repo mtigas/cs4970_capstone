@@ -23,7 +23,7 @@ from django.db import models
 from django_caching.models import CachedModel
 from django_caching.managers import CachingManager
 
-from demographics.models import PlacePopulation
+from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.contenttypes import generic
 
 # Are we on a GIS-aware server?

@@ -44,7 +44,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'capstone.urls'
+ROOT_URLCONF = 'nationbrowse.urls'
 
 TEMPLATE_DIRS = (
     os.path.join(DJANGO_SERVER_DIR, 'templates'),
@@ -57,8 +57,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     
-    'places',
-    'demographics',
+    'nationbrowse.places',
+    'nationbrowse.demographics',
 )
 
 # Sqlite (the DB we use when we develop locally) is not GIS-aware, but our live
