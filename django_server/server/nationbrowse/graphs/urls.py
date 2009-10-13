@@ -4,23 +4,13 @@ import views
 
 urlpatterns = patterns('',
     url(
-        regex   = '^age_bar/$',
-        view    = views.age_bar,
-        name    = 'age_bar',
+        regex   = '^(?P<place_type>[-\w]+)/(?P<slug>[-\w]+)/(?P<graph_type>[-\w]+)/$',
+        view    = views.render_graph,
+        name    = 'render_graph',
     ),
     url(
-        regex   = '^gender_pie/$',
-        view    = views.gender_pie,
-        name    = 'gender_pie',
-    ),
-    url(
-        regex   = '^race_pie/(?P<place_type>[-\w]+)/(?P<slug>[-\w]+)/$',
-        view    = views.race_pie,
-        name    = 'race_pie',
-    ),
-    url(
-        regex   = '^race_pie/county/(?P<state_abbr>[-\w]+)/(?P<name>[-\w]+)/$',
-        view    = views.race_pie_county,
-        name    = 'race_pie_county',
+        regex   = '^county/(?P<state_abbr>[-\w]+)/(?P<name>[-\w]+)/(?P<graph_type>[-\w]+)/$',
+        view    = views.render_graph_county,
+        name    = 'render_graph_county',
     ),
 )
