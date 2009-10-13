@@ -5,15 +5,25 @@ from django.db.models.query import QuerySet
 
 CACHE_DURATION = 3600
 
-def _cache_key(model, pk, field=None):
+def _cache_key(model, value, field=None, module_name=None):
+    if not module_name:
+        module_name = model._meta.module_name
+        
+    # It's safe to hot-swap a "deferred_poly" version of a PolyModel
+    # for the non-deffered version. Django will just have to query again
+    # for the poly.
+    module_name = module_name.replace('_deferred_poly','')
+    
     if field:
-        return "%s:%s.%s:%s" % (field, model._meta.app_label, model._meta.module_name, pk)
+        return "%s:%s.%s:%s" % (model._meta.app_label, module_name, field, value)
     else:
-        return "%s.%s:%s" % (model._meta.app_label, model._meta.module_name, pk)
+        return "%s.%s:%s" % (model._meta.app_label, module_name, value)
 
-def _get_cache_key(self, field=None):
-    return self._cache_key(self.pk, field)
-
+def _get_cache_key(self, field=None, module_name=None):
+    if field:
+        return self._cache_key(getattr(self,field), field, module_name)
+    else:
+        return self._cache_key(self.pk)
 
 class CachingManager(models.Manager):
     def __init__(self, use_for_related_fields=True, *args, **kwargs):
@@ -42,6 +52,8 @@ class CachingManager(models.Manager):
         a web app.
         """
         cache.set(instance.cache_key, None, 5)
+        if hasattr(instance,'slug'):
+            cache.set(instance._get_cache_key('slug'), None, CACHE_DURATION)
 
     def _post_save(self, instance, **kwargs):
         self._invalidate_cache(instance)
@@ -57,6 +69,8 @@ class CachingQuerySet(QuerySet):
             obj = superiter.next()
             # Use cache.add instead of cache.set to prevent race conditions (see CachingManager)
             cache.add(obj.cache_key, obj, CACHE_DURATION)
+            if hasattr(obj,'slug'):
+                cache.add(obj._get_cache_key('slug'), obj, CACHE_DURATION)
             yield obj
 
     def get(self, *args, **kwargs):
@@ -76,12 +90,22 @@ class CachingQuerySet(QuerySet):
         # Punt on anything more complicated than get by pk/id only...
         if len(kwargs) == 1:
             k = kwargs.keys()[0]
+            return obj
             if k in ('pk', 'pk__exact', '%s' % self.model._meta.pk.attname, 
                      '%s__exact' % self.model._meta.pk.attname):
-                obj = cache.get(self.model._cache_key(pk=kwargs.values()[0]))
-                if obj is not None:
-                    obj.from_cache = True
-                    return obj
+                obj = cache.get(self.model._cache_key(
+                    value=kwargs.values()[0],
+                    module_name = self.model._meta.module_name
+                ))
+            elif k in ('slug','slug__iexact','slug__exact'):
+                obj = cache.get(self.model._cache_key(
+                    field="slug",
+                    value=kwargs.values()[0],
+                    module_name = self.model._meta.module_name
+                ))
+            if obj is not None:
+                obj.from_cache = True
+                return obj
 
         # Calls self.iterator to fetch objects, storing object in cache.
         return super(CachingQuerySet, self).get(*args, **kwargs)
@@ -118,6 +142,8 @@ if ('django.contrib.gis' in settings.INSTALLED_APPS):
             a web app.
             """
             cache.set(instance.cache_key, None, 5)
+            if hasattr(instance,'slug'):
+                cache.set(instance._get_cache_key('slug'), None, CACHE_DURATION)
 
         def _post_save(self, instance, **kwargs):
             self._invalidate_cache(instance)
@@ -140,6 +166,8 @@ if ('django.contrib.gis' in settings.INSTALLED_APPS):
                 obj = superiter.next()
                 # Use cache.add instead of cache.set to prevent race conditions (see CachingManager)
                 cache.add(obj.cache_key, obj, CACHE_DURATION)
+                if hasattr(obj,'slug'):
+                    cache.add(obj._get_cache_key('slug'), obj, CACHE_DURATION)
                 yield obj
 
         def get(self, *args, **kwargs):
@@ -159,12 +187,23 @@ if ('django.contrib.gis' in settings.INSTALLED_APPS):
             # Punt on anything more complicated than get by pk/id only...
             if len(kwargs) == 1:
                 k = kwargs.keys()[0]
+                obj = None
                 if k in ('pk', 'pk__exact', '%s' % self.model._meta.pk.attname, 
                          '%s__exact' % self.model._meta.pk.attname):
-                    obj = cache.get(self.model._cache_key(pk=kwargs.values()[0]))
-                    if obj is not None:
-                        obj.from_cache = True
-                        return obj
+                    obj = cache.get(self.model._cache_key(
+                        value=kwargs.values()[0],
+                        module_name = self.model._meta.module_name
+                    ))
+                elif k in ('slug','slug__iexact','slug__exact'):
+                    obj = cache.get(self.model._cache_key(
+                        field="slug",
+                        value=kwargs.values()[0],
+                        module_name = self.model._meta.module_name
+                    ))
+
+                if obj is not None:
+                    obj.from_cache = True
+                    return obj
 
             # Calls self.iterator to fetch objects, storing object in cache.
             return super(GeoCachingQuerySet, self).get(*args, **kwargs)
