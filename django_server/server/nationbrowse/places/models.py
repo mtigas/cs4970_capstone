@@ -226,7 +226,7 @@ class ZipCode(PolyModel):
     
     def counties(self):
         if USE_GEODJANGO:
-            return County.objects.filter(poly__intersects=self.poly)
+            return County.objects.filter(state=self.state,poly__intersects=self.poly)
         else:
             return None
     counties = cached_property(counties, 15552000)
