@@ -22,11 +22,11 @@
             {% endfor %}
         </ul></li>
         {% endif %}
-
     </ul>
-    
-    <h2>Racial breakdown:</h2>
     {% load graphs %}
+
+    {% ifequal place_type "state" %}<p>{% show_on_map place_type place.slug %}</p>{% endifequal %}
+    <h2>Racial breakdown:</h2>
     {% show_graph place_type place.slug race_pie %}
 </body> 
 </html>
