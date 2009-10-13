@@ -30,7 +30,6 @@ def render_graph(request,place_type,slug,graph_type,size=700):
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
-        print "Rendering graph view"
         # 404 if graph_type is invalid
         if hasattr(graph_maker, 'generate_%s' % graph_type):
             graph_generator = getattr(graph_maker, 'generate_%s' % graph_type)
@@ -56,10 +55,7 @@ def render_graph(request,place_type,slug,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
-        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
-    else:
-        print "Hit view cache for %s" % cache_key
 
     # Return the response that was either cached OR generated just now.
     return response
@@ -86,10 +82,7 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
-        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
-    else:
-        print "Hit view cache for %s" % cache_key
 
     # Return the response that was either cached OR generated just now.
     return response

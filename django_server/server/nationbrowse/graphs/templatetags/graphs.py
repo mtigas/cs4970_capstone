@@ -51,8 +51,6 @@ class StaticMapHTMLNode(template.Node):
             )
             return retstr
         except Exception:
-            from traceback import print_exc
-            print_exc
             return u""
 
 
@@ -133,6 +131,4 @@ class GraphHTMLNode(template.Node):
 
             return retstr
         except Exception:
-            from traceback import print_exc
-            print_exc
             return u""

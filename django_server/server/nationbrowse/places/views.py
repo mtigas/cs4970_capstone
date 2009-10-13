@@ -24,19 +24,18 @@ def random_place(request):
     if not PlaceClass:
         raise Http404
     
-    place = PlaceClass.objects.order_by('?')[0]
+    rand_id = rand_choice(PlaceClass.objects.order_by().values_list('pk'))[0]
+    place = PlaceClass.objects.get(pk=rand_id)
     
     # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
     # even sees the page
     #call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
     
     if place_type == "county":
-        print "Redirecting user to County"
         return HttpResponsePermanentRedirect(
             reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
         )
     else:
-        print "Redirecting user to Place"
         return HttpResponseRedirect(
             reverse("places:place_detail",args=(place_type,place.slug),current_app="places")
         )
@@ -76,10 +75,7 @@ def place_detail(request,place_type,slug):
             'place_type':place_type
         },context_instance=RequestContext(request))
         
-        print "Saving view cache for %s" % cache_key
-        safe_set_cache(cache_key,response,10)
-    else:
-        print "Hit view cache for %s" % cache_key
+        safe_set_cache(cache_key,response,86400)
     
     return response
 
@@ -100,9 +96,6 @@ def county_detail(request,state_abbr,name):
             'place_type':'county'
         },context_instance=RequestContext(request))
 
-        print "Saving view cache for %s" % cache_key
-        safe_set_cache(cache_key,response,10)
-    else:
-        print "Hit view cache for %s" % cache_key
+        safe_set_cache(cache_key,response,86400)
 
     return response
