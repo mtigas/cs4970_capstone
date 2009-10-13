@@ -70,7 +70,7 @@ def place_detail(request,place_type,slug):
 
         # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
         # even sees the page
-        call_in_bg(graph_maker.generate_race_pie,(place,200))
+        #call_in_bg(graph_maker.generate_race_pie,(place,200))
 
         response=render_to_response("places/place_detail.html",{
             'title':title,
@@ -94,7 +94,7 @@ def county_detail(request,state_abbr,name):
         
         # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
         # even sees the page
-        call_in_bg(graph_maker.generate_race_pie,(place,200))
+        #call_in_bg(graph_maker.generate_race_pie,(place,200))
 
         response=render_to_response("places/place_detail.html",{
             'title':title,
