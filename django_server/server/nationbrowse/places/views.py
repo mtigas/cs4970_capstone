@@ -1,7 +1,6 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-from django.db import connection
 from cacheutil import safe_get_cache,safe_set_cache
 from django.shortcuts import get_object_or_404,render_to_response
 from django.http import HttpResponseRedirect,HttpResponsePermanentRedirect,Http404
@@ -33,10 +32,12 @@ def random_place(request):
     call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
     
     if place_type == "county":
+        print "Redirecting user to County"
         return HttpResponsePermanentRedirect(
             reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
         )
     else:
+        print "Redirecting user to Place"
         return HttpResponseRedirect(
             reverse("places:place_detail",args=(place_type,place.slug),current_app="places")
         )
@@ -49,7 +50,6 @@ def place_detail(request,place_type,slug):
     """
     cache_key = "place_detail place_type=%s slug=%s" % (place_type, slug)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
@@ -77,14 +77,16 @@ def place_detail(request,place_type,slug):
             'place_type':place_type
         },context_instance=RequestContext(request))
         
+        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
+    else:
+        print "Hit view cache for %s" % cache_key
     
     return response
 
 def county_detail(request,state_abbr,name):
     cache_key = "county_detail state_abbr=%s name=%s" % (state_abbr, name)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     if not response:
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
@@ -99,6 +101,9 @@ def county_detail(request,state_abbr,name):
             'place_type':'county'
         },context_instance=RequestContext(request))
 
+        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
-    
+    else:
+        print "Hit view cache for %s" % cache_key
+
     return response

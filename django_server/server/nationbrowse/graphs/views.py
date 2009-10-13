@@ -1,7 +1,6 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-from django.db import connection
 from cacheutil import safe_get_cache,safe_set_cache
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -28,7 +27,6 @@ def render_graph(request,place_type,slug,graph_type,size=700):
     # Set the cache based on the specific object we got (place_type + place_id)
     cache_key = "render_graph place_type=%s slug=%s graph_type=%s size=%s" % (place_type, slug, graph_type, size)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
@@ -57,8 +55,11 @@ def render_graph(request,place_type,slug,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
+        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
-    
+    else:
+        print "Hit view cache for %s" % cache_key
+
     # Return the response that was either cached OR generated just now.
     return response
 
@@ -69,7 +70,6 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
     """
     cache_key = "render_graph_county state_abbr=%s name=%s graph_type=%s size=%s" % (state_abbr, name, graph_type, size)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     if not response:
         if hasattr(graph_maker, 'generate_%s' % graph_type):
@@ -85,8 +85,11 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
+        print "Saving view cache for %s" % cache_key
         safe_set_cache(cache_key,response,86400)
-    
+    else:
+        print "Hit view cache for %s" % cache_key
+
     # Return the response that was either cached OR generated just now.
     return response
 

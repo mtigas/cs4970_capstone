@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import division
-from django.db import connection
 from matplotlib.figure import Figure
 
 from nationbrowse import graphs
@@ -37,8 +36,6 @@ def generate_race_pie(place,size):
     place_type = place._meta.module_name.replace('_deferred_poly','')
     d = place.population_demographics
     
-    connection.close() # Explicitly reset DB connection
-    
     # Initialize the Figure object
     fig = Figure(figsize=(size,size), dpi=100, facecolor=graphs.BACKGROUND, frameon=False)    
 
@@ -74,7 +71,4 @@ def generate_race_pie(place,size):
         else:
             ax.set_title('Race in %s\n(total pop %s)' % (place,d.total))
         
-    # Explicitly reset DB connection
-    connection.close()
-
     return fig
