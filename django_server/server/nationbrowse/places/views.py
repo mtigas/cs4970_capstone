@@ -68,7 +68,7 @@ def place_detail(request,place_type,slug):
             place = get_object_or_404(PlaceClass,slug=slug)
             title = u"%s" % (place.name)
 
-        call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+        #call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
 
         response=render_to_response("places/place_detail.html",{
             'title':title,
@@ -87,7 +87,8 @@ def county_detail(request,state_abbr,name):
     
     if not response:
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
-        call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+        
+        #call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
 
         title = u"%s, %s" % (place.long_name, place.state)
         
