@@ -85,5 +85,7 @@ class GraphHTMLNode(template.Node):
             
             return '\n<img src="%s"><br />\n%s' % (graph_url,retstr)
         except Exception:
+            from traceback import print_exc
+            print_exc
             return u""
     

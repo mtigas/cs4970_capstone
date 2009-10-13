@@ -5,6 +5,7 @@ in the background of a Django view. When used in a view, the response
 can be returned while the given task continues to operate.
 """
 from threading import Thread
+from django.db.connection import close as close_db
 
 def db_threadsafe(func):
     """
@@ -14,11 +15,10 @@ def db_threadsafe(func):
     concurrently since they will all have to create their own
     separate connections to the DB.
     """
-    from django import db
     
     def wrapped_func(*args, **kwargs):
         try:
-            db.connection.close()
+            close_db()
         except db.InterfaceError:
             pass
         return func(*args, **kwargs)
@@ -38,7 +38,8 @@ def call_in_bg(function,args=[],kwargs={}):
     the background.
     """
     thread = Thread(
-        target=db_threadsafe(function),
+        #target=db_threadsafe(function),
+        target=function,
         args=args,
         kwargs=kwargs
     )
