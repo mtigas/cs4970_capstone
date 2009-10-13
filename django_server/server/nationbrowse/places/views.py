@@ -14,7 +14,7 @@ from nationbrowse.places.models import County
 
 from django.db.models.loading import get_model
 
-from nationbrowse.graphs import graph_maker
+from nationbrowse.graphs.views import render_graph
 from threadutil import call_in_bg
 
 def random_place(request):
@@ -29,7 +29,7 @@ def random_place(request):
     
     # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
     # even sees the page
-    call_in_bg(graph_maker.generate_race_pie,(place,200))
+    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
     
     if place_type == "county":
         return HttpResponsePermanentRedirect(
@@ -68,10 +68,6 @@ def place_detail(request,place_type,slug):
             place = get_object_or_404(PlaceClass,slug=slug)
             title = u"%s" % (place.name)
 
-        # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
-        # even sees the page
-        #call_in_bg(graph_maker.generate_race_pie,(place,200))
-
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,
@@ -92,10 +88,6 @@ def county_detail(request,state_abbr,name):
 
         title = u"%s, %s" % (place.long_name, place.state)
         
-        # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
-        # even sees the page
-        #call_in_bg(graph_maker.generate_race_pie,(place,200))
-
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,

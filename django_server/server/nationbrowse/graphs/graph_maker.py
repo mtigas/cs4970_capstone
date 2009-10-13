@@ -3,7 +3,6 @@ from __future__ import division
 from django.db import connection
 from matplotlib.figure import Figure
 
-from cacheutil import cached_method
 from nationbrowse import graphs
 
 race_pie_labels = [
@@ -79,4 +78,3 @@ def generate_race_pie(place,size):
     connection.close()
 
     return fig
-generate_race_pie = cached_method(generate_race_pie,86400)
