@@ -265,10 +265,11 @@ class ZipCode(PolyModel):
 
 
 from django.db import connection
+from django.core.signals import request_finished
 def close_connection(**kwargs):
     print "Closed connection to DB"
     connection.close()
-signals.request_finished.connect(close_connection)
+request_finished.connect(close_connection)
 
 """
 Used for converting data from tl_2008_us_zcta5.shp, imported via:
