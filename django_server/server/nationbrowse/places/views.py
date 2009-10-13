@@ -24,7 +24,7 @@ def random_place(request):
         raise Http404
     
     num = PlaceClass.objects.count()
-    rand_nums = rand_sample(xrange(1,num), 20)
+    rand_nums = rand_sample(xrange(1,num), num/2)
     place = PlaceClass.objects.filter(id__in=rand_nums)[0]
     
     # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
