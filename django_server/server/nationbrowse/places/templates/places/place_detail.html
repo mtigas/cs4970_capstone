@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Capstone</title>
+</head>
+
+<body>
+    <p><a href="{% url places:random_place %}">Get another random place</a></p>
+    <h1>{{ title }}</h1>
+    <ul>
+        {% ifnotequal place_type "state" %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endifnotequal %}
+        {% if place.counties %}<li>Count{{ place.counties.count|pluralize:"y,ies" }}:<ul style="width:400px;max-height:100px;overflow:auto">
+            {% for county in place.counties %}
+            <li><a href="{{ county.get_absolute_url }}">{{ county.long_name }}</a></li>
+            {% endfor %}
+        </ul></li>
+        {% endif %}
+        {% if place.zipcodes %}<li>ZIP Code{{ place.zipcodes.count|pluralize }}:<ul style="width:400px;max-height:100px;overflow:auto">
+            {% for zipcode in place.zipcodes %}
+            <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
+            {% endfor %}
+        </ul></li>
+        {% endif %}
+
+    </ul>
+    
+    <h2>Racial breakdown:</h2>
+    {% load graphs %}
+    {% show_graph place_type place.slug race_pie %}
+</body> 
+</html>

@@ -1,0 +1,87 @@
+# coding=utf-8
+from __future__ import division
+from django.http import HttpResponse
+from django.db import connection
+from cacheutil import safe_get_cache,safe_set_cache
+from django.shortcuts import get_object_or_404,render_to_response
+from django.http import HttpResponseRedirect,HttpResponsePermanentRedirect,Http404
+from django.core.urlresolvers import reverse
+from random import choice as rand_choice, sample as rand_sample
+from django.template import RequestContext
+from django.template.defaultfilters import urlencode
+from django.contrib.contenttypes.models import ContentType
+
+
+def random_place(request):
+    place_type = rand_choice(['state','county','zipcode'])
+    ctype = get_object_or_404(ContentType,app_label="places",model=place_type).model_class()
+    
+    num = ctype.objects.count()
+    rand_nums = rand_sample(xrange(1,num), 20)
+    place = ctype.objects.filter(id__in=rand_nums)[0]
+    
+    if place_type == "county":
+        return HttpResponsePermanentRedirect(
+            reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
+        )
+    else:
+        return HttpResponseRedirect(
+            reverse("places:place_detail",args=(place_type,place.slug),current_app="places")
+        )
+    
+def place_detail(request,place_type,slug):
+    """
+    /places/state/missouri/
+    /places/zipcode/65201/
+    /places/county/boone-missouri/
+    """
+    cache_key = "place_detail place_type=%s slug=%s" % (place_type, slug)
+    response = safe_get_cache(cache_key)
+    connection.close()
+    
+    # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
+    if not response:
+        ctype = get_object_or_404(ContentType,app_label="places",model=place_type)
+        
+        if place_type == "zipcode":
+            place = get_object_or_404(ctype.model_class(),id=slug)
+            title = u"ZIP Code %s in %s, %s" % (place, place.county.long_name, place.county.state)
+        elif place_type == "county":
+            place = get_object_or_404(ctype.model_class(),slug=slug)
+            return HttpResponsePermanentRedirect(
+                reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
+            )
+        else:
+            place = get_object_or_404(ctype.model_class(),slug=slug)
+            title = u"%s" % (place.name)
+        
+        response=render_to_response("places/place_detail.html",{
+            'title':title,
+            'place':place,
+            'place_type':place_type
+        },context_instance=RequestContext(request))
+        
+        safe_set_cache(cache_key,response,86400)
+    
+    return response
+
+def county_detail(request,state_abbr,name):
+    cache_key = "county_detail state_abbr=%s name=%s" % (state_abbr, name)
+    response = safe_get_cache(cache_key)
+    connection.close()
+    
+    if not response:
+        County = ContentType.objects.get(app_label="places",model="county").model_class()
+        place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
+
+        title = u"%s, %s" % (place.long_name, place.state)
+        
+        response=render_to_response("places/place_detail.html",{
+            'title':title,
+            'place':place,
+            'place_type':'county'
+        },context_instance=RequestContext(request))
+
+        safe_set_cache(cache_key,response,86400)
+    
+    return response

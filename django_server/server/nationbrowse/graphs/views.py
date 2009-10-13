@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import graph_maker
 
-def render_graph(request,place_type,slug,graph_type):
+def render_graph(request,place_type,slug,graph_type,size=700):
     """
     Generates a png pie graph of the given location's racial breakdown. Example
     URLs include:
@@ -24,7 +24,7 @@ def render_graph(request,place_type,slug,graph_type):
     """
     # Check if we have a cache of this render, with the same request parameters ...
     # Set the cache based on the specific object we got (place_type + place_id)
-    cache_key = "render_graph place_type=%s slug=%s graph_type=%s" % (place_type, slug, graph_type)
+    cache_key = "render_graph place_type=%s slug=%s graph_type=%s size=%s" % (place_type, slug, graph_type, size)
     response = safe_get_cache(cache_key)
     connection.close()
     
@@ -47,7 +47,7 @@ def render_graph(request,place_type,slug,graph_type):
             place = get_object_or_404(ctype.model_class(),slug=slug)
         
         # Generate the graph & render it as a PNG to the HTTP response
-        fig = graph_generator(place)
+        fig = graph_generator(place,size)
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
         canvas.print_png(response)
@@ -61,12 +61,12 @@ def render_graph(request,place_type,slug,graph_type):
     # Return the response that was either cached OR generated just now.
     return response
 
-def render_graph_county(request,state_abbr,name,graph_type):
+def render_graph_county(request,state_abbr,name,graph_type,size=700):
     """
     An alternative view to above, with nicer URL structure for county browsing:
     /graphs/county/mo/boone/race_pie/
     """
-    cache_key = "render_graph_county state_abbr=%s name=%s graph_type=%s" % (state_abbr, name, graph_type)
+    cache_key = "render_graph_county state_abbr=%s name=%s graph_type=%s size=%s" % (state_abbr, name, graph_type, size)
     response = safe_get_cache(cache_key)
     connection.close()
     
@@ -79,7 +79,7 @@ def render_graph_county(request,state_abbr,name,graph_type):
         County = ContentType.objects.get(app_label="places",model="county").model_class()
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
 
-        fig = graph_generator(place)
+        fig = graph_generator(place,size)
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
         canvas.print_png(response)

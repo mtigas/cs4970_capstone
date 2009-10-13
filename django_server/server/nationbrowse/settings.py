@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     
     'nationbrowse.places',
     'nationbrowse.demographics',
+    'nationbrowse.graphs',
 )
 
 # Sqlite (the DB we use when we develop locally) is not GIS-aware, but our live

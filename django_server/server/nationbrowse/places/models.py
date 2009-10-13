@@ -124,11 +124,32 @@ class State(PolyModel):
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
+    #def zipcodes(self):
+    #    if USE_GEODJANGO:
+    #        return ZipCode.objects.filter(poly__coveredby=self.poly)
+    #    else:
+    #        return None
+    #zipcodes = cached_property(zipcodes, 15552000)
+    #
+    #def counties(self):
+    #    if USE_GEODJANGO:
+    #        return County.objects.filter(poly__coveredby=self.poly)
+    #    else:
+    #        return None
+    #counties = cached_property(counties, 15552000)
+    
     class Meta:
         ordering = ('name',)
 	
     def __unicode__(self):
         return unicode(self.name)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('places:place_detail', (), {
+            'place_type' : 'state',
+            'slug' : self.slug
+        })
 
 class County(PolyModel):
     if USE_GEODJANGO:
@@ -160,6 +181,13 @@ class County(PolyModel):
     def __unicode__(self):
         return u"%s, %s" % (self.name, self.state.name)
     __unicode__ = cached_clsmethod(__unicode__, 1800)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('places:county_detail', (), {
+            'state_abbr' : self.state.abbr.lower(),
+            'name' : self.name.lower()
+        })
 
 class ZipCode(PolyModel):
     if USE_GEODJANGO:
@@ -226,6 +254,13 @@ class ZipCode(PolyModel):
     def __unicode__(self):
         return u"%s" % (self.name)
     __unicode__ = cached_clsmethod(__unicode__, 1800)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('places:place_detail', (), {
+            'place_type' : 'zipcode',
+            'slug' : self.id
+        })
 
 """
 Used for converting data from tl_2008_us_zcta5.shp, imported via:
