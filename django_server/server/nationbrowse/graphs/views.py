@@ -30,6 +30,7 @@ def render_graph(request,place_type,slug,graph_type,size=700):
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
+        print "Rendering graph view"
         # 404 if graph_type is invalid
         if hasattr(graph_maker, 'generate_%s' % graph_type):
             graph_generator = getattr(graph_maker, 'generate_%s' % graph_type)
