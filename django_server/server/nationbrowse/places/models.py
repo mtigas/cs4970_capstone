@@ -262,6 +262,14 @@ class ZipCode(PolyModel):
             'slug' : self.id
         })
 
+
+
+from django.db import connection
+def close_connection(**kwargs):
+    print "Closed connection to DB"
+    connection.close()
+signals.request_finished.connect(close_connection)
+
 """
 Used for converting data from tl_2008_us_zcta5.shp, imported via:
 ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -overwrite tl_2008_us_zcta5.shp
