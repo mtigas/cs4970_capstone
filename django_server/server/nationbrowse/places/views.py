@@ -78,7 +78,7 @@ def place_detail(request,place_type,slug):
         },context_instance=RequestContext(request))
         
         print "Saving view cache for %s" % cache_key
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,10)
     else:
         print "Hit view cache for %s" % cache_key
     
@@ -102,7 +102,7 @@ def county_detail(request,state_abbr,name):
         },context_instance=RequestContext(request))
 
         print "Saving view cache for %s" % cache_key
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,10)
     else:
         print "Hit view cache for %s" % cache_key
 
