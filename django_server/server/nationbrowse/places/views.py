@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from random import choice as rand_choice, sample as rand_sample
 from django.template import RequestContext
 from django.template.defaultfilters import urlencode
+from django.views.decorators.cache import never_cache
 
 from nationbrowse.places.models import County
 
@@ -17,6 +18,7 @@ from django.db.models.loading import get_model
 from nationbrowse.graphs.views import render_graph
 from threadutil import call_in_bg
 
+@never_cache
 def random_place(request):
     place_type = rand_choice(['state','county','zipcode'])
     PlaceClass = get_model("places",place_type)
