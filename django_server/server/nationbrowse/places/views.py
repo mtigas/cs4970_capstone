@@ -24,8 +24,7 @@ def random_place(request):
     if not PlaceClass:
         raise Http404
     
-    rand_id = rand_choice(PlaceClass.objects.values_list('pk'))[0]
-    place = PlaceClass.objects.get(pk=rand_id)
+    place = PlaceClass.objects.order_by('?')[0]
     
     # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
     # even sees the page
