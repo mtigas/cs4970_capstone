@@ -9,16 +9,20 @@ from django.core.urlresolvers import reverse
 from random import choice as rand_choice, sample as rand_sample
 from django.template import RequestContext
 from django.template.defaultfilters import urlencode
-from django.contrib.contenttypes.models import ContentType
 
+from nationbrowse.places.models import County
+
+from django.db.models.loading import get_model
 
 def random_place(request):
     place_type = rand_choice(['state','county','zipcode'])
-    ctype = get_object_or_404(ContentType,app_label="places",model=place_type).model_class()
+    PlaceClass = get_model("places",place_type)
+    if not PlaceClass:
+        raise Http404
     
-    num = ctype.objects.count()
+    num = PlaceClass.objects.count()
     rand_nums = rand_sample(xrange(1,num), 20)
-    place = ctype.objects.filter(id__in=rand_nums)[0]
+    place = PlaceClass.objects.filter(id__in=rand_nums)[0]
     
     if place_type == "county":
         return HttpResponsePermanentRedirect(
@@ -41,18 +45,20 @@ def place_detail(request,place_type,slug):
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
-        ctype = get_object_or_404(ContentType,app_label="places",model=place_type)
+        PlaceClass = get_model("places",place_type)
+        if not PlaceClass:
+            raise Http404        
         
         if place_type == "zipcode":
-            place = get_object_or_404(ctype.model_class(),id=slug)
+            place = get_object_or_404(PlaceClass,id=slug)
             title = u"ZIP Code %s in %s, %s" % (place, place.county.long_name, place.county.state)
         elif place_type == "county":
-            place = get_object_or_404(ctype.model_class(),slug=slug)
-            return HttpResponsePermanentRedirect(
+            place = get_object_or_404(PlaceClass,slug=slug)
+            response = HttpResponsePermanentRedirect(
                 reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
             )
         else:
-            place = get_object_or_404(ctype.model_class(),slug=slug)
+            place = get_object_or_404(PlaceClass,slug=slug)
             title = u"%s" % (place.name)
         
         response=render_to_response("places/place_detail.html",{
@@ -71,7 +77,6 @@ def county_detail(request,state_abbr,name):
     connection.close()
     
     if not response:
-        County = ContentType.objects.get(app_label="places",model="county").model_class()
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
 
         title = u"%s, %s" % (place.long_name, place.state)

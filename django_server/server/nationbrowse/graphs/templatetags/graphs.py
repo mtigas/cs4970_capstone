@@ -9,7 +9,8 @@ from django.utils.encoding import force_unicode
 from nationbrowse import graphs
 from nationbrowse.graphs import graph_maker
 from nationbrowse.demographics.models import PlacePopulation
-from django.contrib.contenttypes.models import ContentType
+
+from django.db.models.loading import get_model
 
 register = template.Library()
 
@@ -53,8 +54,10 @@ class GraphHTMLNode(template.Node):
             graph_type = force_unicode(self.graph_type)
         
         try:
-            ctype = ContentType.objects.get(app_label="places",model=place_type)
-            place = ctype.model_class().objects.get(slug__iexact=slug)
+            PlaceClass = get_model("places",place_type)
+            if not PlaceClass:
+                return u""
+            place = ctype.objects.get(slug__iexact=slug)
             
             labels = getattr(graph_maker, '%s_labels' % graph_type)
             values = getattr(graph_maker, '%s_values' % graph_type)(place.population_demographics)
@@ -82,7 +85,5 @@ class GraphHTMLNode(template.Node):
             
             return '\n<img src="%s"><br />\n%s' % (graph_url,retstr)
         except Exception:
-            from traceback import print_exc
-            print_exc()
             return u""
     

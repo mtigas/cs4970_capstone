@@ -2,7 +2,6 @@
 from __future__ import division
 from django.db import connection
 from matplotlib.figure import Figure
-from django.contrib.contenttypes.models import ContentType
 
 from nationbrowse import graphs
 
@@ -35,7 +34,7 @@ def generate_race_pie(place,size):
     
     size = int(size)/100
     
-    place_type = unicode(ContentType.objects.get_for_model(place).model)
+    place_type = place._meta.module_name.replace('_deferred_poly','')
     d = place.population_demographics
     
     connection.close() # Explicitly reset DB connection

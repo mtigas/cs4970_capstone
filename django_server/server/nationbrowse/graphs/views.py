@@ -7,7 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 
 from nationbrowse.demographics.models import PlacePopulation
-from django.contrib.contenttypes.models import ContentType
+from nationbrowse.places.models import County
+
+from django.db.models.loading import get_model
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import graph_maker
@@ -37,14 +39,16 @@ def render_graph(request,place_type,slug,graph_type,size=700):
             raise Http404
         
         # 404 if the PlaceType is invalid
-        ctype = get_object_or_404(ContentType,app_label="places",model=place_type)
+        PlaceClass = get_model("places",place_type)
+        if not PlaceClass:
+            raise Http404
         
         # 404 if place slug is invalid
         if place_type.lower() == "zipcode":
             # Querying ZipCode by numeric ID is *MUCH* quicker than string
-            place = get_object_or_404(ctype.model_class(),id=slug)
+            place = get_object_or_404(PlaceClass,id=slug)
         else:
-            place = get_object_or_404(ctype.model_class(),slug=slug)
+            place = get_object_or_404(PlaceClass,slug=slug)
         
         # Generate the graph & render it as a PNG to the HTTP response
         fig = graph_generator(place,size)
@@ -54,9 +58,6 @@ def render_graph(request,place_type,slug,graph_type,size=700):
         
         # Save the response to cache
         safe_set_cache(cache_key,response,86400)
-        print "\nSaved to cache:\n\t%s\n" % cache_key
-    else:        
-        print "\nGot from cache:\n\t%s\n" % cache_key
     
     # Return the response that was either cached OR generated just now.
     return response
@@ -76,7 +77,6 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
         else:
             raise Http404
 
-        County = ContentType.objects.get(app_label="places",model="county").model_class()
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
 
         fig = graph_generator(place,size)
@@ -86,9 +86,6 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
         
         # Save the response to cache
         safe_set_cache(cache_key,response,86400)
-        print "\nSaved to cache:\n\t%s\n" % cache_key
-    else:        
-        print "\nGot from cache:\n\t%s\n" % cache_key
     
     # Return the response that was either cached OR generated just now.
     return response
