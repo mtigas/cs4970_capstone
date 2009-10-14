@@ -1,6 +1,8 @@
 from django.core.cache import cache
-from hashlib import sha256
+from hashlib import sha512
 from django.utils.encoding import smart_str
+
+USING_MEMCACHED = (cache.__module__ == 'django.core.cache.backends.memcached')
 
 def _get_real_cachename(cachename):
     """
@@ -13,11 +15,15 @@ def _get_real_cachename(cachename):
         * Cache contents cannot be introspected: this means cache data can't simply be browsed by key,
           which provides a little privacy protection if we are caching user-specific data.
     """
+    # Only need this on memcached
+    if not USING_MEMCACHED:
+        return cachename
+    
     cachename = cachename.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t').replace(' ','\\_')
     cachename = smart_str(cachename,errors="backslashreplace")
     if len(cachename) > 250:
         # Concatenate part of the original string to avoid collisions and not waste the 250char limit
-        cachename = sha256(cachename).hexdigest()+cachename[:186]
+        cachename = "%s%s" % (cachename[:122], sha512(cachename).hexdigest())
     return cachename
 
 def safe_get_cache(cachename):
