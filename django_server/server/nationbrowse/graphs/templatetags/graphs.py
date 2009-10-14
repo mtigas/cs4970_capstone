@@ -106,6 +106,7 @@ class GraphHTMLNode(template.Node):
             percents = map(lambda x: (x/total*100), values)
             
             graph_url = reverse("graphs:render_graph",args=(place_type,slug,graph_type,200),current_app="graphs")
+            graph_url2 = reverse("graphs:render_graph",args=(place_type,slug,graph_type,700),current_app="graphs")
 
             google_graph_url = "http://chart.apis.google.com/chart?chs=400x200&chd=t:%s&cht=p&chl=%s&chco=%s" % (
                 ",".join(map(lambda x: "%1.2f"%x, percents)),
@@ -126,9 +127,12 @@ class GraphHTMLNode(template.Node):
                     values[v],
                     percents[v]
                 )
-                
-            retstr = '\n<img src="%s"><br />\n%s' % (google_graph_url,retstr)
-
+            
+            retstr = """
+            <table><tr><th>Google</th><th>Matplotlib</th></tr>
+            <tr><td><img src="%s"></td><td><a href="%s"><img src="%s"></a></td></tr>
+            </table><br />
+            %s""" % (google_graph_url, graph_url2, graph_url, retstr)
             return retstr
         except Exception:
             return u""
