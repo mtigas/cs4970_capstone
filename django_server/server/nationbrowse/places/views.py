@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-from cacheutil import safe_get_cache,safe_set_cache
+from cacheutil import safe_get_cache,safe_set_cache,USING_DUMMY
 from django.shortcuts import get_object_or_404,render_to_response
 from django.http import HttpResponseRedirect,HttpResponsePermanentRedirect,Http404
 from django.core.urlresolvers import reverse
@@ -41,15 +41,17 @@ def seed_next_random():
                     reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
                 )
                 # Pre-cache this random view in the background, too.
-                call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
-                call_in_bg(county_detail,(None,place.state.abbr.lower(),urlencode(place.name.lower())))
+                if not USING_DUMMY:
+                    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+                    call_in_bg(county_detail,(None,place.state.abbr.lower(),urlencode(place.name.lower())))
             else:
                 response = HttpResponseRedirect(
                     reverse("places:place_detail",args=(place_type,place.slug),current_app="places")
                 )
                 # Pre-cache this random view in the background, too.
-                call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
-                call_in_bg(place_detail,(None,place_type,place.slug))
+                if not USING_DUMMY:
+                    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+                    call_in_bg(place_detail,(None,place_type,place.slug))
         except:
             response = None
     safe_set_cache(cache_key,response,604800)
@@ -73,7 +75,8 @@ def random_place(request):
         response = seed_next_random()
     
     # Pre-generate the next random location.
-    call_in_bg(seed_next_random)
+    if not USING_DUMMY:
+        call_in_bg(seed_next_random)
     
     return response
     
@@ -107,12 +110,14 @@ def place_detail(request,place_type,slug):
         else:
             place = get_object_or_404(PlaceClass,slug=slug)
             title = u"%s" % (place.name)
-
-        call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+        
+        if not USING_DUMMY:
+            call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
 
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,
+            'demographics':place.population_demographics.__dict__,
             'place_type':place_type
         },context_instance=RequestContext(request))
         
@@ -126,13 +131,15 @@ def county_detail(request,state_abbr,name):
     if not response:
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
         
-        call_in_bg(render_graph,(None,"county",place.slug,"race_pie",200))
+        if not USING_DUMMY:
+            call_in_bg(render_graph,(None,"county",place.slug,"race_pie",200))
 
         title = u"%s, %s" % (place.long_name, place.state)
         
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,
+            'demographics':place.population_demographics.__dict__,
             'place_type':'county'
         },context_instance=RequestContext(request))
 
@@ -140,6 +147,7 @@ def county_detail(request,state_abbr,name):
         
         # It's likely that the user will go to the State's page from here (since it's linked
         # from the County detail page). Call it right now to pre-cache it.
-        call_in_bg(place_detail,(None,"state",place.state.slug))
+        if not USING_DUMMY:
+            call_in_bg(place_detail,(None,"state",place.state.slug))
 
     return response
