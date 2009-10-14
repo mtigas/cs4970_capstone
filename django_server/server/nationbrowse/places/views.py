@@ -57,7 +57,9 @@ def place_detail(request,place_type,slug):
         
         if place_type == "zipcode":
             place = get_object_or_404(PlaceClass,id=slug)
-            title = u"ZIP Code %s in %s, %s" % (place, place.county.long_name, place.county.state)
+            # HORRENDOUSLY SLOW
+            #title = u"ZIP Code %s in %s, %s" % (place, place.county.long_name, place.county.state)
+            title = u"ZIP Code %s" % (place)
         elif place_type == "county":
             place = get_object_or_404(PlaceClass,slug=slug)
             response = HttpResponsePermanentRedirect(
