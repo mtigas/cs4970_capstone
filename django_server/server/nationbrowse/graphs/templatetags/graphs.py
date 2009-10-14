@@ -32,25 +32,35 @@ class StaticMapHTMLNode(template.Node):
             place_type = force_unicode(resolve_variable(self.place_type, context))
         except:
             place_type = force_unicode(self.place_type)
-        if not place_type == "state":
-            return u""
         
         try:
             slug = force_unicode(resolve_variable(self.slug, context))
         except:
             slug = force_unicode(self.slug)
-        
+                
         try:
             PlaceClass = get_model("places",place_type)
             if not PlaceClass:
                 return u""
             place = PlaceClass.objects.get(slug__iexact=slug)
-
-            retstr = '\n<img src="http://chart.apis.google.com/chart?cht=t&chs=400x200&chd=s:_&chtm=usa&chco=BBBBBB,000066,0000FF&chld=%s&chd=t:100">' % (
-                place.abbr
-            )
-            return retstr
+            
+            if place_type == 'state':
+                return '\n<img src="http://chart.apis.google.com/chart?cht=t&chs=400x200&chd=s:_&chtm=usa&chco=BBBBBB,000066,0000FF&chld=%s&chd=t:100">' % (
+                    place.abbr
+                )
+            elif place.center:
+                return '\n<img src="http://maps.google.com/maps/api/staticmap?markers=color:blue|%s,%s&center=%s,%s&zoom=5&maptype=terrain&size=300x200&key=%s&sensor=false">' % (
+                    place.latitude,
+                    place.longitude,
+                    place.latitude,
+                    place.longitude,
+                    settings.GOOGLE_MAPS_API_KEY
+                )
+            else:
+                return u""
         except Exception:
+            from traceback import print_exc
+            print_exc()
             return u""
 
 

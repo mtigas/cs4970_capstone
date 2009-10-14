@@ -25,10 +25,10 @@ from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.contenttypes import generic
 
 # Are we on a GIS-aware server?
-USE_GEODJANGO = ('django.contrib.gis' in settings.INSTALLED_APPS)
+USE_GIS = getattr(settings,'USE_GIS',False)
 
 # If so, override some of the above imports
-if USE_GEODJANGO:
+if USE_GIS:
     from django.contrib.gis.db import models
     from django.contrib.gis.geos import fromstr as geo_from_str
 
@@ -45,7 +45,7 @@ class PolyModel(models.Model):
     name = models.CharField(max_length=250,db_index=True)
     slug = models.SlugField(unique=True,max_length=250,db_index=True)
     
-    if USE_GEODJANGO:
+    if USE_GIS:
         poly    = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
     else:
         poly    = models.TextField(verbose_name="geographic area data (non-GIS)",blank=True,null=True)
@@ -57,7 +57,10 @@ class PolyModel(models.Model):
         if not self.poly:
             return None
         try:
-            return self.poly.centroid
+            if isinstance(self.poly,basestring):
+                return geo_from_str(self.poly).centroid
+            else:
+                return self.poly.centroid
         except:
             return None
     center = cached_property(center, 15552000)
@@ -84,13 +87,17 @@ class PolyModel(models.Model):
 
     def contains_coordinate(self, lat, lon):
         """ Helper method; given a lat/lon, returns whether the given point is within this PolyModel. """
-        if not USE_GEODJANGO:
+        if not USE_GIS:
             return None
         if not self.poly:
             return False
         
         point = geo_from_str("POINT(%s %s)" % (lon,lat))
-        return self.poly.contains(point)
+        
+        if isinstance(self.poly,basestring):
+            return geo_from_str(self.poly).contains(point)
+        else:
+            return self.poly.contains(point)
     contains_coordinate = cached_clsmethod(contains_coordinate, 15552000)
     
     # Special fake foreign key that checks the PlacePopulation table for a record
@@ -114,7 +121,7 @@ class PolyModel(models.Model):
 # --------------------------------------------------------------
 
 class State(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
     
@@ -123,14 +130,14 @@ class State(PolyModel):
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
     #def zipcodes(self):
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        return ZipCode.objects.filter(poly__coveredby=self.poly)
     #    else:
     #        return None
     #zipcodes = cached_property(zipcodes, 15552000)
     
     def counties(self):
-        return self.county_set.all()
+        return self.county_set.iterator()
     
     class Meta:
         ordering = ('name',)
@@ -146,7 +153,7 @@ class State(PolyModel):
         })
 
 class County(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
     
@@ -159,7 +166,7 @@ class County(PolyModel):
     metdivfp = models.PositiveIntegerField(verbose_name="Metropolitan Division Code",blank=True,null=True)
 
     #def zipcodes(self):
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        return ZipCode.objects.filter(poly__intersects=self.poly)
     #    else:
     #        return None
@@ -182,7 +189,7 @@ class County(PolyModel):
         })
 
 class ZipCode(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
 	
@@ -192,7 +199,7 @@ class ZipCode(PolyModel):
         speed of the import. Between the fact that this field is rarely used *and* cached,
         this is a performance tradeoff we can afford to take.
         """
-        if USE_GEODJANGO:
+        if USE_GIS:
             return State.objects.filter(poly__intersects=self.poly)
         else:
             return None
@@ -204,7 +211,7 @@ class ZipCode(PolyModel):
         If it belongs to more than one state, returns the first match.
         Otherwise, returns None.
         """
-        if USE_GEODJANGO:
+        if USE_GIS:
             s = self.states
             if s and (s.count() > 0):
                 return s[0]
@@ -215,7 +222,7 @@ class ZipCode(PolyModel):
     state = cached_property(state, 15552000)
     
     #def counties(self):
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        return County.objects.filter(state=self.state,poly__intersects=self.poly)
     #    else:
     #        return None
@@ -227,7 +234,7 @@ class ZipCode(PolyModel):
     #    If it belongs to more than one county, returns the first match.
     #    Otherwise, returns None.
     #    """
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        c = self.counties
     #        if c and (c.count() > 0):
     #            return c[0]

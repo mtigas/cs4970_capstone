@@ -118,7 +118,7 @@ def place_detail(request,place_type,slug):
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,
-            'demographics':place.population_demographics.__dict__,
+            'demographics':getattr(place.population_demographics,'__dict__',{}),
             'place_type':place_type
         },context_instance=RequestContext(request))
         
@@ -137,7 +137,7 @@ def county_detail(request,state_abbr,name):
         response=render_to_response("places/place_detail.html",{
             'title':title,
             'place':place,
-            'demographics':place.population_demographics.__dict__,
+            'demographics':getattr(place.population_demographics,'__dict__',{}),
             'place_type':'county'
         },context_instance=RequestContext(request))
 
