@@ -58,7 +58,10 @@ def cached_method(func, cachetime=None):
         key = 'cached_method_%s_%s_%s' % \
             (func.__name__, hash(args), hash(frozenset(kwargs.items())))
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(*args, **kwargs), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(*args, **kwargs), cachetime)
+        else:
+            return val
     return cached_func
 
 def cached_clsmethod(func, cachetime=None):
@@ -67,7 +70,10 @@ def cached_clsmethod(func, cachetime=None):
         key = 'cached_clsmethod_%s_%s_%s_%s_%s' % \
             (self.__class__.__name__, func.__name__, self.pk, hash(args), hash(frozenset(kwargs.items())))
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(self, *args, **kwargs), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(self, *args, **kwargs), cachetime)
+        else:
+            return val
     return cached_func
 
 def cached_property(func, cachetime=None):
@@ -76,5 +82,8 @@ def cached_property(func, cachetime=None):
         key = 'cached_property_%s_%s_%s' % \
             (self.__class__.__name__, func.__name__, self.pk)
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(self), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(self), cachetime)
+        else:
+            return val
     return property(cached_func)
