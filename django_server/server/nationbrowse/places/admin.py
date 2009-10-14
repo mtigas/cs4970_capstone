@@ -32,7 +32,7 @@ admin.site.register(County,CountyAdmin)
 
 class ZipCodeAdmin(admin.ModelAdmin):
     model = ZipCode
-    list_display = ('name','state')
+    list_display = ('name',)
     ordering = ('name',)
 
     fieldsets = (
