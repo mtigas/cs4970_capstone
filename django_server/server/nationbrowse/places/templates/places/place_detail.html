@@ -8,6 +8,7 @@
 <body>
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
+    {% comment %} THIS ENTIRE CODE BLOCK IS MEGA SLOW.
     <ul>
         {% ifnotequal place_type "state" %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endifnotequal %}
         {% if place.counties %}<li>Count{{ place.counties.count|pluralize:"y,ies" }}:<ul style="width:400px;max-height:100px;overflow:auto">
@@ -23,6 +24,7 @@
         </ul></li>
         {% endif %}
     </ul>
+    {% endcomment %}
     {% load graphs %}
 
     {% ifequal place_type "state" %}<p>{% show_on_map place_type place.slug %}</p>{% endifequal %}
