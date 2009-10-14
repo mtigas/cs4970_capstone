@@ -42,9 +42,6 @@ class ProfileMiddleware(object):
             stats_str = out.getvalue()
 
             if response and response.content and stats_str:
-                f = open("/tmp/python-profiler.txt","w")
-                f.write(stats_str)
-                f.close()
-            out.close()
+                response.content = "<pre>" + stats_str + "</pre>"
 
         return response
