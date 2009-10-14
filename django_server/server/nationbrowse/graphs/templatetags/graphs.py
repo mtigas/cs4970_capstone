@@ -97,7 +97,7 @@ class GraphHTMLNode(template.Node):
             PlaceClass = get_model("places",place_type)
             if not PlaceClass:
                 return u""
-            place = PlaceClass.objects.get(slug__iexact=slug)
+            place = PlaceClass.objects.get(slug=slug)
             
             labels = getattr(graph_maker, '%s_labels' % graph_type)
             values = getattr(graph_maker, '%s_values' % graph_type)(place.population_demographics)
