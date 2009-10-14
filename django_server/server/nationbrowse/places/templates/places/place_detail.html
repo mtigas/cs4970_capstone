@@ -8,6 +8,11 @@
 <body>
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
+    
+    <ul>
+        {% ifequal place_type "county" %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endifequal %}
+    </ul>
+    
     {% comment %} THIS ENTIRE CODE BLOCK IS MEGA SLOW.
     <ul>
         {% ifnotequal place_type "state" %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endifnotequal %}
