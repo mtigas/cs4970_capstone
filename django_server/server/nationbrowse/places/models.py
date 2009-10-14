@@ -20,8 +20,6 @@ is what populates these model tables.
 from django.conf import settings
 from cacheutil import cached_clsmethod,cached_property
 from django.db import models
-from django_caching.models import CachedModel
-from django_caching.managers import CachingManager
 
 from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.contenttypes import generic
@@ -32,9 +30,11 @@ USE_GEODJANGO = ('django.contrib.gis' in settings.INSTALLED_APPS)
 # If so, override some of the above imports
 if USE_GEODJANGO:
     from django.contrib.gis.db import models
-    from django_caching.models import GeoCachedModel as CachedModel
-    from django_caching.managers import GeoCachingManager,PolyDeferGeoManager
     from django.contrib.gis.geos import fromstr as geo_from_str
+
+    class PolyDeferGeoManager(models.Manager):
+        def get_query_set(self):
+    		return models.query.GeoQuerySet(self.model).defer('poly',)
 
 # --------------------------------------------------------------
 
@@ -116,9 +116,7 @@ class PolyModel(models.Model):
 class State(PolyModel):
     if USE_GEODJANGO:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
+        pobjects = models.Manager()
     
     abbr     = models.CharField(verbose_name="abbreviation",max_length=10,help_text="Standard mailing abbreviation in CAPS; i.e. WA",db_index=True)
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
@@ -154,9 +152,7 @@ class State(PolyModel):
 class County(PolyModel):
     if USE_GEODJANGO:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
+        pobjects = models.Manager()
     
     state  = models.ForeignKey('State',db_index=True)
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
@@ -192,9 +188,7 @@ class County(PolyModel):
 class ZipCode(PolyModel):
     if USE_GEODJANGO:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
+        pobjects = models.Manager()
 	
     #def states(self):
     #    """
@@ -253,7 +247,6 @@ class ZipCode(PolyModel):
 	
     def __unicode__(self):
         return u"%s" % (self.name)
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
 
     @models.permalink
     def get_absolute_url(self):
