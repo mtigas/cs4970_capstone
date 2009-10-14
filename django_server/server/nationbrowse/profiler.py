@@ -42,7 +42,7 @@ class ProfileMiddleware(object):
             stats_str = out.getvalue()
 
             if response and response.content and stats_str:
-                f=open("/tmp/profiler.txt","w")
+                f=open("/tmp/profiler.txt","a")
                 f.write(stats_str + "\n\n" + ("="*20) +"\n\n")
                 f.close()
 
