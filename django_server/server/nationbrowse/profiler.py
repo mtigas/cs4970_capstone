@@ -2,6 +2,7 @@ import sys
 import tempfile
 import hotshot
 import hotshot.stats
+from django.conf import settings
 from cStringIO import StringIO
 
 class ProfileMiddleware(object):
@@ -16,16 +17,16 @@ class ProfileMiddleware(object):
     * Only tested on Linux
     """
     def process_request(self, request):
-        if request.GET.has_key('prof'):
+        if request.META.get('REMOTE_ADDR','') in settings.INTERNAL_IPS:
             self.tmpfile = tempfile.NamedTemporaryFile()
             self.prof = hotshot.Profile(self.tmpfile.name)
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        if request.GET.has_key('prof'):
+        if request.META.get('REMOTE_ADDR','') in settings.INTERNAL_IPS:
             return self.prof.runcall(callback, request, *callback_args, **callback_kwargs)
 
     def process_response(self, request, response):
-        if request.GET.has_key('prof'):
+        if request.META.get('REMOTE_ADDR','') in settings.INTERNAL_IPS:
             self.prof.close()
 
             out = StringIO()
