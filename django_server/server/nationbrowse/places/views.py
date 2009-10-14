@@ -42,7 +42,6 @@ def seed_next_random():
                 )
                 # Pre-cache this random view in the background, too.
                 if not USING_DUMMY:
-                    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
                     call_in_bg(county_detail,(None,place.state.abbr.lower(),urlencode(place.name.lower())))
             else:
                 response = HttpResponseRedirect(
@@ -50,8 +49,9 @@ def seed_next_random():
                 )
                 # Pre-cache this random view in the background, too.
                 if not USING_DUMMY:
-                    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
                     call_in_bg(place_detail,(None,place_type,place.slug))
+                    if place_type == "zipcode":
+                        call_in_bg(getattr,(place,'states',''))
         except:
             response = None
     safe_set_cache(cache_key,response,604800)
@@ -112,7 +112,8 @@ def place_detail(request,place_type,slug):
             title = u"%s" % (place.name)
         
         if not USING_DUMMY:
-            call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+            if place_type == "zipcode":
+                call_in_bg(getattr,(place,'states',''))
 
         response=render_to_response("places/place_detail.html",{
             'title':title,
@@ -130,9 +131,6 @@ def county_detail(request,state_abbr,name):
     
     if not response:
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
-        
-        if not USING_DUMMY:
-            call_in_bg(render_graph,(None,"county",place.slug,"race_pie",200))
 
         title = u"%s, %s" % (place.long_name, place.state)
         

@@ -128,13 +128,9 @@ class State(PolyModel):
     #    else:
     #        return None
     #zipcodes = cached_property(zipcodes, 15552000)
-    #
-    #def counties(self):
-    #    if USE_GEODJANGO:
-    #        return County.objects.filter(poly__coveredby=self.poly)
-    #    else:
-    #        return None
-    #counties = cached_property(counties, 15552000)
+    
+    def counties(self):
+        return self.county_set.all()
     
     class Meta:
         ordering = ('name',)
@@ -190,33 +186,33 @@ class ZipCode(PolyModel):
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
 	
-    #def states(self):
-    #    """
-    #    This *could* be a field, but this reduces the size of the database and the
-    #    speed of the import. Between the fact that this field is rarely used *and* cached,
-    #    this is a performance tradeoff we can afford to take.
-    #    """
-    #    if USE_GEODJANGO:
-    #        return State.objects.filter(poly__intersects=self.poly)
-    #    else:
-    #        return None
-    #states = cached_property(states, 15552000)
+    def states(self):
+        """
+        This *could* be a field, but this reduces the size of the database and the
+        speed of the import. Between the fact that this field is rarely used *and* cached,
+        this is a performance tradeoff we can afford to take.
+        """
+        if USE_GEODJANGO:
+            return State.objects.filter(poly__intersects=self.poly)
+        else:
+            return None
+    states = cached_property(states, 15552000)
     
-    #def state(self):
-    #    """
-    #    If this ZIP code belongs to a state, returns that.
-    #    If it belongs to more than one state, returns the first match.
-    #    Otherwise, returns None.
-    #    """
-    #    if USE_GEODJANGO:
-    #        s = self.states
-    #        if s and (s.count() > 0):
-    #            return s[0]
-    #        else:
-    #            return None
-    #    else:
-    #        return None
-    #state = cached_property(state, 15552000)
+    def state(self):
+        """
+        If this ZIP code belongs to a state, returns that.
+        If it belongs to more than one state, returns the first match.
+        Otherwise, returns None.
+        """
+        if USE_GEODJANGO:
+            s = self.states
+            if s and (s.count() > 0):
+                return s[0]
+            else:
+                return None
+        else:
+            return None
+    state = cached_property(state, 15552000)
     
     #def counties(self):
     #    if USE_GEODJANGO:
