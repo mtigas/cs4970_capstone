@@ -166,12 +166,12 @@ class County(PolyModel):
     cbsafp = models.PositiveIntegerField(verbose_name="Metropolitan Area Code",blank=True,null=True)
     metdivfp = models.PositiveIntegerField(verbose_name="Metropolitan Division Code",blank=True,null=True)
 
-    def zipcodes(self):
-        if USE_GEODJANGO:
-            return ZipCode.objects.filter(poly__intersects=self.poly)
-        else:
-            return None
-    zipcodes = cached_property(zipcodes, 15552000)
+    #def zipcodes(self):
+    #    if USE_GEODJANGO:
+    #        return ZipCode.objects.filter(poly__intersects=self.poly)
+    #    else:
+    #        return None
+    #zipcodes = cached_property(zipcodes, 15552000)
     
     class Meta:
         verbose_name_plural = "counties"
@@ -196,56 +196,56 @@ class ZipCode(PolyModel):
     else:
         objects = CachingManager()
 	
-    def states(self):
-        """
-        This *could* be a field, but this reduces the size of the database and the
-        speed of the import. Between the fact that this field is rarely used *and* cached,
-        this is a performance tradeoff we can afford to take.
-        """
-        if USE_GEODJANGO:
-            return State.objects.filter(poly__intersects=self.poly)
-        else:
-            return None
-    states = cached_property(states, 15552000)
+    #def states(self):
+    #    """
+    #    This *could* be a field, but this reduces the size of the database and the
+    #    speed of the import. Between the fact that this field is rarely used *and* cached,
+    #    this is a performance tradeoff we can afford to take.
+    #    """
+    #    if USE_GEODJANGO:
+    #        return State.objects.filter(poly__intersects=self.poly)
+    #    else:
+    #        return None
+    #states = cached_property(states, 15552000)
     
-    def state(self):
-        """
-        If this ZIP code belongs to a state, returns that.
-        If it belongs to more than one state, returns the first match.
-        Otherwise, returns None.
-        """
-        if USE_GEODJANGO:
-            s = self.states
-            if s and (s.count() > 0):
-                return s[0]
-            else:
-                return None
-        else:
-            return None
-    state = cached_property(state, 15552000)
+    #def state(self):
+    #    """
+    #    If this ZIP code belongs to a state, returns that.
+    #    If it belongs to more than one state, returns the first match.
+    #    Otherwise, returns None.
+    #    """
+    #    if USE_GEODJANGO:
+    #        s = self.states
+    #        if s and (s.count() > 0):
+    #            return s[0]
+    #        else:
+    #            return None
+    #    else:
+    #        return None
+    #state = cached_property(state, 15552000)
     
-    def counties(self):
-        if USE_GEODJANGO:
-            return County.objects.filter(state=self.state,poly__intersects=self.poly)
-        else:
-            return None
-    counties = cached_property(counties, 15552000)
+    #def counties(self):
+    #    if USE_GEODJANGO:
+    #        return County.objects.filter(state=self.state,poly__intersects=self.poly)
+    #    else:
+    #        return None
+    #counties = cached_property(counties, 15552000)
 
-    def county(self):
-        """
-        If this ZIP code belongs to a county, returns that.
-        If it belongs to more than one county, returns the first match.
-        Otherwise, returns None.
-        """
-        if USE_GEODJANGO:
-            c = self.counties
-            if c and (c.count() > 0):
-                return c[0]
-            else:
-                return None
-        else:
-            return None
-    county = cached_property(county, 15552000)
+    #def county(self):
+    #    """
+    #    If this ZIP code belongs to a county, returns that.
+    #    If it belongs to more than one county, returns the first match.
+    #    Otherwise, returns None.
+    #    """
+    #    if USE_GEODJANGO:
+    #        c = self.counties
+    #        if c and (c.count() > 0):
+    #            return c[0]
+    #        else:
+    #            return None
+    #    else:
+    #        return None
+    #county = cached_property(county, 15552000)
 
     class Meta:
         ordering = ('name',)
