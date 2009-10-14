@@ -2,7 +2,6 @@ import sys
 import tempfile
 import hotshot
 import hotshot.stats
-from django.conf import settings
 from cStringIO import StringIO
 
 class ProfileMiddleware(object):
@@ -17,16 +16,16 @@ class ProfileMiddleware(object):
     * Only tested on Linux
     """
     def process_request(self, request):
-        if settings.DEBUG and request.GET.has_key('prof'):
+        if request.GET.has_key('prof'):
             self.tmpfile = tempfile.NamedTemporaryFile()
             self.prof = hotshot.Profile(self.tmpfile.name)
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        if settings.DEBUG and request.GET.has_key('prof'):
+        if request.GET.has_key('prof'):
             return self.prof.runcall(callback, request, *callback_args, **callback_kwargs)
 
     def process_response(self, request, response):
-        if settings.DEBUG and request.GET.has_key('prof'):
+        if request.GET.has_key('prof'):
             self.prof.close()
 
             out = StringIO()
