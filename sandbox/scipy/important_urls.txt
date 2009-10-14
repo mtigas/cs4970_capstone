@@ -1,0 +1,39 @@
+Here are some useful links on scipy that i've found...
+
+The official documentation for this libarary
+http://docs.scipy.org/doc/scipy/reference/tutorial/stats.html
+
+The guy who writes this blog has previous experience with statistical features of scipy
+http://www.johndcook.com/blog/2009/07/20/probability-distributions-scipy/
+
+A python package that provides an interface to scipy for statistical computations including descriptive stats
+computations and fitting statistical models
+http://scikits.appspot.com/statsmodels
+
+General overview of scipy with some elementary stat examples (prety general)
+http://www.codeproject.com/KB/library/scipy.aspx
+
+Someone who generally faces the same problem we have
+http://mail.scipy.org/pipermail/scipy-user/2009-July/022043.html
+
+This one doesn't appear to be that useful
+http://stackoverflow.com/questions/1154378/how-to-run-statistics-cumulative-distribution-function-and-probablity-density-fun
+
+A useful overview of curve fitting at Harvard
+http://www.cfa.harvard.edu/~jbattat/computer/python/science/#fitPoly
+
+Statistical Modeling, Casual Inference, and Social Science at Columbia University (probally not that useful)
+http://www.stat.columbia.edu/~cook/movabletype/archives/2007/03/curve_fitting_o.html
+
+Two-dimensional Gaussian fitting in Python using scipy and mpfit
+http://casa.colorado.edu/~ginsbura/pygaussfit.htm
+
+Intresting article at HackerNews about Python+Scipy+Matplotlib vs Matlab, these posts always have useful information
+in the comments, generally smart people talking about the tools we're using
+http://news.ycombinator.com/item?id=363096
+
+Fitting a bimodal distribution to a set of values at Stackoverflow.com
+http://stackoverflow.com/questions/1504378/fitting-a-bimodal-distribution-to-a-set-of-values
+
+How-to fit a gamma distribution on the python mailing list
+http://mail.python.org/pipermail/python-list/2009-April/177598.html
