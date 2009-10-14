@@ -1,7 +1,7 @@
 from numpy import *
 
 x = array([0.2, 6.4, 3.0, 1.6, 0.9, 2.3, 1.6, 5.7, 8.5, 4.0, 12.8])
-bins = array([0.0, 1.0, 2.5, 4.0, 10.0]) #numers are increasing monotonically
+bins = array([0.0, 1.0, 2.5, 4.0, 10.0]) #numbers are increasing monotonically
 N,bins = histogram(x,bins)
 
 #input: N,bins

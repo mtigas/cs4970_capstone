@@ -1,14 +1,14 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-from django.db import connection
 from cacheutil import safe_get_cache,safe_set_cache
 from django.shortcuts import get_object_or_404,render_to_response
 from django.http import HttpResponseRedirect,HttpResponsePermanentRedirect,Http404
 from django.core.urlresolvers import reverse
-from random import choice as rand_choice, sample as rand_sample
+from random import choice as rand_choice
 from django.template import RequestContext
 from django.template.defaultfilters import urlencode
+from django.views.decorators.cache import never_cache
 
 from nationbrowse.places.models import County
 
@@ -17,19 +17,19 @@ from django.db.models.loading import get_model
 from nationbrowse.graphs.views import render_graph
 from threadutil import call_in_bg
 
+@never_cache
 def random_place(request):
     place_type = rand_choice(['state','county','zipcode'])
     PlaceClass = get_model("places",place_type)
     if not PlaceClass:
         raise Http404
     
-    num = PlaceClass.objects.count()
-    rand_nums = rand_sample(xrange(1,num), num/2)
-    place = PlaceClass.objects.filter(id__in=rand_nums)[0]
+    rand_id = rand_choice(PlaceClass.objects.order_by().values_list('pk'))[0]
+    place = PlaceClass.objects.get(pk=rand_id)
     
     # THIS IS AWESOME: start pre-generating the race pie chart for this place before the user
     # even sees the page
-    call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
+    #call_in_bg(render_graph,(None,place_type,place.slug,"race_pie",200))
     
     if place_type == "county":
         return HttpResponsePermanentRedirect(
@@ -48,7 +48,6 @@ def place_detail(request,place_type,slug):
     """
     cache_key = "place_detail place_type=%s slug=%s" % (place_type, slug)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     # If it wasn't cached, do all of this fancy logic and generate the image as a PNG
     if not response:
@@ -83,7 +82,6 @@ def place_detail(request,place_type,slug):
 def county_detail(request,state_abbr,name):
     cache_key = "county_detail state_abbr=%s name=%s" % (state_abbr, name)
     response = safe_get_cache(cache_key)
-    connection.close()
     
     if not response:
         place = get_object_or_404(County,state__abbr__iexact=state_abbr,name__iexact=name)
@@ -99,5 +97,5 @@ def county_detail(request,state_abbr,name):
         },context_instance=RequestContext(request))
 
         safe_set_cache(cache_key,response,86400)
-    
+
     return response
