@@ -1,24 +1,26 @@
-.svn/
+# Mac OS X junk
+.DS_Store
+.fseventsd
+.Trashes
+
+# Python bytecode
 *.pyc
 *.pyo
-.DS_Store
-*.db
+
+# Misc dev junk
+.svn/
 *.swp
-*.lock
 *~
 *.tmp
 *.bak
+
+# Server-local settings, log files, etc
+local_settings.py
 access.log
 error.log
+fcgi_stderr.log
+fcgi_stdout.log
 *.pid
-extra_settings.py
 .pid
-1-state.xml.bz2
-2-county.xml.bz2
-3-zipcode-A.xml.bz2
-3-zipcode-B.xml.bz2
-3-zipcode-C.xml.bz2
-3-zipcode-D.xml.bz2
-3-zipcode-E.xml.bz2
-.fseventsd
-.Trashes
+*.db
+*.lock
