@@ -35,7 +35,10 @@ if USE_GIS:
 
     class PolyDeferGeoManager(models.Manager):
         def get_query_set(self):
-    		return models.query.GeoQuerySet(self.model).defer('poly',)
+            try:
+                return models.query.GeoQuerySet(self.model).select_related('state','primary_state').defer('poly',)
+            except:
+    		    return models.query.GeoQuerySet(self.model).defer('poly',)
 
 # --------------------------------------------------------------
 
@@ -140,6 +143,9 @@ class State(PolyModel):
     def counties(self):
         return self.county_set.iterator()
     
+    def zipcodes(self):
+        return self.state_zipcodes.iterator()
+    
     class Meta:
         ordering = ('name',)
 	
@@ -181,7 +187,7 @@ class County(PolyModel):
     def __unicode__(self):
         return u"%s, %s" % (self.name, self.state.name)
     __unicode__ = cached_clsmethod(__unicode__, 1800)
-
+    
     @models.permalink
     def get_absolute_url(self):
         return ('places:county_detail', (), {
@@ -193,42 +199,23 @@ class ZipCode(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
-	
-	def __init__(self, *args, **kwargs):
-	    super(ZipCode,self).__init__(*args, **kwargs)
-	    
-	    # If we're using a cache, pre-call the States list right now
-	    # so that it gets cached.
-	    if not USING_DUMMY_CACHE:
-	        call_in_bg(lambda x: x.states,(self,))
-	
-    def states(self):
-        """
-        This *could* be a field, but this reduces the size of the database and the
-        speed of the import. Between the fact that this field is rarely used *and* cached,
-        this is a performance tradeoff we can afford to take.
-        """
-        if USE_GIS:
-            return State.objects.filter(poly__bbcontains=self.poly)
-        else:
-            return None
-    states = cached_property(states, 15552000)
-    
+
+    states  = models.ManyToManyField('State',blank=True,null=True,db_index=True,related_name="state_zipcodes_raw")
+    primary_state  = models.ForeignKey('State',blank=True,null=True,db_index=True,related_name="state_zipcodes")
+
     def state(self):
         """
         If this ZIP code belongs to a state, returns that.
         If it belongs to more than one state, returns the first match.
         Otherwise, returns None.
         """
-        if USE_GIS:
-            s = self.states
-            if s and (s.count() > 0):
-                return s[0]
-            else:
-                return None
+        if self.primary_state:
+            return self.primary_state
+        elif self.states and (self.states.count() > 0):
+            return self.states.all()[0]
         else:
             return None
-    state = cached_property(state, 15552000)
+    state = cached_property(state, 86400)
     
     #def counties(self):
     #    if USE_GIS:
