@@ -11,14 +11,14 @@
     <h1>{{ title }}</h1>
     
     <ul>
-        {% ifnotequal place_type "state" %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endifnotequal %}
-        {% if place.counties %}<li>Count{{ place.counties.count|pluralize:"y,ies" }}:<ul style="width:400px;max-height:100px;overflow:auto">
+        {% if place.state %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endif %}
+        {% if place.counties %}<li>Count{{ place.county_set.count|pluralize:"y,ies" }}:<ul style="width:400px;max-height:100px;overflow:auto">
             {% for county in place.counties %}
             <li><a href="{{ county.get_absolute_url }}">{{ county.long_name }}</a></li>
             {% endfor %}
         </ul></li>
         {% endif %}
-        {% if place.zipcodes %}<li>ZIP Code{{ place.zipcodes.count|pluralize }}:<ul style="width:400px;max-height:100px;overflow:auto">
+        {% if place.zipcodes %}<li>ZIP Code{{ place.zipcode_set.count|pluralize }}:<ul style="width:400px;max-height:100px;overflow:auto">
             {% for zipcode in place.zipcodes %}
             <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
             {% endfor %}

@@ -52,7 +52,6 @@ def convert_by_block(qs,split_into):
         print "  %02d/%02d (%d to %d out of %d)..."%(i+1, split_into, start, end, num_objs)
 
         p = Process(
-            #target=db_threadsafe(function),
             target=convert_block,
             args=(qs[start:end],)
         )

@@ -131,10 +131,16 @@ class State(PolyModel):
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
     def counties(self):
-        return self.county_set.iterator()
+        if self.county_set.count() > 0:
+            return self.county_set.iterator()
+        else:
+            return None
     
     def zipcodes(self):
-        return self.zipcode_set.iterator()
+        if self.zipcode_set.count() > 0:
+            return self.zipcode_set.iterator()
+        else:
+            return None
     
     class Meta:
         ordering = ('name',)
@@ -144,8 +150,7 @@ class State(PolyModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('places:place_detail', (), {
-            'place_type' : 'state',
+        return ('places:state_detail', (), {
             'slug' : self.slug
         })
 
@@ -225,8 +230,7 @@ class ZipCode(PolyModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('places:place_detail', (), {
-            'place_type' : 'zipcode',
+        return ('places:zipcode_detail', (), {
             'slug' : self.id
         })
 
