@@ -18,11 +18,12 @@ is what populates these model tables.
 """
 
 from django.conf import settings
-from cacheutil import cached_clsmethod,cached_property
+from cacheutil import cached_clsmethod,cached_property,USING_DUMMY_CACHE
 from django.db import models
 
 from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.contenttypes import generic
+from threadutil import call_in_bg
 
 # Are we on a GIS-aware server?
 USE_GIS = getattr(settings,'USE_GIS',False)
@@ -193,6 +194,14 @@ class ZipCode(PolyModel):
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
 	
+	def __init__(self, *args, **kwargs):
+	    super(ZipCode,self).__init__(*args, **kwargs)
+	    
+	    # If we're using a cache, pre-call the States list right now
+	    # so that it gets cached.
+	    if not USING_DUMMY_CACHE:
+	        call_in_bg(lambda x: x.states,(self,))
+	
     def states(self):
         """
         This *could* be a field, but this reduces the size of the database and the
@@ -200,7 +209,7 @@ class ZipCode(PolyModel):
         this is a performance tradeoff we can afford to take.
         """
         if USE_GIS:
-            return State.objects.filter(poly__intersects=self.poly)
+            return State.objects.filter(poly__bbcontains=self.poly)
         else:
             return None
     states = cached_property(states, 15552000)

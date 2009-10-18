@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 from django.http import HttpResponse
-from cacheutil import safe_get_cache,safe_set_cache,USING_DUMMY
+from cacheutil import safe_get_cache,safe_set_cache,USING_DUMMY_CACHE
 from django.shortcuts import get_object_or_404,render_to_response
 from django.http import HttpResponseRedirect,HttpResponsePermanentRedirect,Http404
 from django.core.urlresolvers import reverse
@@ -41,14 +41,14 @@ def seed_next_random():
                     reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
                 )
                 # Pre-cache this random view in the background, too.
-                if not USING_DUMMY:
+                if not USING_DUMMY_CACHE:
                     call_in_bg(county_detail,(None,place.state.abbr.lower(),urlencode(place.name.lower())))
             else:
                 response = HttpResponseRedirect(
                     reverse("places:place_detail",args=(place_type,place.slug),current_app="places")
                 )
                 # Pre-cache this random view in the background, too.
-                if not USING_DUMMY:
+                if not USING_DUMMY_CACHE:
                     call_in_bg(place_detail,(None,place_type,place.slug))
                     if place_type == "zipcode":
                         call_in_bg(getattr,(place,'states',''))
@@ -75,7 +75,7 @@ def random_place(request):
         response = seed_next_random()
     
     # Pre-generate the next random location.
-    if not USING_DUMMY:
+    if not USING_DUMMY_CACHE:
         call_in_bg(seed_next_random)
     
     return response
@@ -111,7 +111,7 @@ def place_detail(request,place_type,slug):
             place = get_object_or_404(PlaceClass,slug=slug)
             title = u"%s" % (place.name)
         
-        if not USING_DUMMY:
+        if not USING_DUMMY_CACHE:
             if place_type == "zipcode":
                 call_in_bg(getattr,(place,'states',''))
 
@@ -145,7 +145,7 @@ def county_detail(request,state_abbr,name):
         
         # It's likely that the user will go to the State's page from here (since it's linked
         # from the County detail page). Call it right now to pre-cache it.
-        if not USING_DUMMY:
+        if not USING_DUMMY_CACHE:
             call_in_bg(place_detail,(None,"state",place.state.slug))
 
     return response

@@ -3,7 +3,7 @@ from hashlib import sha512
 from django.utils.encoding import smart_str
 
 USING_MEMCACHED = (cache.__module__ == 'django.core.cache.backends.memcached')
-USING_DUMMY = (cache.__module__ == 'django.core.cache.backends.dummy')
+USING_DUMMY_CACHE = (cache.__module__ == 'django.core.cache.backends.dummy')
 
 def _get_real_cachename(cachename):
     """
