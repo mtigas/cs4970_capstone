@@ -5,6 +5,7 @@
 <title>Capstone</title>
 </head>
 
+{% load graphs humanize %}
 <body>
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
@@ -25,8 +26,6 @@
         {% endif %}
     </ul>
 
-    {% load graphs %}
-
     <p>If server resources allow, maybe replace ZIP/County point with a shaded-area version of the map.<br />{% show_on_map place_type place.slug %}</p>
 
     {% if not demographics %}
@@ -39,7 +38,7 @@
         <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>
         <table><tr><th>Demographic</th><th>Population</tr>
             {% for d,p in demographics.items %}
-            <tr><td><b>{{ d }}</b></td><td>{{ p }}</td></tr>
+            <tr><td><b>{{ d }}</b></td><td style="text-align:right">{{ p|intcomma }}</td></tr>
             {% endfor %}
         </table>
     {% endif %}

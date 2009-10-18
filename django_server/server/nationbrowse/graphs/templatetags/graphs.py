@@ -4,6 +4,7 @@ from django.template import resolve_variable
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
+from django.contrib.humanize.templatetags import humanize
 from urllib import urlencode
 
 from nationbrowse import graphs
@@ -161,7 +162,7 @@ class GraphHTMLNode(template.Node):
                 legend += '\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%s%%)</span><br class="clear"/>' % (
                     colors[v],
                     labels[v],
-                    values[v],
+                    humanize.intcomma(values[v]),
                     percents[v]
                 )
             
