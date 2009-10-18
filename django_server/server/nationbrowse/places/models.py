@@ -35,10 +35,7 @@ if USE_GIS:
 
     class PolyDeferGeoManager(models.Manager):
         def get_query_set(self):
-            try:
-                return models.query.GeoQuerySet(self.model).select_related('state','primary_state').defer('poly',)
-            except:
-    		    return models.query.GeoQuerySet(self.model).defer('poly',)
+            return models.query.GeoQuerySet(self.model).defer('poly',)
 
 # --------------------------------------------------------------
 
@@ -133,18 +130,11 @@ class State(PolyModel):
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
-    #def zipcodes(self):
-    #    if USE_GIS:
-    #        return ZipCode.objects.filter(poly__coveredby=self.poly)
-    #    else:
-    #        return None
-    #zipcodes = cached_property(zipcodes, 15552000)
-    
     def counties(self):
         return self.county_set.iterator()
     
     def zipcodes(self):
-        return self.state_zipcodes.iterator()
+        return self.zipcode_set.iterator()
     
     class Meta:
         ordering = ('name',)
@@ -200,23 +190,9 @@ class ZipCode(PolyModel):
         objects = PolyDeferGeoManager()
         pobjects = models.Manager()
 
-    states  = models.ManyToManyField('State',blank=True,null=True,db_index=True,related_name="state_zipcodes_raw")
-    primary_state  = models.ForeignKey('State',blank=True,null=True,db_index=True,related_name="state_zipcodes")
+    # Technically, ZipCodes can span multiple states. We're only storing the "primary" match.
+    state  = models.ForeignKey('State',blank=True,null=True,db_index=True)
 
-    def state(self):
-        """
-        If this ZIP code belongs to a state, returns that.
-        If it belongs to more than one state, returns the first match.
-        Otherwise, returns None.
-        """
-        if self.primary_state:
-            return self.primary_state
-        elif self.states and (self.states.count() > 0):
-            return self.states.all()[0]
-        else:
-            return None
-    state = cached_property(state, 86400)
-    
     #def counties(self):
     #    if USE_GIS:
     #        return County.objects.filter(state=self.state,poly__intersects=self.poly)
