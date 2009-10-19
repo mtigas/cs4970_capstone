@@ -24,14 +24,21 @@ def seed_next_random():
     
     See random_place() below, for notes on usage.
     """
-    cache_key = "random_place"
-    
     response = None
     while not response:
         try:
             PlaceClass = rand_choice([State,ZipCode,County])
-            rand_id = rand_choice(PlaceClass.objects.only('id').order_by().values_list('pk'))[0]
-
+            
+            # Cached list of all of the ID numbers for this place type.
+            cache_key = "all_ids: %s" % (PlaceClass.__name__)
+            all_ids = safe_get_cache(cache_key)
+            if not all_ids:
+                all_ids = PlaceClass.objects.only('id').order_by().values_list('pk') # [(0,),(1,),...]
+                all_ids = map(lambda x: x[0], all_ids) # pull ID out of tuples for a "regular" list
+                safe_set_cache(cache_key,all_ids,1209600) # 14 days
+            
+            rand_id = rand_choice(all_ids)
+            
             if PlaceClass.__name__ == "County":
                 place = PlaceClass.objects.get(pk=rand_id)
                 url = reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
@@ -49,7 +56,7 @@ def seed_next_random():
             from traceback import print_exc
             print_exc()
             response = None
-    safe_set_cache(cache_key,response,604800)
+    safe_set_cache("random_place",response,604800)
     
     return response
 
