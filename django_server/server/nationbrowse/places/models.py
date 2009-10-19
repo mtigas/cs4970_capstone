@@ -131,16 +131,12 @@ class State(PolyModel):
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
     def counties(self):
-        if self.county_set.count() > 0:
-            return self.county_set.iterator()
-        else:
-            return None
+        return self.county_set.defer('poly',).all()
+    counties = cached_clsmethod(counties, 15552000)
     
     def zipcodes(self):
-        if self.zipcode_set.count() > 0:
-            return self.zipcode_set.iterator()
-        else:
-            return None
+        return self.zipcode_set.defer('poly',).all()
+    zipcodes = cached_clsmethod(zipcodes, 15552000)
     
     class Meta:
         ordering = ('name',)
