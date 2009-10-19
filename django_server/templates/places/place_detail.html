@@ -30,7 +30,7 @@
     {% else %}
         <h2>Racial breakdown:</h2>
         {% show_graph place_type place.slug race_pie %}
-    
+        {% comment %}
         <h2>Demographics</h2>
         <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>
         <table><tr><th>Demographic</th><th>Population</tr>
@@ -38,5 +38,6 @@
             <tr><td><b>{{ d }}</b></td><td style="text-align:right">{{ p|intcomma }}</td></tr>
             {% endfor %}
         </table>
+        {% endcomment %}
     {% endif %}
 {% endblock %}
