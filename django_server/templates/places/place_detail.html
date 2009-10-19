@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<title>Capstone</title>
-</head>
+{% extends "base.html" %}
 
-{% load graphs humanize %}
-<body>
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block body %}
+    {% load graphs humanize %}
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
     
@@ -42,5 +39,4 @@
             {% endfor %}
         </table>
     {% endif %}
-</body> 
-</html>
+{% endblock %}
