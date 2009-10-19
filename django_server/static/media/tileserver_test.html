@@ -25,7 +25,6 @@
 		var extent = new OpenLayers.Bounds(-180, 0, -50, 90);
 
 		function init(){
-
             map = new OpenLayers.Map('map' , {
 				maxExtent: extent,
 				controls: [
@@ -41,18 +40,26 @@
 				],
 
 			});
-
-
-
+			
 			//------------------------- base layers
-
-			var state_pop = new OpenLayers.Layer.WMS(
+            
+			var state_base = new OpenLayers.Layer.WMS(
 				"Basic State Shape",
-				"http://tile.capstone.nationbrowse.com/?",
+				[   "http://tile.capstone.nationbrowse.com/?",
+				    "http://tile2.capstone.nationbrowse.com/?",
+				    "http://tile3.capstone.nationbrowse.com:81/?"
+				],
 				{layers:'state_base',format:"image/png"}
             );
-
-            map.addLayers([state_pop]);
+			var state_pop_2000 = new OpenLayers.Layer.WMS(
+				"State Population (2000)",
+				[   "http://tile.capstone.nationbrowse.com/?",
+				    "http://tile2.capstone.nationbrowse.com/?",
+				    "http://tile3.capstone.nationbrowse.com:81/?"
+				],
+				{layers:'state_pop_2000',format:"image/png"}
+            );
+            map.addLayers([state_base,state_pop_2000]);
 			map.setCenter(new OpenLayers.LonLat(-92.28516,39.02344));
 			map.zoomTo(4);
 			//alert(map.getExtent());
