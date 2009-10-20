@@ -22,6 +22,7 @@ from cacheutil import cached_clsmethod,cached_property,USING_DUMMY_CACHE
 from django.db import models
 
 from nationbrowse.demographics.models import PlacePopulation
+from django.contrib.gis.measure import Area
 from django.contrib.contenttypes import generic
 from threadutil import call_in_bg
 import re
@@ -123,6 +124,26 @@ class PolyModel(models.Model):
             self.poly.simplify(tolerance=.01).wkt
         )
     simple_wkt = cached_property(simple_wkt, 15552000)
+    
+    def area(self):
+        """
+        Since most of our polygons are HORRIBLY detailed (~ 1 million chars for Missouri's
+        WKT), we simplify it a bit and lose some of the detail (.01 tolerance -> 9000 chars
+        for Missouri's WKT; .05 -> 2278 chars).
+        
+        Additionally uses a compiled regular expression to truncate coordinates to at most
+        six decimal places.
+        """
+        if not USE_GIS:
+            return None
+        if not self.poly:
+            return False
+        
+        # Not the most exact, but it applies nationally.
+        p = self.poly
+        p.transform(2163)
+        return Area(sq_m=p.area,default_unit="sq_mi")
+    area = cached_property(area, 15552000)
     
     # Special fake foreign key that checks the PlacePopulation table for a record
     # that corresponds with this Place.
