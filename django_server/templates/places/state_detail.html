@@ -28,6 +28,10 @@
         var sourceProj = null;
         var targetProj = null;
         
+        // global var so this can be disabled on certain conditions (like when mousing
+        // over the list -- we don't want it to scroll then)
+        var list_autoscroll = true;
+        
         var wkt_to_vector = function(wkt) {
             // Converts WKT text (in WGS84) to a vector image (in the Google spherical mercator)
 
@@ -119,7 +123,8 @@
                     var label = jQuery('#link_county_'+feature.data.id);
                     label.css('font-weight','bold');
                     label.css('font-size','larger');
-                    jQuery("#counties_list").scrollTo(label);
+                    if (list_autoscroll)
+                        jQuery("#counties_list").scrollTo(label);
                 },
         		onUnselect: function(feature) {
         		    // When the mouse leaves the poly, unbold the name in list.
@@ -146,15 +151,20 @@
             jQuery.each(counties,function(i, obj){
                 var label = jQuery('#link_county_'+obj.data.id);
                 label.mouseover(function(){
-                    // Calls the .overFeature method of our
-                    // event handler (above), which provides
-                    // the highlight and text bolding (via our callback).
-                    // See OpenLayer doc: http://yu8.in/D_
+                    // Disable the "scrollTo" hook because we don't want the list
+                    // to scroll while we're mousing over the list!
+                    list_autoscroll = false;
+                    
+                    // Externally calls the .overFeature in our hover_control handler (above)
                     hover_control.overFeature(obj);
                 });
                 label.mouseout(function(){
                     // Same as above, except for the .outFeature method
                     hover_control.outFeature(obj);
+                    
+                    // Re-enable "scrollTo" hook so the list will autoscroll if
+                    // user mouses over the map.
+                    list_autoscroll = true;
                 });
             });
         }
