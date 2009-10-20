@@ -60,7 +60,7 @@
 					new OpenLayers.Control.LayerSwitcher(),
 					new OpenLayers.Control.Permalink(),
 					new OpenLayers.Control.ScaleLine()
-				],
+				]
 			});
 			wkt_parser = new OpenLayers.Format.WKT();
 			
@@ -189,7 +189,11 @@
 {% endcomment %}
 
 {# TODO: Note that calculation uses SRID=2163, the National Atlas Equal Area projection. #}
-<p><b>Total Area:</b> <span title="...Or {{place.area.sq_inch|intword}} square inches.">{{ place.area.sq_mi|floatformat:3|intcomma }} sq. mi. ({{ place.area.sq_km|floatformat:3|intcomma }} sq. km)</span></p>
+<p>
+<b>Total Area:</b> <span title="...Or {{place.area.sq_inch|intword}} square inches.">{{ place.area.sq_mi|floatformat:3|intcomma }} sq. mi. ({{ place.area.sq_km|floatformat:3|intcomma }} sq. km)</span><br />
+Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_source }}</a>
+</p>
+
     {% if not demographics %}
         <p>This location has no demographic data.</p>
     {% else %}
@@ -210,5 +214,7 @@
             {% endfor %}
         </table>
         {% endcomment %}
+
+        <p>Demographic data source: <a href="{{ place.population_demographics.source.url }}">{{ place.population_demographics.source }}</a></p>
     {% endif %}
 {% endblock %}
