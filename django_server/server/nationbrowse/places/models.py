@@ -55,6 +55,9 @@ class PolyModel(models.Model):
     else:
         poly    = models.TextField(verbose_name="geographic area data (non-GIS)",blank=True,null=True)
 
+    poly_source = "U.S. Census Bureau TIGER/Line, 2008"
+    poly_source_url = "http://www.census.gov/geo/www/tiger/"
+
     def center(self):
         """
         Returns the Point that corresponds to the center of this object's shape.

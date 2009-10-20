@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
+{% load graphs humanize safecache %}
+
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
 {% block extrahead %}
+    {% safecache 86400 huge_state_detail_js place.pk %}
 	<style type="text/css">
 	.smallmap {
     width: 400px;
@@ -59,10 +62,9 @@
                 maxExtent: new OpenLayers.Bounds(-20037508, -20037508,
                                                  20037508, 20037508.34),
 				controls: [
-					new OpenLayers.Control.PanZoomBar(),
+					new OpenLayers.Control.ZoomPanel(),
 					new OpenLayers.Control.MouseDefaults(),
 					new OpenLayers.Control.LayerSwitcher(),
-					new OpenLayers.Control.Permalink(),
 					new OpenLayers.Control.ScaleLine()
 				]
 			});
@@ -72,7 +74,8 @@
             var vectors = new OpenLayers.Layer.Vector("Counties");
             var google = new OpenLayers.Layer.Google("Google Terrain", {
                 'type': G_PHYSICAL_MAP,
-                numZoomLevels: 22,
+                'displayInLayerSwitcher': false, // don't allow disabling this layer
+                'numZoomLevels': 22,
                 'sphericalMercator': true
             });
 
@@ -84,7 +87,10 @@
                 county_tmp[{{forloop.counter0}}].data = {
                     'id':{{c.id}},
                     'name':'{{c.long_name|escapejs}}',
-                    'url':'{{c.get_absolute_url}}'
+                    'url':'{{c.get_absolute_url}}',
+                    'total_pop':'{{ c.population_demographics.total|intcomma }}',
+                    'male':'{{ c.population_demographics.male|intcomma }}',
+                    'female':'{{ c.population_demographics.female|intcomma }}'
                 };
             {% endifnotequal %}
             {% endfor %}
@@ -125,6 +131,14 @@
                     label.css('font-size','larger');
                     if (list_autoscroll)
                         jQuery("#counties_list").scrollTo(label);
+                    
+                    var data_html = '<h2 style="margin:0">'+feature.data.name+"</h2>";
+                    data_html += '<table style="margin:0;width:190px">';
+                    data_html += "<tr><td><b>Population</b></td><td>"+feature.data.total_pop+"</td></tr>"
+                    data_html += "<tr><td><b>Male pop.</b></td><td>"+feature.data.male+"</td></tr>"
+                    data_html += "<tr><td><b>Female pop.</b></td><td>"+feature.data.female+"</td></tr>";
+                    data_html += "</table>";
+                    jQuery('#counties_data_pane').html(data_html);
                 },
         		onUnselect: function(feature) {
         		    // When the mouse leaves the poly, unbold the name in list.
@@ -170,22 +184,25 @@
         }
         window.onload = init;
     </script>
+    {% endsafecache %}
 {% endblock %}
 
 
 {% block body %}
-    {% load graphs humanize %}
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
     
 {% if place.counties %}
-<h2>Count{{ place.county_set.count|pluralize:"y,ies" }}:</h2>
+<div style="width:830px;border:1px solid #999">
 <div id="counties_map" class="smallmap" style="float:left"></div>
-<p id="counties_list" style="float:left;width:200px;height:400px;margin:0 0 0 10px;overflow:auto">
+<ul id="counties_list" style="float:left;width:200px;height:400px;margin:0 0 0 5px;padding:0;overflow:auto;list-style-type:none;list-style-position:outside">
 {% for county in place.counties %}
-{% if not forloop.first %}<br />{% endif %}<a href="{{ county.get_absolute_url }}" id="link_county_{{county.id}}" onMouseOver="">{{ county.long_name }}</a>{% endfor %}
-</p>
+<li style="margin:0"><a href="{{ county.get_absolute_url }}" id="link_county_{{county.id}}" onMouseOver="">{{ county.long_name }}</a></li>{% endfor %}
+</ul>
+<div id="counties_data_pane" style="float:left;width:200px;height:400px;margin:0 0 0 10px;overflow:auto">
+</div>
 <br style="clear:both"/>
+</div>
 {% endif %}
 
 {% comment %}
