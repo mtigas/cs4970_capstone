@@ -89,7 +89,7 @@ def state_detail(request,slug):
     if not response:
         place = get_object_or_404(State,slug=slug)
         
-        response=render_to_response("places/place_detail.html",{
+        response=render_to_response("places/state_detail.html",{
             'title':str(place.name),
             'place':place,
             'demographics':getattr(place.population_demographics,'__dict__',{}),

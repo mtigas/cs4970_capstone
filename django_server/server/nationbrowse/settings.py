@@ -69,6 +69,7 @@ TEMPLATE_LOADERS = (
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.auth",
     "django.core.context_processors.media",
+    "nationbrowse.places.context_processors.api_key",
 )
 
 # ===== Extra app-specifics =====

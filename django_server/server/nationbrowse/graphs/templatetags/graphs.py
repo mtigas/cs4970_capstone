@@ -159,7 +159,7 @@ class GraphHTMLNode(template.Node):
             # ...
             legend = ''
             for v in xrange(0,len(labels)):
-                legend += '\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%s%%)</span><br class="clear"/>' % (
+                legend += '\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%s%%)<br class="clear"/>' % (
                     colors[v],
                     labels[v],
                     humanize.intcomma(values[v]),

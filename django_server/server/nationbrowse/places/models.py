@@ -24,6 +24,7 @@ from django.db import models
 from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.contenttypes import generic
 from threadutil import call_in_bg
+import re
 
 # Are we on a GIS-aware server?
 USE_GIS = getattr(settings,'USE_GIS',False)
@@ -33,11 +34,13 @@ if USE_GIS:
     from django.contrib.gis.db import models
     from django.contrib.gis.geos import fromstr as geo_from_str
 
-    class PolyDeferGeoManager(models.Manager):
+    class PolyDeferGeoManager(models.GeoManager):
         def get_query_set(self):
             return models.query.GeoQuerySet(self.model).defer('poly',)
 
 # --------------------------------------------------------------
+
+TRUNCATE_WKT = re.compile('(-?\d?\d?\d\.\d\d\d\d\d\d)(\d+)(,? ?)')
 
 class PolyModel(models.Model):
     """
@@ -100,6 +103,26 @@ class PolyModel(models.Model):
         else:
             return self.poly.contains(point)
     contains_coordinate = cached_clsmethod(contains_coordinate, 15552000)
+
+    def simple_wkt(self):
+        """
+        Since most of our polygons are HORRIBLY detailed (~ 1 million chars for Missouri's
+        WKT), we simplify it a bit and lose some of the detail (.01 tolerance -> 9000 chars
+        for Missouri's WKT; .05 -> 2278 chars).
+        
+        Additionally uses a compiled regular expression to truncate coordinates to at most
+        six decimal places.
+        """
+        if not USE_GIS:
+            return None
+        if not self.poly:
+            return False
+        
+        return TRUNCATE_WKT.sub(
+            r'\1\3',
+            self.poly.simplify(tolerance=.01).wkt
+        )
+    simple_wkt = cached_property(simple_wkt, 15552000)
     
     # Special fake foreign key that checks the PlacePopulation table for a record
     # that corresponds with this Place.
@@ -124,7 +147,7 @@ class PolyModel(models.Model):
 class State(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.Manager()
+        pobjects = models.GeoManager()
     
     abbr     = models.CharField(verbose_name="abbreviation",max_length=10,help_text="Standard mailing abbreviation in CAPS; i.e. WA",db_index=True)
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
@@ -153,7 +176,7 @@ class State(PolyModel):
 class County(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.Manager()
+        pobjects = models.GeoManager()
     
     state  = models.ForeignKey('State',db_index=True)
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
@@ -189,7 +212,7 @@ class County(PolyModel):
 class ZipCode(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.Manager()
+        pobjects = models.GeoManager()
 
     # Technically, ZipCodes can span multiple states. We're only storing the "primary" match.
     state  = models.ForeignKey('State',blank=True,null=True,db_index=True)

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+	<style type="text/css">
+	.smallmap {
+    width: 400px;
+    height: 400px;
+    border: 2px solid #ccc;
+	}
+	</style>
+    {# TODO: OVER 60KB OF EXTERNAL JS. Can we do better? #}
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js" type="text/javascript"></script>
+	<script src="http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.2-min.js" type="text/javascript"></script>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key={{GOOGLE_MAPS_API_KEY}}" type="text/javascript"></script>
+    <script src="http://openlayers.org/api/OpenLayers.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var $j = jQuery.noConflict();
+        OpenLayers.IMAGE_RELOAD_ATTEMPTS = 2;
+        OpenLayers.Util.onImageLoadErrorColor = "transparent";
+        
+        // In case OpenLayers doesn't load, define these out here
+        // since some functions may call on them on the global namespace (and null
+        // is way better than undefined).
+        var counties_map = null;
+        var wkt_parser = null;
+        var sourceProj = null;
+        var targetProj = null;
+        
+        var wkt_to_vector = function(wkt) {
+            // Converts WKT text (in WGS84) to a vector image (in the Google spherical mercator)
+
+            // Punt on empty polygons or other bad data.
+        	var tempObj = wkt_parser.read(wkt);
+        	if (!tempObj) return null;
+        	
+        	var tempGeom = tempObj.geometry.clone();
+        	tempGeom.transform(sourceProj, targetProj);
+        	var obj = wkt_parser.read(tempGeom);
+        	return obj
+        };
+
+		var init = function(){
+        	sourceProj = new OpenLayers.Projection("EPSG:4326");
+        	targetProj = new OpenLayers.Projection("EPSG:900913");
+
+            // Initialize the map object
+            counties_map = new OpenLayers.Map('counties_map' , {
+                projection: targetProj,
+                displayProjection: sourceProj,
+                units: "m",
+                numZoomLevels: 18,
+                maxResolution: 156543.0339,
+                maxExtent: new OpenLayers.Bounds(-20037508, -20037508,
+                                                 20037508, 20037508.34),
+				controls: [
+					new OpenLayers.Control.PanZoomBar(),
+					new OpenLayers.Control.MouseDefaults(),
+					new OpenLayers.Control.LayerSwitcher(),
+					new OpenLayers.Control.Permalink(),
+					new OpenLayers.Control.ScaleLine()
+				],
+			});
+			wkt_parser = new OpenLayers.Format.WKT();
+			
+            // ===== Map layers =====
+            var vectors = new OpenLayers.Layer.Vector("Counties");
+            var google = new OpenLayers.Layer.Google("Google Terrain", {
+                'type': G_PHYSICAL_MAP,
+                numZoomLevels: 22,
+                'sphericalMercator': true
+            });
+
+            // Dump counties in via Django template forloop.
+            var county_tmp = [];
+            {% for c in place.counties %}
+            {% ifnotequal c.simple_wkt "POLYGON EMPTY" %}
+                county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{c.simple_wkt|escapejs}}');
+                county_tmp[{{forloop.counter0}}].data = {
+                    'id':{{c.id}},
+                    'name':'{{c.long_name|escapejs}}',
+                    'url':'{{c.get_absolute_url}}'
+                };
+            {% endifnotequal %}
+            {% endfor %}
+            
+            // Since some of the above items will be null, recreate the array
+            // so we have consequtive IDs on the array (because OpenLayers expects
+            // 0...n objects and fails on nulls).
+            var counties = new Array();
+            for(var i = 0; i<county_tmp.length; i++){
+                if (county_tmp[i]){
+                    counties.push(county_tmp[i]);
+                }
+            }
+            
+            // Destroy 'temporary' array
+            county_tmp.length = 0;
+            county_tmp = null;
+            
+            vectors.addFeatures(counties);
+            counties_map.addLayers([google,vectors]);
+            
+            // ===== Center the map on the State's center. =====
+            var c = new OpenLayers.LonLat({{place.longitude}},{{place.latitude}});
+            // Need to reproject the lat/lon into spherical mercator
+			counties_map.setCenter(c.transform(sourceProj, targetProj));
+			
+			// Zoom to the closest zoom that shows every county.
+			counties_map.zoomTo(counties_map.getZoomForExtent(vectors.getDataExtent()));
+
+            // ===== Handle mouseover/mouseout/click events =====
+        	var hover_control = new OpenLayers.Control.SelectFeature(vectors, {
+        		hover:true,
+        		onSelect: function(feature) {
+        		    // Hover will bold the name of the county in the list
+        		    // and also scroll the county's name into the view
+                    var label = jQuery('#link_county_'+feature.data.id);
+                    label.css('font-weight','bold');
+                    label.css('font-size','larger');
+                    jQuery("#counties_list").scrollTo(label);
+                },
+        		onUnselect: function(feature) {
+        		    // When the mouse leaves the poly, unbold the name in list.
+                    var label = jQuery('#link_county_'+feature.data.id);
+                    label.css('font-weight','normal');
+                    label.css('font-size','medium');
+                },
+        		callbacks: {
+        		    'click': function(feature) {
+        		        // On click, destroy the map obj (to prevent browser memory 
+        		        // leaks) and redirect to the page for the county.
+                		var url = feature.data.url;
+                		counties_map.destroy();
+                		window.location.href = url;
+                		return false;
+                	}
+        		}
+        	});
+        	counties_map.addControl(hover_control);
+            hover_control.activate();
+
+            // Magics to get the "reverse" hover working:
+            // Hover over the label and you get the *poly* highlighted.
+            jQuery.each(counties,function(i, obj){
+                var label = jQuery('#link_county_'+obj.data.id);
+                label.mouseover(function(){
+                    // Calls the .overFeature method of our
+                    // event handler (above), which provides
+                    // the highlight and text bolding (via our callback).
+                    // See OpenLayer doc: http://yu8.in/D_
+                    hover_control.overFeature(obj);
+                });
+                label.mouseout(function(){
+                    // Same as above, except for the .outFeature method
+                    hover_control.outFeature(obj);
+                });
+            });
+        }
+        window.onload = init;
+    </script>
+{% endblock %}
+
+
+{% block body %}
+    {% load graphs humanize %}
+    <p><a href="{% url places:random_place %}">Get another random place</a></p>
+    <h1>{{ title }}</h1>
+    
+{% if place.counties %}
+<h2>Count{{ place.county_set.count|pluralize:"y,ies" }}:</h2>
+<div id="counties_map" class="smallmap" style="float:left"></div>
+<p id="counties_list" style="float:left;width:200px;height:400px;margin:0 0 0 10px;overflow:auto">
+{% for county in place.counties %}
+{% if not forloop.first %}<br />{% endif %}<a href="{{ county.get_absolute_url }}" id="link_county_{{county.id}}" onMouseOver="">{{ county.long_name }}</a>{% endfor %}
+</p>
+<br style="clear:both"/>
+{% endif %}
+
+{% comment %}
+{% if place.zipcodes %}<h2>ZIP Code{{ place.zipcode_set.count|pluralize }}:</h2>
+<ul style="width:300px;max-height:150px;overflow-y:auto;-moz-column-count:3;column-count:3">
+    {% for zipcode in place.zipcodes %}
+    <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endcomment %}
+
+    {% if not demographics %}
+        <p>This location has no demographic data.</p>
+    {% else %}
+        <h2>Racial breakdown:</h2>
+        {% show_graph place_type place.slug race_pie %}
+        {% comment %}
+        <h2>Demographics</h2>
+        <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>
+        <table><tr><th>Demographic</th><th>Population</tr>
+            {% for d,p in demographics.items %}
+            <tr><td><b>{{ d }}</b></td><td style="text-align:right">{{ p|intcomma }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endcomment %}
+    {% endif %}
+{% endblock %}
