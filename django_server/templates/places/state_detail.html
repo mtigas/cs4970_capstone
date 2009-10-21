@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 
-{% load graphs humanize safecache %}
+{% load graphs humanize safecache inline_jsmin %}
 
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
 {% block extrahead %}
-    {% safecache 86400 huge_state_detail_js place.pk request.GET.density %}
 	<style type="text/css">
 	.smallmap {
     width: 400px;
@@ -19,6 +18,13 @@
     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key={{GOOGLE_MAPS_API_KEY}}" type="text/javascript"></script>
     <script src="http://media2.nationbrowse.com/js/OpenLayers.js" type="text/javascript"></script>
     <script type="text/javascript">
+        // JSmin'd for the time being (until shared code can be refactored out later)
+        {% safecache 86400 county_poly_for_state place.pk request.GET.density jsmin %}
+        {% startjsmin %}
+        {% comment %}
+        TODO: fork out a LOT of this JS into an external file so that every page can benefit
+        from having this rendering code shared (and not downloaded again and again and again)
+        {% endcomment %}
         var $j = jQuery.noConflict();
         OpenLayers.IMAGE_RELOAD_ATTEMPTS = 2;
         OpenLayers.Util.onImageLoadErrorColor = "transparent";
@@ -57,13 +63,6 @@
         	sourceProj = new OpenLayers.Projection("EPSG:4326");
         	targetProj = new OpenLayers.Projection("EPSG:900913");
             
-            /*
-            style2.fillColor = '#A6BDDB';
-            style3.fillColor = '#74A9CF';
-            style4.fillColor = '#3690C0';
-            style5.fillColor = '#0570B0';
-            style6.fillColor = '#034E7B';
-            */
             var default_style = new OpenLayers.Style({
             	strokeColor : '#777777',
             	strokeWidth: 1,
@@ -166,22 +165,21 @@
 
             // Dump counties in via Django template forloop.
             var county_tmp = [];
-            {% for c in place.counties %}
-            {% ifnotequal c.simple_wkt "POLYGON EMPTY" %}
-                county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{c.simple_wkt|escapejs}}');
+            {% for county in place.counties %}
+            {% ifnotequal county.simple_wkt "POLYGON EMPTY" %}
+                county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{county.simple_wkt|escapejs}}');
                 county_tmp[{{forloop.counter0}}].attributes = {
-                    'total_pop':{{ c.population_demographics.total }},
-                    'pop_density':Math.round({{ c.population_demographics.total }}/{{ c.area.sq_mi }})
+                    'total_pop':{{ county.population_demographics.total }},
+                    'pop_density':Math.round({{ county.population_demographics.total }}/{{ county.area.sq_mi }})
                 };
                 county_tmp[{{forloop.counter0}}].data = {
-                    'id':{{c.id}},
-                    'name':'{{c.long_name|escapejs}}',
-                    'url':'{{c.get_absolute_url}}',
-                    'total_pop':'{{ c.population_demographics.total|intcomma }}',
-                    'male':'{{ c.population_demographics.male|intcomma }}',
-                    'female':'{{ c.population_demographics.female|intcomma }}'
+                    'id':{{county.id}},
+                    'name':'{{county.long_name|escapejs}}',
+                    'url':'{{county.get_absolute_url}}',
+                    'total_pop':'{{ county.population_demographics.total|intcomma }}',
+                    'male':'{{ county.population_demographics.male|intcomma }}',
+                    'female':'{{ county.population_demographics.female|intcomma }}'
                 };
-                //county_tmp[{{forloop.counter0}}].style = layer_styles[Math.floor(Math.random()*6)];
             {% endifnotequal %}
             {% endfor %}
             
@@ -203,9 +201,9 @@
             counties_map.addLayers([google,vectors]);
             
             // ===== Center the map on the State's center. =====
-            var c = new OpenLayers.LonLat({{place.longitude}},{{place.latitude}});
+            var state_center = new OpenLayers.LonLat({{place.longitude}},{{place.latitude}});
             // Need to reproject the lat/lon into spherical mercator
-			counties_map.setCenter(c.transform(sourceProj, targetProj));
+			counties_map.setCenter(state_center.transform(sourceProj, targetProj));
 			
 			// Zoom to the closest zoom that shows every county.
 			counties_map.zoomTo(counties_map.getZoomForExtent(vectors.getDataExtent()));
@@ -276,8 +274,9 @@
             });
         }
         window.onload = init;
+        {% endjsmin %}
+        {% endsafecache %}
     </script>
-    {% endsafecache %}
 {% endblock %}
 
 

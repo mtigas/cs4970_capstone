@@ -41,10 +41,12 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'cacheutil',
+    #'debug_toolbar',
+    'jsmin',
     'nationbrowse.places',
     'nationbrowse.demographics',
     'nationbrowse.graphs',
-    'cacheutil'
 )
 ROOT_URLCONF = 'nationbrowse.urls'
 
