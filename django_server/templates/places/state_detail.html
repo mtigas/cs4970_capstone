@@ -169,8 +169,8 @@
             {% ifnotequal county.simple_wkt "POLYGON EMPTY" %}
                 county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{county.simple_wkt|escapejs}}');
                 county_tmp[{{forloop.counter0}}].attributes = {
-                    'total_pop':{{ county.population_demographics.total }},
-                    'pop_density':Math.round({{ county.population_demographics.total }}/{{ county.area.sq_mi }}),
+                    'total_pop':{% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %},
+                    'pop_density':Math.round({% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %}/{{ county.area.sq_mi }}),
                     'area':'{{ county.area.sq_mi|floatformat:3|intcomma }} sq. mi.'
                 };
                 county_tmp[{{forloop.counter0}}].data = {
