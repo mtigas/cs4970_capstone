@@ -170,7 +170,8 @@
                 county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{county.simple_wkt|escapejs}}');
                 county_tmp[{{forloop.counter0}}].attributes = {
                     'total_pop':{{ county.population_demographics.total }},
-                    'pop_density':Math.round({{ county.population_demographics.total }}/{{ county.area.sq_mi }})
+                    'pop_density':Math.round({{ county.population_demographics.total }}/{{ county.area.sq_mi }}),
+                    'area':'{{ county.area.sq_mi|floatformat:3|intcomma }} sq. mi.'
                 };
                 county_tmp[{{forloop.counter0}}].data = {
                     'id':{{county.id}},
@@ -226,6 +227,7 @@
                     data_html += "<tr><td><b>Male pop.</b></td><td>"+feature.data.male+"</td></tr>"
                     data_html += "<tr><td><b>Female pop.</b></td><td>"+feature.data.female+"</td></tr>";
                     data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
+                    data_html += "<tr><td><b>Area</b></td><td>"+feature.attributes.area+"</td></tr>"
                     data_html += "<tr><td><b>Pop. density</b></td><td>"+feature.attributes.pop_density+" (per sq. mi.)</td></tr>"
 
                     data_html += "</table>";
