@@ -122,10 +122,42 @@ class PolyModel(models.Model):
         if not self.poly:
             return False
         
-        return TRUNCATE_WKT.sub(
+        simple = TRUNCATE_WKT.sub(
             r'\1\3',
             self.poly.simplify(tolerance=.01).wkt
         )
+        
+        # If that tolerance level results in an empty polygon (the algorithm
+        # gets rid of too many points), try to do a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify(tolerance=.01,preserve_topology=True).wkt
+            )
+        
+        # Try a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify().wkt
+            )
+        
+        # Try a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify(preserve_topology=True).wkt
+            )
+        
+        # If even *that* doesn't get a simple polygon, just return the standard poly,
+        # with the coordinates truncated to 6 decimal places.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.wkt
+            )
+        
+        return simple
     simple_wkt = cached_property(simple_wkt, 15552000)
     
     def area(self):
