@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'nationbrowse.places',
     'nationbrowse.demographics',
     'nationbrowse.graphs',
+    'cacheutil'
 )
 ROOT_URLCONF = 'nationbrowse.urls'
 
@@ -69,6 +70,7 @@ TEMPLATE_LOADERS = (
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.auth",
     "django.core.context_processors.media",
+    "django.core.context_processors.request",
     "nationbrowse.places.context_processors.api_key",
 )
 

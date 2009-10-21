@@ -83,7 +83,7 @@ def random_place(request):
     return response
 
 def state_detail(request,slug):
-    cache_key = "state_detail slug=%s" % slug
+    cache_key = "state_detail slug=%s GET=%s" % (slug, request.GET)
     response = safe_get_cache(cache_key)
     
     if not response:

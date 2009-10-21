@@ -5,7 +5,7 @@
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
 {% block extrahead %}
-    {% safecache 86400 huge_state_detail_js place.pk %}
+    {% safecache 86400 huge_state_detail_js place.pk request.GET.density %}
 	<style type="text/css">
 	.smallmap {
     width: 400px;
@@ -47,11 +47,94 @@
         	var obj = wkt_parser.read(tempGeom);
         	return obj
         };
-
+        var cloneObj = function(what) {
+            for (i in what) {
+                this[i] = what[i];
+            }
+        };
+        
 		var init = function(){
         	sourceProj = new OpenLayers.Projection("EPSG:4326");
         	targetProj = new OpenLayers.Projection("EPSG:900913");
+            
+            /*
+            style2.fillColor = '#A6BDDB';
+            style3.fillColor = '#74A9CF';
+            style4.fillColor = '#3690C0';
+            style5.fillColor = '#0570B0';
+            style6.fillColor = '#034E7B';
+            */
+            var default_style = new OpenLayers.Style({
+            	strokeColor : '#777777',
+            	strokeWidth: 1,
+            	strokeOpacity: 0.5,
+            	fillColor : '#FFFFFF', // Should be overridden by data styles
+            	fillOpacity : 0.7,
+            	pointRadius : 3,
+            	strokeLinecap: "round"
+            });
+            var hover_style = new OpenLayers.Style({
+            	fillOpacity : 1,
+            	strokeWidth: 3,
+            	strokeOpacity: 1,
+            	strokeColor : '#000000'
+            });
+            function create_rule_style_array(rule_property,in_arr) {
+                // OpenLayers has the most verbose rule definition syntax
+                // ever. Add the ability to create quick color-shading rules
+                // based on a given attribute.
 
+                // [[0,"#FEE391"],[10000,"FEC44F"],...]
+                
+                var out_arr = new Array();
+                for(var i = 0; i<in_arr.length; i++){
+                    out_arr.push(new OpenLayers.Rule({
+                        filter: new OpenLayers.Filter.Comparison({
+                            type: OpenLayers.Filter.Comparison.GREATER_THAN_OR_EQUAL_TO,
+                            property: rule_property,
+                            value: in_arr[i][0]
+                        }),
+                        symbolizer: {
+                            fillColor:in_arr[i][1]
+                        }
+                    }));
+                }
+                return out_arr;
+            };
+            
+            {% ifequal request.GET.density "1" %}
+            default_style.addRules(create_rule_style_array(
+                "pop_density", [
+                [0,"#FFFFE5"],
+                [25,"#FFF7BC"],
+                [50,"#FEE391"],
+                [100,"#FEC44F"],
+                [250,"#FE9929"],
+                [500,"#EC7014"],
+                [1000,"#CC4C02"],
+                [2500,"#993404"],
+                [5000,"#662506"]
+            ]));
+            {% else %}
+            default_style.addRules(create_rule_style_array(
+                "total_pop", [
+                [0,"#FFFFE5"],
+                [10000,"#FFF7BC"],
+                [50000,"#FEE391"],
+                [75000,"#FEC44F"],
+                [100000,"#FE9929"],
+                [250000,"#EC7014"],
+                [500000,"#CC4C02"],
+                [1000000,"#993404"],
+                [2000000,"#662506"]
+            ]));
+            {% endifequal %}
+            
+            var style_map = new OpenLayers.StyleMap({
+                "default":default_style,
+                "select":hover_style
+            });
+            
             // Initialize the map object
             counties_map = new OpenLayers.Map('counties_map' , {
                 projection: targetProj,
@@ -71,7 +154,9 @@
 			wkt_parser = new OpenLayers.Format.WKT();
 			
             // ===== Map layers =====
-            var vectors = new OpenLayers.Layer.Vector("Counties");
+            var vectors = new OpenLayers.Layer.Vector("Counties", {
+                styleMap: style_map
+            });
             var google = new OpenLayers.Layer.Google("Google Terrain", {
                 'type': G_PHYSICAL_MAP,
                 'displayInLayerSwitcher': false, // don't allow disabling this layer
@@ -84,6 +169,10 @@
             {% for c in place.counties %}
             {% ifnotequal c.simple_wkt "POLYGON EMPTY" %}
                 county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{c.simple_wkt|escapejs}}');
+                county_tmp[{{forloop.counter0}}].attributes = {
+                    'total_pop':{{ c.population_demographics.total }},
+                    'pop_density':Math.round({{ c.population_demographics.total }}/{{ c.area.sq_mi }})
+                };
                 county_tmp[{{forloop.counter0}}].data = {
                     'id':{{c.id}},
                     'name':'{{c.long_name|escapejs}}',
@@ -92,6 +181,7 @@
                     'male':'{{ c.population_demographics.male|intcomma }}',
                     'female':'{{ c.population_demographics.female|intcomma }}'
                 };
+                //county_tmp[{{forloop.counter0}}].style = layer_styles[Math.floor(Math.random()*6)];
             {% endifnotequal %}
             {% endfor %}
             
@@ -137,6 +227,9 @@
                     data_html += "<tr><td><b>Population</b></td><td>"+feature.data.total_pop+"</td></tr>"
                     data_html += "<tr><td><b>Male pop.</b></td><td>"+feature.data.male+"</td></tr>"
                     data_html += "<tr><td><b>Female pop.</b></td><td>"+feature.data.female+"</td></tr>";
+                    data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
+                    data_html += "<tr><td><b>Pop. density</b></td><td>"+feature.attributes.pop_density+" (per sq. mi.)</td></tr>"
+
                     data_html += "</table>";
                     jQuery('#counties_data_pane').html(data_html);
                 },
@@ -191,7 +284,9 @@
 {% block body %}
     <p><a href="{% url places:random_place %}">Get another random place</a></p>
     <h1>{{ title }}</h1>
-    
+{% ifequal request.GET.density "1" %}<p>Shaded by population density. (<a href="{{ request.path }}">View by population size</a>.)</p>
+{% else %}<p>Shaded by population size. (<a href="{{ request.path }}?density=1">View by population density</a>.)</p>
+{% endifequal %}
 {% if place.counties %}
 <div style="width:830px;border:1px solid #999">
 <div id="counties_map" class="smallmap" style="float:left"></div>
