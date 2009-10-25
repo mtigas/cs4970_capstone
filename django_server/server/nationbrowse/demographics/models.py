@@ -1,19 +1,15 @@
 # coding=utf-8
 from django.db import models
 
-from django_caching.models import CachedModel
-from django_caching.managers import CachingManager
-from cacheutil import cached_clsmethod,cached_property
+from cacheutil import cached_clsmethod
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from datetime import date
 
-class DataSource(CachedModel):
+class DataSource(models.Model):
     """ Stores metadata regarding a particular source of demographic information """
-    objects = CachingManager()
-    
     source = models.CharField(max_length=255)
     date = models.DateField(help_text="Note that for some data sources, only the year is valid.")
     url = models.URLField(blank=True,null=True,max_length=255,verify_exists=False)
@@ -29,15 +25,13 @@ class DataSource(CachedModel):
         ordering = ('date','source')
         unique_together = (('source','date'),)
 
-class PlacePopulation(CachedModel):
+class PlacePopulation(models.Model):
     """
     Each record represents data from one source, for one particular place.
     
     For example, PlacePopulation.objects.get(pk=24703) gets you the Census 2000 population data
     for ZipCode 65201.
     """
-    objects = CachingManager()
-    
     # Internal Django fields that handles the GenericForeignKey below
     place_type = models.ForeignKey(ContentType)
     place_id = models.PositiveIntegerField(db_index=True)

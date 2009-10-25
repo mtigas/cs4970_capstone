@@ -17,11 +17,11 @@ def db_threadsafe(func):
     """
     
     def wrapped_func(*args, **kwargs):
-        try:
-            pass
-            #close_db()
-        except db.InterfaceError:
-            pass
+        #try:
+        #    close_db()
+        #except db.InterfaceError:
+        #    # Connection is already dead
+        #    pass
         return func(*args, **kwargs)
     
     return wrapped_func

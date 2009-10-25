@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block body %}
+    {% load graphs humanize %}
+    <p><a href="{% url places:random_place %}">Get another random place</a></p>
+    <h1>{{ title }}</h1>
+    
+    <ul>
+        {% if place.state %}<li>State:<ul><li><a href="{{ place.state.get_absolute_url }}">{{ place.state }}</a></li></ul></li>{% endif %}
+        {% if place.counties %}<li>Count{{ place.county_set.count|pluralize:"y,ies" }}:<ul style="width:400px;max-height:100px;overflow:auto">
+            {% for county in place.counties %}
+            <li><a href="{{ county.get_absolute_url }}">{{ county.long_name }}</a></li>
+            {% endfor %}
+        </ul></li>
+        {% endif %}
+        {% if place.zipcodes %}<li>ZIP Code{{ place.zipcode_set.count|pluralize }}:<ul style="width:400px;max-height:100px;overflow:auto">
+            {% for zipcode in place.zipcodes %}
+            <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
+            {% endfor %}
+        </ul></li>
+        {% endif %}
+    </ul>
+
+    <p>If server resources allow, maybe replace ZIP/County point with a shaded-area version of the map.<br />{% show_on_map place_type place.slug %}</p>
+
+    {% if not demographics %}
+        <p>This location has no demographic data.</p>
+    {% else %}
+        <h2>Racial breakdown:</h2>
+        {% show_graph place_type place.slug race_pie %}
+        {% comment %}
+        <h2>Demographics</h2>
+        <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>
+        <table><tr><th>Demographic</th><th>Population</tr>
+            {% for d,p in demographics.items %}
+            <tr><td><b>{{ d }}</b></td><td style="text-align:right">{{ p|intcomma }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endcomment %}
+    {% endif %}
+{% endblock %}

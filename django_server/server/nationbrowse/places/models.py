@@ -18,25 +18,30 @@ is what populates these model tables.
 """
 
 from django.conf import settings
-from cacheutil import cached_clsmethod,cached_property
+from cacheutil import cached_clsmethod,cached_property,USING_DUMMY_CACHE
 from django.db import models
-from django_caching.models import CachedModel
-from django_caching.managers import CachingManager
 
 from nationbrowse.demographics.models import PlacePopulation
+from django.contrib.gis.measure import Area
 from django.contrib.contenttypes import generic
+from threadutil import call_in_bg
+import re
 
 # Are we on a GIS-aware server?
-USE_GEODJANGO = ('django.contrib.gis' in settings.INSTALLED_APPS)
+USE_GIS = getattr(settings,'USE_GIS',False)
 
 # If so, override some of the above imports
-if USE_GEODJANGO:
+if USE_GIS:
     from django.contrib.gis.db import models
-    from django_caching.models import GeoCachedModel as CachedModel
-    from django_caching.managers import GeoCachingManager,PolyDeferGeoManager
     from django.contrib.gis.geos import fromstr as geo_from_str
 
+    class PolyDeferGeoManager(models.GeoManager):
+        def get_query_set(self):
+            return models.query.GeoQuerySet(self.model).defer('poly',)
+
 # --------------------------------------------------------------
+
+TRUNCATE_WKT = re.compile('(-?\d?\d?\d\.\d\d\d\d\d\d)(\d+)(,? ?)')
 
 class PolyModel(models.Model):
     """
@@ -45,10 +50,13 @@ class PolyModel(models.Model):
     name = models.CharField(max_length=250,db_index=True)
     slug = models.SlugField(unique=True,max_length=250,db_index=True)
     
-    if USE_GEODJANGO:
+    if USE_GIS:
         poly    = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
     else:
         poly    = models.TextField(verbose_name="geographic area data (non-GIS)",blank=True,null=True)
+
+    poly_source = "U.S. Census Bureau TIGER/Line, 2008"
+    poly_source_url = "http://www.census.gov/geo/www/tiger/"
 
     def center(self):
         """
@@ -57,7 +65,10 @@ class PolyModel(models.Model):
         if not self.poly:
             return None
         try:
-            return self.poly.centroid
+            if isinstance(self.poly,basestring):
+                return geo_from_str(self.poly).centroid
+            else:
+                return self.poly.centroid
         except:
             return None
     center = cached_property(center, 15552000)
@@ -84,14 +95,90 @@ class PolyModel(models.Model):
 
     def contains_coordinate(self, lat, lon):
         """ Helper method; given a lat/lon, returns whether the given point is within this PolyModel. """
-        if not USE_GEODJANGO:
+        if not USE_GIS:
             return None
         if not self.poly:
             return False
         
         point = geo_from_str("POINT(%s %s)" % (lon,lat))
-        return self.poly.contains(point)
+        
+        if isinstance(self.poly,basestring):
+            return geo_from_str(self.poly).contains(point)
+        else:
+            return self.poly.contains(point)
     contains_coordinate = cached_clsmethod(contains_coordinate, 15552000)
+
+    def simple_wkt(self):
+        """
+        Since most of our polygons are HORRIBLY detailed (~ 1 million chars for Missouri's
+        WKT), we simplify it a bit and lose some of the detail (.01 tolerance -> 9000 chars
+        for Missouri's WKT; .05 -> 2278 chars).
+        
+        Additionally uses a compiled regular expression to truncate coordinates to at most
+        six decimal places.
+        """
+        if not USE_GIS:
+            return None
+        if not self.poly:
+            return False
+        
+        simple = TRUNCATE_WKT.sub(
+            r'\1\3',
+            self.poly.simplify(tolerance=.01).wkt
+        )
+        
+        # If that tolerance level results in an empty polygon (the algorithm
+        # gets rid of too many points), try to do a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify(tolerance=.01,preserve_topology=True).wkt
+            )
+        
+        # Try a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify().wkt
+            )
+        
+        # Try a "dumb" simplification on it.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.simplify(preserve_topology=True).wkt
+            )
+        
+        # If even *that* doesn't get a simple polygon, just return the standard poly,
+        # with the coordinates truncated to 6 decimal places.
+        if simple == "POLYGON EMPTY":
+            simple = TRUNCATE_WKT.sub(
+                r'\1\3',
+                self.poly.wkt
+            )
+        
+        return simple
+    simple_wkt = cached_property(simple_wkt, 15552000)
+    
+    def area(self):
+        """
+        Since most of our polygons are HORRIBLY detailed (~ 1 million chars for Missouri's
+        WKT), we simplify it a bit and lose some of the detail (.01 tolerance -> 9000 chars
+        for Missouri's WKT; .05 -> 2278 chars).
+        
+        Additionally uses a compiled regular expression to truncate coordinates to at most
+        six decimal places.
+        """
+        if not USE_GIS:
+            return None
+        if not self.poly:
+            return False
+        
+        # Not the most exact, but it applies nationally.
+        p = self.poly
+        p.transform(2163)
+        return Area(sq_m=p.area,default_unit="sq_mi")
+    area = cached_property(area, 15552000)
     
     # Special fake foreign key that checks the PlacePopulation table for a record
     # that corresponds with this Place.
@@ -114,29 +201,21 @@ class PolyModel(models.Model):
 # --------------------------------------------------------------
 
 class State(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
+        pobjects = models.GeoManager()
     
     abbr     = models.CharField(verbose_name="abbreviation",max_length=10,help_text="Standard mailing abbreviation in CAPS; i.e. WA",db_index=True)
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
-    #def zipcodes(self):
-    #    if USE_GEODJANGO:
-    #        return ZipCode.objects.filter(poly__coveredby=self.poly)
-    #    else:
-    #        return None
-    #zipcodes = cached_property(zipcodes, 15552000)
-    #
-    #def counties(self):
-    #    if USE_GEODJANGO:
-    #        return County.objects.filter(poly__coveredby=self.poly)
-    #    else:
-    #        return None
-    #counties = cached_property(counties, 15552000)
+    def counties(self):
+        return self.county_set.defer('poly',).all()
+    counties = cached_clsmethod(counties, 15552000)
+    
+    def zipcodes(self):
+        return self.zipcode_set.defer('poly',).all()
+    zipcodes = cached_clsmethod(zipcodes, 15552000)
     
     class Meta:
         ordering = ('name',)
@@ -146,17 +225,14 @@ class State(PolyModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('places:place_detail', (), {
-            'place_type' : 'state',
+        return ('places:state_detail', (), {
             'slug' : self.slug
         })
 
 class County(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
+        pobjects = models.GeoManager()
     
     state  = models.ForeignKey('State',db_index=True)
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
@@ -167,7 +243,7 @@ class County(PolyModel):
     metdivfp = models.PositiveIntegerField(verbose_name="Metropolitan Division Code",blank=True,null=True)
 
     #def zipcodes(self):
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        return ZipCode.objects.filter(poly__intersects=self.poly)
     #    else:
     #        return None
@@ -181,7 +257,7 @@ class County(PolyModel):
     def __unicode__(self):
         return u"%s, %s" % (self.name, self.state.name)
     __unicode__ = cached_clsmethod(__unicode__, 1800)
-
+    
     @models.permalink
     def get_absolute_url(self):
         return ('places:county_detail', (), {
@@ -190,42 +266,15 @@ class County(PolyModel):
         })
 
 class ZipCode(PolyModel):
-    if USE_GEODJANGO:
+    if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
-	
-    #def states(self):
-    #    """
-    #    This *could* be a field, but this reduces the size of the database and the
-    #    speed of the import. Between the fact that this field is rarely used *and* cached,
-    #    this is a performance tradeoff we can afford to take.
-    #    """
-    #    if USE_GEODJANGO:
-    #        return State.objects.filter(poly__intersects=self.poly)
-    #    else:
-    #        return None
-    #states = cached_property(states, 15552000)
-    
-    #def state(self):
-    #    """
-    #    If this ZIP code belongs to a state, returns that.
-    #    If it belongs to more than one state, returns the first match.
-    #    Otherwise, returns None.
-    #    """
-    #    if USE_GEODJANGO:
-    #        s = self.states
-    #        if s and (s.count() > 0):
-    #            return s[0]
-    #        else:
-    #            return None
-    #    else:
-    #        return None
-    #state = cached_property(state, 15552000)
-    
+        pobjects = models.GeoManager()
+
+    # Technically, ZipCodes can span multiple states. We're only storing the "primary" match.
+    state  = models.ForeignKey('State',blank=True,null=True,db_index=True)
+
     #def counties(self):
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        return County.objects.filter(state=self.state,poly__intersects=self.poly)
     #    else:
     #        return None
@@ -237,7 +286,7 @@ class ZipCode(PolyModel):
     #    If it belongs to more than one county, returns the first match.
     #    Otherwise, returns None.
     #    """
-    #    if USE_GEODJANGO:
+    #    if USE_GIS:
     #        c = self.counties
     #        if c and (c.count() > 0):
     #            return c[0]
@@ -253,12 +302,10 @@ class ZipCode(PolyModel):
 	
     def __unicode__(self):
         return u"%s" % (self.name)
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
 
     @models.permalink
     def get_absolute_url(self):
-        return ('places:place_detail', (), {
-            'place_type' : 'zipcode',
+        return ('places:zipcode_detail', (), {
             'slug' : self.id
         })
 

@@ -40,7 +40,7 @@ def generate_race_pie(place,size):
     fig = Figure(figsize=(size,size), dpi=100, facecolor=graphs.BACKGROUND, frameon=False)    
 
     # Settings based on size
-    if graphs.USE_PLAINFORMAT:
+    if size < 5.0: #graphs.USE_PLAINFORMAT:
         labels = None
         pct_fmt = None
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.0, hspace=0.0)
@@ -54,7 +54,7 @@ def generate_race_pie(place,size):
     
     ax.pie(fracs, colors=race_pie_colors, labels=labels, autopct=pct_fmt, labeldistance=1.15, shadow=True)
     
-    if not graphs.USE_PLAINFORMAT:
+    if size >= 5.0: #not graphs.USE_PLAINFORMAT:
         # For ZIP codes, also show the county it's in, if possible.
         if place_type == "zipcode":
             try:

@@ -1,0 +1,16 @@
+Mac DB creation:
+
+dropdb cs4970_capstone
+createdb cs4970_capstone -E UTF8
+createlang -d cs4970_capstone plpgsql
+psql -d cs4970_capstone -f /usr/local/pgsql/share/contrib/postgis.sql
+psql -d cs4970_capstone -f /usr/local/pgsql/share/contrib/spatial_ref_sys.sql
+
+Loading data from a .shp file & logging errors:
+export PGCLIENTENCODING=UTF8
+ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -nln in_places_state -overwrite state/tl_2008_us_state.shp
+# There are a few failures in here (since there are counties in Puerto Rico that have non-ASCII characters in them)
+# I've enabled -skipfailures. The next command with the .sql command should import these properly.
+ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -nln in_places_county -skipfailures -overwrite county/tl_2008_us_county.shp
+psql -d cs4970_capstone -f counties_with_utf8.sql
+ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -nln in_places_zipcode -overwrite zipcode/tl_2008_us_zcta5.shp

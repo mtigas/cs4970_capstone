@@ -1,6 +1,9 @@
 from django.core.cache import cache
-from hashlib import sha256
+from hashlib import sha512
 from django.utils.encoding import smart_str
+
+USING_MEMCACHED = (cache.__module__ == 'django.core.cache.backends.memcached')
+USING_DUMMY_CACHE = (cache.__module__ == 'django.core.cache.backends.dummy')
 
 def _get_real_cachename(cachename):
     """
@@ -13,11 +16,15 @@ def _get_real_cachename(cachename):
         * Cache contents cannot be introspected: this means cache data can't simply be browsed by key,
           which provides a little privacy protection if we are caching user-specific data.
     """
+    # Only need this on memcached
+    if not USING_MEMCACHED:
+        return cachename
+    
     cachename = cachename.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t').replace(' ','\\_')
     cachename = smart_str(cachename,errors="backslashreplace")
     if len(cachename) > 250:
         # Concatenate part of the original string to avoid collisions and not waste the 250char limit
-        cachename = sha256(cachename).hexdigest()+cachename[:186]
+        cachename = "%s%s" % (cachename[:122], sha512(cachename).hexdigest())
     return cachename
 
 def safe_get_cache(cachename):
@@ -51,7 +58,10 @@ def cached_method(func, cachetime=None):
         key = 'cached_method_%s_%s_%s' % \
             (func.__name__, hash(args), hash(frozenset(kwargs.items())))
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(*args, **kwargs), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(*args, **kwargs), cachetime)
+        else:
+            return val
     return cached_func
 
 def cached_clsmethod(func, cachetime=None):
@@ -60,7 +70,10 @@ def cached_clsmethod(func, cachetime=None):
         key = 'cached_clsmethod_%s_%s_%s_%s_%s' % \
             (self.__class__.__name__, func.__name__, self.pk, hash(args), hash(frozenset(kwargs.items())))
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(self, *args, **kwargs), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(self, *args, **kwargs), cachetime)
+        else:
+            return val
     return cached_func
 
 def cached_property(func, cachetime=None):
@@ -69,5 +82,8 @@ def cached_property(func, cachetime=None):
         key = 'cached_property_%s_%s_%s' % \
             (self.__class__.__name__, func.__name__, self.pk)
         val = safe_get_cache(key)
-        return safe_set_cache(key, func(self), cachetime) if val is None else val
+        if val is None:
+            return safe_set_cache(key, func(self), cachetime)
+        else:
+            return val
     return property(cached_func)

@@ -1,10 +1,11 @@
 # coding=utf-8
-from __future__ import division
 from django import template
 from django.template import resolve_variable
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
+from django.contrib.humanize.templatetags import humanize
+from urllib import urlencode
 
 from nationbrowse import graphs
 from nationbrowse.graphs import graph_maker
@@ -32,25 +33,35 @@ class StaticMapHTMLNode(template.Node):
             place_type = force_unicode(resolve_variable(self.place_type, context))
         except:
             place_type = force_unicode(self.place_type)
-        if not place_type == "state":
-            return u""
         
         try:
             slug = force_unicode(resolve_variable(self.slug, context))
         except:
             slug = force_unicode(self.slug)
-        
+                
         try:
             PlaceClass = get_model("places",place_type)
             if not PlaceClass:
                 return u""
             place = PlaceClass.objects.get(slug__iexact=slug)
-
-            retstr = '\n<img src="http://chart.apis.google.com/chart?cht=t&chs=400x200&chd=s:_&chtm=usa&chco=BBBBBB,000066,0000FF&chld=%s&chd=t:100">' % (
-                place.abbr
-            )
-            return retstr
+            
+            if place_type == 'state':
+                return '\n<img src="http://chart.apis.google.com/chart?cht=t&chs=400x200&chd=s:_&chtm=usa&chco=BBBBBB,000066,0000FF&chld=%s&chd=t:100">' % (
+                    place.abbr
+                )
+            elif place.center:
+                return '\n<img src="http://maps.google.com/maps/api/staticmap?markers=color:blue|%s,%s&center=%s,%s&zoom=5&maptype=terrain&size=300x200&key=%s&sensor=false">' % (
+                    place.latitude,
+                    place.longitude,
+                    place.latitude,
+                    place.longitude,
+                    settings.GOOGLE_MAPS_API_KEY
+                )
+            else:
+                return u""
         except Exception:
+            from traceback import print_exc
+            print_exc()
             return u""
 
 
@@ -93,42 +104,76 @@ class GraphHTMLNode(template.Node):
         except:
             graph_type = force_unicode(self.graph_type)
         
+        # Only implement race_pie graph chart for now.
+        if "race_pie" not in graph_type:
+            print "wat"
+            return ""
+        
         try:
             PlaceClass = get_model("places",place_type)
             if not PlaceClass:
-                return u""
+                return ""
             place = PlaceClass.objects.get(slug=slug)
             
+            # This needs a SERIOUS refactor.
+            # Just assume that labels, values, and colors all return lists
+            # where labels[0] is the label for the population number in values[0]
+            # and likewise for colors[0].
             labels = getattr(graph_maker, '%s_labels' % graph_type)
             values = getattr(graph_maker, '%s_values' % graph_type)(place.population_demographics)
             colors = getattr(graph_maker, '%s_colors' % graph_type)
-            total = getattr(graph_maker, '%s_total' % graph_type)(place.population_demographics)
-            percents = map(lambda x: (x/total*100), values)
             
-            graph_url = reverse("graphs:render_graph",args=(place_type,slug,graph_type,200),current_app="graphs")
-
-            google_graph_url = "http://chart.apis.google.com/chart?chs=400x200&chd=t:%s&cht=p&chl=%s&chco=%s" % (
-                ",".join(map(lambda x: "%1.2f"%x, percents)),
-                "|".join(labels),
-                "|".join(map(lambda x: x.replace("#",'').upper(), colors))
-            )
-            retstr = u'''<style type="text/css">
+            # Google Charts pie chart does not like huge numbers, so turn these into percents (from 0-100)
+            total = sum(values)
+            percents = map(lambda x: (float(x)/float(total)*100.0), values)
+            
+            # The resulting `percents` list is a list of floats. Cast these as 
+            # formatted strings, so we can "join" the sequence when we output the string.
+            # Only go to two decimal points when formatting the string.
+            percents = map(lambda x: "%.2f"%x, percents)
+            
+            # Build the request parameters as a dictionary so we can use urllib.urlencode
+            # to create a nice and safe string.
+            request_parameters = {
+                'cht':"p",
+                'chs':"400x200"
+            }
+            
+            # Chart data is percents list as a comma-delimited string starting with "t:"
+            # i.e.: chd=t:8.75,1.1,10.2
+            request_parameters['chd'] = "t:" + ",".join(percents)
+            
+            # Labels is pipe-delimited.
+            request_parameters['chl'] = "|".join(labels)
+            
+            # Colors is pipe-delimited. We also remove leading # from hex colors since
+            # google takes the hex value straight up.
+            request_parameters['chco'] = "|".join(map(lambda x: x.replace("#",'').upper(), colors))
+            
+            # The URL, hooray.
+            google_graph_url = "http://chart.apis.google.com/chart?%s" % urlencode(request_parameters)
+            
+            # Generate an HTML output legend (where the box shows the color corresponding to the chart). i.e.:
+            # [] White: 115714 (87.11%)
+            # [] Black: 11572 (8.71%)
+            # ...
+            legend = ''
+            for v in xrange(0,len(labels)):
+                legend += '\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%s%%)<br class="clear"/>' % (
+                    colors[v],
+                    labels[v],
+                    humanize.intcomma(values[v]),
+                    percents[v]
+                )
+            
+            # Add some CSS so the legends look right.
+            # Throw in the <img> tag for the Google Chart.
+            return """<style type="text/css">
                 .graph_label_icon{width:1em;height:1em;display:block;float:left;clear:left;border:1px solid #444;margin-right:5px;}
                 .clear{clear:both}
                 </style>
-                '''
-            
-            for v in xrange(0,len(labels)):
-                retstr = '%s\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%1.2f%%)</span><br class="clear"/>' % (
-                    retstr,
-                    colors[v],
-                    labels[v],
-                    values[v],
-                    percents[v]
-                )
-                
-            retstr = '\n<img src="%s"><br />\n%s' % (google_graph_url,retstr)
-
-            return retstr
+                <p><img src="%s"></p>%s""" % (google_graph_url, legend) 
         except Exception:
-            return u""
+            from traceback import print_exc
+            print_exc()
+            return ""
