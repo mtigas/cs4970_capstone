@@ -15,7 +15,7 @@ def pie_chart(values, labels=None, colors=None, size=(400,200), in_3d=False):
 		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "+"))
 	total = sum(values)
 	valueList = map(lambda x: (float(x)/float(total)*100.0), values)
-	valueList = ''.join(["%s," % s for s in valueList])
+	valueList = ''.join(["%3.2f," % s for s in valueList])
 	labelList = ''.join([z for z in labelList])
 	return "http://chart.apis.google.com/chart?chco=%s&chd=t:%s&chs=%s&cht=%s&chl=%s" % \
 		(paramColors(colors), valueList[0:len(valueList)-1], ("%sx%s" % (size[0], size[1])), param3D(in_3d), paramLabels(labels))
