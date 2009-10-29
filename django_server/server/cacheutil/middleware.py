@@ -21,8 +21,6 @@ class NginxMemcacheMiddleWare(object):
         # header will not be cached to nginx (because nginx can only use
         # path-based cache keys only)
         if request.method != "GET" \
-          or response.has_header('Vary') \
-          or (anon_only and request.user and not request.user.is_anonymous()) \
           or not response.status_code == 200 \
           or not response.has_header('Content-Type') \
           or not ("text/html" in response['Content-Type']):
