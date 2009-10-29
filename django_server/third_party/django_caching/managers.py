@@ -72,7 +72,7 @@ class CachingQuerySet(QuerySet):
             if hasattr(obj,'slug'):
                 cache.add(obj._get_cache_key('slug'), obj, CACHE_DURATION)
             yield obj
-
+    
     def get(self, *args, **kwargs):
         """
         Checks the cache to see if there's a cached entry for this pk. If not, fetches 
@@ -90,7 +90,7 @@ class CachingQuerySet(QuerySet):
         # Punt on anything more complicated than get by pk/id only...
         if len(kwargs) == 1:
             k = kwargs.keys()[0]
-            return obj
+            obj = None
             if k in ('pk', 'pk__exact', '%s' % self.model._meta.pk.attname, 
                      '%s__exact' % self.model._meta.pk.attname):
                 obj = cache.get(self.model._cache_key(
