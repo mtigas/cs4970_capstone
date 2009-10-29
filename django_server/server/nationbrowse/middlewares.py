@@ -4,29 +4,7 @@ import tempfile
 import cProfile
 import pstats
 from cStringIO import StringIO
-
-from django.core.cache import cache
 from django.conf import settings
-
-# http://bretthoerner.com/blog/2008/oct/27/using-nginx-memcached-module-django/
-class NginxMemcacheMiddleWare:
-    def process_response(self, request, response):
-        path = request.get_full_path()
-        
-        if request.method != "GET" \
-          or (path.startswith('/admin') and not request.user.is_anonymous()) \
-          or response.status_code != 200 \
-          or not response.has_header('Content-Type') \
-          or not ("text/html" in response['Content-Type']):
-            return response
-        
-        prefix = getattr(settings,"NGINX_CACHE_PREFIX","NG")
-        cachetime = getattr(settings,"CACHE_MIDDLEWARE_SECONDS",300)
-        key = "%s:%s" % (prefix, path)
-        
-        cache.set(key, response.content, cachetime)
-        
-        return response
 
 class ProfileMiddleware(object):
     def process_request(self, request):
