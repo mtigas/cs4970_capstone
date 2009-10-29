@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from random import choice as rand_choice
 from django.template import RequestContext
 from django.template.defaultfilters import urlencode
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import cache_control,never_cache
 
 from nationbrowse.places.models import State,ZipCode,County
 
@@ -82,6 +82,7 @@ def random_place(request):
     
     return response
 
+@cache_control(public=True,max_age=86400*14)
 def state_detail(request,slug):
     cache_key = "state_detail slug=%s GET=%s" % (slug, request.GET)
     response = safe_get_cache(cache_key)
@@ -100,6 +101,7 @@ def state_detail(request,slug):
 
     return response
 
+@cache_control(public=True,max_age=86400*14)
 def zipcode_detail(request,slug):
     cache_key = "zipcode_detail slug=%s" % slug
     response = safe_get_cache(cache_key)
@@ -129,6 +131,7 @@ def zipcode_detail(request,slug):
 
     return response
 
+@cache_control(public=True,max_age=86400*14)
 def county_detail(request,state_abbr,name):
     cache_key = "county_detail state_abbr=%s name=%s" % (state_abbr, name)
     response = safe_get_cache(cache_key)
