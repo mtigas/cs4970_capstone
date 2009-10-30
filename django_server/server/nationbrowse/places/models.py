@@ -20,6 +20,8 @@ is what populates these model tables.
 from django.conf import settings
 from cacheutil import cached_clsmethod,cached_property,USING_DUMMY_CACHE
 from django.db import models
+from django_caching.models import CachedModel
+from django_caching.managers import CachingManager
 
 from nationbrowse.demographics.models import PlacePopulation
 from django.contrib.gis.measure import Area
@@ -33,17 +35,15 @@ USE_GIS = getattr(settings,'USE_GIS',False)
 # If so, override some of the above imports
 if USE_GIS:
     from django.contrib.gis.db import models
+    from django_caching.models import GeoCachedModel as CachedModel
+    from django_caching.managers import GeoCachingManager,PolyDeferGeoManager
     from django.contrib.gis.geos import fromstr as geo_from_str
-
-    class PolyDeferGeoManager(models.GeoManager):
-        def get_query_set(self):
-            return models.query.GeoQuerySet(self.model).defer('poly',)
 
 # --------------------------------------------------------------
 
 TRUNCATE_WKT = re.compile('(-?\d?\d?\d\.\d\d\d\d\d\d)(\d+)(,? ?)')
 
-class PolyModel(models.Model):
+class PolyModel(CachedModel):
     """
     An abstract base class for any model with a polygon region.
     """
@@ -203,7 +203,9 @@ class PolyModel(models.Model):
 class State(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.GeoManager()
+        pobjects = GeoCachingManager()
+    else:
+        objects = CachingManager()
     
     abbr     = models.CharField(verbose_name="abbreviation",max_length=10,help_text="Standard mailing abbreviation in CAPS; i.e. WA",db_index=True)
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
@@ -232,7 +234,9 @@ class State(PolyModel):
 class County(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.GeoManager()
+        pobjects = GeoCachingManager()
+    else:
+        objects = CachingManager()
     
     state  = models.ForeignKey('State',db_index=True)
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
@@ -268,8 +272,10 @@ class County(PolyModel):
 class ZipCode(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
-        pobjects = models.GeoManager()
-
+        pobjects = GeoCachingManager()
+    else:
+        objects = CachingManager()
+    
     # Technically, ZipCodes can span multiple states. We're only storing the "primary" match.
     state  = models.ForeignKey('State',blank=True,null=True,db_index=True)
 
@@ -315,7 +321,7 @@ ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:
 
 See also management/commands/import_zipcode.py
 
-class ConversionZipCode(models.Model):
+class ConversionZipCode(CachedModel):
     id = models.PositiveIntegerField(db_column="ogc_fid",primary_key=True)
     wkb_geometry = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
     zipcode_x = models.CharField(max_length=5,blank=True,null=True,db_column="zcta5ce")
@@ -343,7 +349,7 @@ Import failures were handled manually (some Puerto Rico Municipios had non-ASCII
 
 See also management/commands/import_counties.py
         
-class ConversionCounty(models.Model):
+class ConversionCounty(CachedModel):
     id = models.PositiveIntegerField(db_column="ogc_fid",primary_key=True)
     wkb_geometry = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
     statefp = models.CharField(max_length=2,blank=True,null=True)

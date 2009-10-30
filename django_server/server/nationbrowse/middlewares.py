@@ -1,10 +1,10 @@
+import os
 import sys
 import tempfile
 import cProfile
 import pstats
-from django.conf import settings
 from cStringIO import StringIO
-import os
+from django.conf import settings
 
 class ProfileMiddleware(object):
     def process_request(self, request):
