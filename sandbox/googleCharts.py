@@ -55,14 +55,25 @@ def bar_chart(values, labels=None, colors=None, size=(400,200)):
 	return "http://chart.apis.google.com/chart?cht=bvs&chs=%s%s%s&chd=t:%s&chco=%s&chds=0,%s&chxt=y&chxl=%s&chbh=a" % \
 		(("%sx%s" % (size[0], size[1])), chdlBool(labels), paramLabels(labels), valueList[0:len(valueList)-1], paramColors(colors), max(values), chxlFormat(values))
 	
-#def grouped_bar_chart(values_a, values_b, labels=None, colors_a=None, colors_b=None, size=(400,200)) 
+def grouped_bar_chart(values_a, values_b, labels=None, colors_a=None, colors_b=None, size=(400,200)):
+	"""returns a string of the url for the generated grouped bar chart via google"""
+	valueListA = []; valueListB = []; labelListA = []; labelListB = []; colorListA = []; colorListB = []
+	paramColors = lambda x: [''.join([z for z in colorList]),'None'][x==None]
+	paramLabels = lambda x: [''.join([z for z in labelList]),''][x==None]
+	if labels != None:
+	if colors_a != None:
+	if colors_b != None:
+	return "http://chart.apis.google.com/chart?cht=bvg&chs=%s&chd=t:%s&chdl=%s&chco=%s&chds=%s&chxt=%s&chxl=%s&chbh=%s" % \
+		()
 
-# Run some tests if this script is run from the command-line.
+# Run a test to see if this script is being executed from the command-line.
 if __name__ == "__main__":
     values = [1000,2340,88,792,1985,234]
+    values_b = [792,1234,1985,8468,213,99]
     labels = ["White","Black","Native American","Asian","Pacific Islander","Other"]
     colors = ["#0000FF","#5555FF","#999911","#00FF00","#FF00FF","#FFFF00"]
-    print "%s\n%s\n%s\n" % (values,labels,colors)
+    colors_b = ["#668CFF","#8C66FF","#D966FF","#FF668C","#8CFF66","#FF8C66"]
+    print "values=%s\nvalues_b=%s\nlabels=%scolors=%s\ncolors_b=%s\n" % (values,values_b,labels,colors,colors_b)
     print "*"*10 + " pie chart " + "*"*10
     print pie_chart(values,in_3d=True)
     print pie_chart(values,labels,colors)
@@ -70,4 +81,5 @@ if __name__ == "__main__":
     print bar_chart(values,labels,colors)
     print bar_chart(values)
     print "*"*10 + " grouped bar chart " + "*"*10
+    print grouped_bar_chart(values, values_b, labels, colors, colors_b)
 
