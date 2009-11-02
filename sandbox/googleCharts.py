@@ -50,18 +50,20 @@ def bar_chart(values, labels=None, colors=None, size=(400,200)):
 		for x in colors: colorList.append("%s%%7C" % x.strip("#"))
 		colorList[len(colorList)-1] = colorList[len(colorList)-1].strip('%7C')
 	if labels != None:
-		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "%20")) #
+		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "%20")) #replace spaces with +, put a | in between individual labels
 		labelList[len(labelList)-1] = labelList[len(labelList)-1].strip('%7c') #remove last seperatng value from labelList
 	return "http://chart.apis.google.com/chart?cht=bvs&chs=%s%s%s&chd=t:%s&chco=%s&chds=0,%s&chxt=y&chxl=%s&chbh=a" % \
 		(("%sx%s" % (size[0], size[1])), chdlBool(labels), paramLabels(labels), valueList[0:len(valueList)-1], paramColors(colors), max(values), chxlFormat(values))
-	
+
+#colors_b is optional if colors_a is set in grouped_bar_chart. (Google will just make all matched pairs the same color.)
 def grouped_bar_chart(values_a, values_b, labels=None, colors_a=None, colors_b=None, size=(400,200)):
 	"""returns a string of the url for the generated grouped bar chart via google"""
-	valueListA = []; valueListB = []; labelListA = []; labelListB = []; colorListA = []; colorListB = []
+	valueList = []; labelListA = []; labelListB = []; colorListA = []; colorListB = []
 	paramColors = lambda x: [''.join([z for z in colorList]),'None'][x==None]
 	paramLabels = lambda x: [''.join([z for z in labelList]),''][x==None]
+	valueList = map()
 	return "http://chart.apis.google.com/chart?cht=bvg&chs=%s&chd=t:%s&chdl=%s&chco=%s&chds=%s&chxt=%s&chxl=%s&chbh=a,1,20" % \
-		()
+		(("%sx%s" % (size[0], size[1])), )
 
 # Run a test to see if this script is being executed from the command-line.
 if __name__ == "__main__":
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     labels = ["White","Black","Native American","Asian","Pacific Islander","Other"]
     colors = ["#0000FF","#5555FF","#999911","#00FF00","#FF00FF","#FFFF00"]
     colors_b = ["#668CFF","#8C66FF","#D966FF","#FF668C","#8CFF66","#FF8C66"]
-    print "values=%s\nvalues_b=%s\nlabels=%scolors=%s\ncolors_b=%s\n" % (values,values_b,labels,colors,colors_b)
+    print "values=%s\nvalues_b=%s\nlabels=%s\ncolors=%s\ncolors_b=%s\n" % (values,values_b,labels,colors,colors_b)
     print "*"*10 + " pie chart " + "*"*10
     print pie_chart(values,in_3d=True)
     print pie_chart(values,labels,colors)
@@ -79,4 +81,5 @@ if __name__ == "__main__":
     print bar_chart(values)
     print "*"*10 + " grouped bar chart " + "*"*10
     #print grouped_bar_chart(values, values_b, labels, colors, colors_b)
+	#print grouped_Bar_chart(values, values_b)
 
