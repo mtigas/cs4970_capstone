@@ -30,7 +30,7 @@ def pie_chart(values, labels=None, colors=None, size=(400,200), in_3d=False):
 		for x in colors: colorList.append("%s%%7C" % x.strip("#")) #format values for colors
 		colorList[len(colorList)-1] = colorList[len(colorList)-1].strip('%7C') #remove last seperatng value
 	if labels != None:
-		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "+")) #add seperating values, remove spaces
+		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "%20")) #add seperating values, remove spaces
 	total = sum(values)
 	valueList = map(lambda x: (float(x)/float(total)*100.0), values) #normalize data values
 	valueList = ''.join(["%3.2f," % s for s in valueList]) #float values to two significant figures
@@ -50,7 +50,7 @@ def bar_chart(values, labels=None, colors=None, size=(400,200)):
 		for x in colors: colorList.append("%s%%7C" % x.strip("#"))
 		colorList[len(colorList)-1] = colorList[len(colorList)-1].strip('%7C')
 	if labels != None:
-		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "+")) #
+		for y in labels: labelList.append(("%s%%7c" % y).replace(" ", "%20")) #
 		labelList[len(labelList)-1] = labelList[len(labelList)-1].strip('%7c') #remove last seperatng value from labelList
 	return "http://chart.apis.google.com/chart?cht=bvs&chs=%s%s%s&chd=t:%s&chco=%s&chds=0,%s&chxt=y&chxl=%s&chbh=a" % \
 		(("%sx%s" % (size[0], size[1])), chdlBool(labels), paramLabels(labels), valueList[0:len(valueList)-1], paramColors(colors), max(values), chxlFormat(values))
@@ -60,10 +60,7 @@ def grouped_bar_chart(values_a, values_b, labels=None, colors_a=None, colors_b=N
 	valueListA = []; valueListB = []; labelListA = []; labelListB = []; colorListA = []; colorListB = []
 	paramColors = lambda x: [''.join([z for z in colorList]),'None'][x==None]
 	paramLabels = lambda x: [''.join([z for z in labelList]),''][x==None]
-	if labels != None:
-	if colors_a != None:
-	if colors_b != None:
-	return "http://chart.apis.google.com/chart?cht=bvg&chs=%s&chd=t:%s&chdl=%s&chco=%s&chds=%s&chxt=%s&chxl=%s&chbh=%s" % \
+	return "http://chart.apis.google.com/chart?cht=bvg&chs=%s&chd=t:%s&chdl=%s&chco=%s&chds=%s&chxt=%s&chxl=%s&chbh=a,1,20" % \
 		()
 
 # Run a test to see if this script is being executed from the command-line.
@@ -81,5 +78,5 @@ if __name__ == "__main__":
     print bar_chart(values,labels,colors)
     print bar_chart(values)
     print "*"*10 + " grouped bar chart " + "*"*10
-    print grouped_bar_chart(values, values_b, labels, colors, colors_b)
+    #print grouped_bar_chart(values, values_b, labels, colors, colors_b)
 
