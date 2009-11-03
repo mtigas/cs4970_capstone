@@ -259,7 +259,7 @@ class County(PolyModel):
         unique_together = (('name', 'state'))
 	
     def __unicode__(self):
-        return u"%s, %s" % (self.name, self.state.name)
+        return u"%s, %s" % (self.long_name, self.state.name)
     __unicode__ = cached_clsmethod(__unicode__, 1800)
     
     @models.permalink
