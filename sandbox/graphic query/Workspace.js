@@ -1,130 +1,287 @@
 var wsRef;
 
-function Workspace(node){
-	wsRef = this;
-	
-    //add node
-    n = document.createElement('div');
-    n.setAttribute("id","Workspace");
-    n.setAttribute("class","ofWorkspace");
+function Workspace(divId){
+
+  wsRef = this;
+  
+  /* Definitions */
+  var MAX_TABLES = 5;
+  
+  var TAB_WIDTH = 100;
+  var TAB_HEIGHT = 72;
+  
+  var WS_WIDTH = 20+MAX_TABLES*TAB_WIDTH;
+  var WS_HEIGHT = 300+2*TAB_HEIGHT;
+
+  /* Wo-mandeer this node */
+  this.myDivNode = document.getElementById(divId); 
+  
+  /* workspace members */
+  this.current = 0; 
+  this.joinSet = new Array();
+  for(i=0;i<MAX_TABLES;i++){
+    this.joinSet[i]="";
+  }
+  this.E_joinSet = false;
+  
+  /* Add table method */
+  this.addNewTable = function(name,location){
+    if(this.current>=MAX_TABLES) return;
     
-    node.appendChild(n);
-    this.myDiv = n;
+    //create table node, set attributes
+    t = document.createElement('div');
+    t.setAttribute("id","Table"+this.current);
+    //t.setAttribute("class","ofTable");
     
-    //setup tables for ws
-    this.tables = new Array();
+    t.style.position = "absolute";    
+    t.style.top = location.top;
+    t.style.left = location.left;
     
-    //points to next add table location
+    //convenient storage in the node
+    t.isJoined = false;
+    t.overlaps = "";
+    
+    t.appendChild( document.createTextNode(name) );
+    
+    //add to the ws node
+    this.myDivNode.appendChild(t);
+    
+    this.current++;
+    
+    //tables are draggable
+    $("#"+t.id).draggable( {containment:'parent',
+      drag:function(e,ui){
+        wsRef.check(e.target.id);
+      },
+      
+      start:function(e,ui){
+        index=wsRef.find(e.target.id);
+        if(index>-1 && !(index+1>=MAX_TABLES || index-1<0) &&wsRef.areBothOccupied(e.target.id) )
+          alert("Cant drag tables out of the middle of the join set! Drag tables off the ends.");
+      },
+      
+      stop:function(e,ui){
+        wsRef.reposition(e.target.id);
+      } });
+      
+    //jQuery for class...(ie)
+    $("#"+t.id).addClass("ofTable");
+    
+  };
+
+  /* remove table divs from the dom */ 
+  this.clear = function(){
+
+    for(i=this.current-1;i>=0;i--){
+      this.myDivNode.removeChild(this.myDivNode.childNodes[i]);
+    }
+
     this.current = 0;
     
-    //adding table
-    this.addNewTable = function(tableName){
-         
-      if( this.current<2 ){ //max num of tables in ws
-        //add node
-        t = document.createElement('div');
-        t.setAttribute("id","Table"+this.current);
-        t.setAttribute("class","ofTable");
+    this.E_joinSet=false;
+    for(i=0;i<this.joinSet.length;i++){
+      this.joinSet[i]="";
+    }
+    for(i=0;i<this.myDivNode.childNodes.length;i++){
+      this.myDivNode.childNodes[i].isJoined=false;
+    }
+  };
+  
+  /* Remove argument from joinset */
+  this.removeFromJoinSet = function(removingId){
+    this.joinSet[ this.find(removingId) ] = "";
+  };
+  
+  this.find = function(tableId){
     
-        this.myDiv.appendChild(t);
-        this.tables[this.current] = new Table(tableName,t,this.current); 
-        this.current++;
-      }
-    };
-    
-    this.clear_ws = function(){
-      /* remove table divs from the dom */
-      for(i=this.current-1;i>=0;i--){
-        this.myDiv.removeChild(this.myDiv.childNodes[i]);
-      }
-      
-      this.tables = new Array();
-      this.current = 0;
-    };
-    
-    this.check = function(id){
-    	for(i=0;i<this.current;i++){
-    		if(i==id) continue;
-    		
-    		tb = this.tables[i];
-    		tbc = this.tables[id];
-    		
-    		//consts are table w on x and h on y
-    		if(tb.myDiv.tableX <= tbc.myDiv.tableX+100 && 
-    			tbc.myDiv.tableX <= tb.myDiv.tableX+100 &&
-    			tb.myDiv.tableY <= tbc.myDiv.tableY+70 &&
-    			tbc.myDiv.tableY <= tb.myDiv.tableY+70){
-    			
-    			tb.myDiv.overlap = tbc.myDiv.tableId;
-    			tbc.myDiv.overlap = tb.myDiv.tableId;
-    			
-    			tb.myDiv.style.border="2px solid green";
-    			tbc.myDiv.style.border="2px solid green";
-    		} else{
-    			tb.myDiv.overlap = -1;
-    			tbc.myDiv.overlap = -1;
-    			
-    			tb.myDiv.style.border="";
-    			tbc.myDiv.style.border="";
-    			
-    		}
-    	}
-    };
-    
-    /*Class will need to be registered...*/
-    $("#"+this.myDiv.id).addClass("ofWorkspace");
-}
+    for(i=0;i<this.joinSet.length;i++){
+      if(tableId == this.joinSet[i]){
+        return i;
+      } 
+    }
 
-function Table(tableName,node,id){
+    return -1;
+  };
   
-  this.myDiv = node;
-  this.myDiv.tableId = id;
+  this.joinOnRight = function(first,second){
+    this.joinSet[ this.find(second)+1 ] = first;
+  };
   
-  this.myDiv.tableX = "";
-  this.myDiv.tableY = "";
+  this.joinOnLeft = function(first,second){
+    this.joinSet[ this.find(second)-1 ] = first;
+  };
   
-  /* add a paragraph of table name */
-  t = document.createElement('p');
-  this.myDiv.appendChild(t);
+  this.areBothOccupied = function(tableId){
+      index = this.find(tableId);
+      if(index+1>MAX_TABLES || index-1<0) return true;   
+    return this.joinSet[index+1]!="" && this.joinSet[index-1]!=""; 
+  };
   
-  u = document.createTextNode(this.myDiv.id+","+this.x+","+this.y);
-  t.appendChild(u);
+  this.isRightOccupied = function(tableId){
+    return this.joinSet[ this.find(tableId)+1 ]!="";
+  };
   
+  this.addInMiddle = function(tableId){
+    this.joinSet[parseInt(MAX_TABLES/2)]=tableId;
+  };
   
-  /* Register me with draggable */
-  $("#"+this.myDiv.id).draggable({ containment:'parent',
-        drag:function(e,ui){        	        
-        	tn = e.target;
-        	tn.tableX = ui.offset.left;
-        	tn.tableY = ui.offset.top;
-        	tn.firstChild.firstChild.nodeValue = tn.id+","+tn.tableX+","+tn.tableY;
-        	
-        	wsRef.check(tn.tableId);
-        },
+  this.countJoinSet = function(){
+    count=0;
+    for(i=0;i<this.joinSet.length;i++){
+      if(this.joinSet[i]!="") count++;
+    }
+    
+    return count;
+  };
+  
+  this.showJoinCount=function(){
+    c=this.countJoinSet();
+    alert(c);
+  };
+  
+  this.showJoins = function(){
+    for(i=0;i<this.joinSet.length;i++){
+      alert(i+" "+this.joinSet[i]);
+    }
+    for(i=0;i<this.myDivNode.childNodes.length;i++){
+      alert(i+" "+this.myDivNode.childNodes[i].isJoined);
+    }
+  };
+  
+  /* Check if argument overlaps any other child */
+  this.check = function(draggingId){
+    dragging = document.getElementById(draggingId);
+    
+    if(dragging.isJoined){
+      dragging.isJoined = false;
+      this.removeFromJoinSet(draggingId);
+      
+      //is there one tab left?
+      //alert(this.countJoinSet());
+      if( this.countJoinSet()==1 ){
+      //alert("left 1 tab in join set...");
+        for(i=0;i<this.joinSet.length;i++){
+          this.joinSet[i]="";          
+        }
+       // alert(this.myDivNode.childNodes.length);
+        for(i=0;i<this.myDivNode.childNodes.length;i++){
+          this.myDivNode.childNodes[i].isJoined=false;
+          //alert("unsetting border "+i);
+          this.myDivNode.childNodes[i].style.border="";
+        }
         
-        stop:function(e,ui){
-          if( e.target.overlap>-1 ){
-            stopped = document.getElementById("Table"+e.target.overlap);
-            dragging = e.target;
+        this.E_joinSet=false;
+      }
+    }
+    for(i=0;i<this.myDivNode.childNodes.length;i++){
+      sibling = this.myDivNode.childNodes[i];
+      siblingId = sibling.id;
+      if(siblingId == draggingId) continue;
+      
+      dt = parseInt(dragging.style.top);
+      dl = parseInt(dragging.style.left);
+      st = parseInt(sibling.style.top);
+      sl = parseInt(sibling.style.left);
+      
+      if(sl <= dl+TAB_WIDTH && 
+    			dl <= sl+TAB_WIDTH &&
+    			st <= dt+TAB_HEIGHT &&
+    			dt <= st+TAB_HEIGHT){
+        
+        if(dragging.overlaps==""){
+          if(!this.E_joinSet){
+            dragging.overlaps = siblingId;
             
-            iff = ( stopped.tableX+200>256);//ws size 
-            //alert( dragging.tableX+","+(dragging.tableX+200)+","+(dragging.tableX+200>256));
-                           
-            dragging.style.position = "absolute";
-            dragging.style.left = iff?stopped.tableX-100:stopped.tableX+100;
-            dragging.style.top = stopped.tableY;
-              
-            dragging.tableX = iff?stopped.tableX-100:stopped.tableX+100;
-            dragging.tableY = stopped.tableY;                                                           
-            
-            dragging.firstChild.firstChild.nodeValue = dragging.id+","+dragging.tableX+","+dragging.tableY;
+            dragging.style.border = "2px solid green";
+            sibling.style.border = "2px solid green";
+          } else{
+            //sibling is in joinset then set overlap
+            if( this.find(siblingId)>-1 && !this.areBothOccupied(siblingId) ){
+              dragging.overlaps=siblingId;
+              dragging.style.border="2px solid green";
+            }
           }
         }
-  });
- 
+
+      } else{
+        if(dragging.overlaps == siblingId){
+          dragging.overlaps = "";
+          dragging.style.border = "";
+          
+          if(!sibling.isJoined) sibling.style.border="";
+        }
+      }
+      
+      //this.E_joinSet &= !sibling.isJoined;
+      
+      
+    }
     
-  /* and add class... */
-  $("#"+this.myDiv.id).addClass("ofTable");
+  };
   
+  /* Reposition the children tables */
+  this.reposition = function(draggingId){
+    if(dragging.overlaps == "") return;
+    
+    dragging = document.getElementById(draggingId);
+    
+    if(this.E_joinSet){
+      if( !this.areBothOccupied(dragging.overlaps) ){
+        if( this.isRightOccupied(dragging.overlaps) ){
+          this.joinOnLeft(draggingId,dragging.overlaps);
+        } else{
+          this.joinOnRight(draggingId,dragging.overlaps);
+        }
+        dragging.isJoined=true;
+      }
+      
+      
+    } else{
+      this.addInMiddle(dragging.overlaps);
+      this.joinOnRight(draggingId,dragging.overlaps);
+      
+      this.E_joinSet = true;
+      dragging.isJoined = true;
+      document.getElementById(dragging.overlaps).isJoined = true;
+    }
+    
+    /* Repositioning */
+
+    for(i=0;i<this.joinSet.length;i++){
+    //alert(i+" "+this.joinSet[i]);
+      if(this.joinSet[i]!=""){
+        n = document.getElementById(this.joinSet[i]);
+        n.style.left = 10+TAB_WIDTH*i;
+        n.style.top = (WS_HEIGHT-(2*TAB_HEIGHT))/3;
+      }
+    }
+    
+    for(i=0;i<this.myDivNode.childNodes.length;i++){
+      n=this.myDivNode.childNodes[i];
+      if(!n.isJoined){
+     // alert(i+" "+this.myDivNode.childNodes[i].isJoined);
+        n.style.left = i*(10+TAB_WIDTH);
+        n.style.top = 2*((WS_HEIGHT-2*TAB_HEIGHT)/3)+TAB_HEIGHT;
+      }
+    }
+    
+    //unset moving variable
+    dragging.overlaps="";
+    
+    /* seek the join columns... */
+    
+  };
   
+  /* Jquery */
+  //add class. setting the class otherwise wont work in ie
+  $("#"+this.myDivNode.id).addClass("ofWorkspace");
+  
+  //add as droppable 
+  $("#"+this.myDivNode.id).droppable( {
+    drop:function(e,ui){
+    //alert(ui.draggable[0].iClass);
+      if(ui.draggable[0].iClass == "TableItem")
+        wsRef.addNewTable( ui.draggable[0].id,ui.offset );
+    }
+  });
 }
