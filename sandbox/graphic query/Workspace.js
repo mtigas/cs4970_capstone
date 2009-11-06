@@ -269,6 +269,7 @@ function Workspace(divId){
     dragging.overlaps="";
     
     /* seek the join columns... */
+    /* seek the columns of the join set, django can join (?) */
     
   };
   
