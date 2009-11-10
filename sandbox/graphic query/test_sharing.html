@@ -1,0 +1,68 @@
+<head>
+<script>
+  sailor=["sname","sid","rating","age","one","two","three","four"];
+  reserves=["bid","sid"];
+  boat=["bid","color","bname"];
+  var tables=new Array();
+
+  tables[0]=sailor;
+  tables[1]=boat;
+  tables[2]=boat;
+  tables[3]=reserves;
+layout=3;
+$(document).ready(go);
+function count(array){
+  count=0;
+  while(typeof(eval(object)[array[count]]) != 'undefined'){
+    count++;
+  }
+  return count;
+}
+function scream(){
+
+  document.writeln("HEY!");
+  document.writeln(sailor.length);
+  document.writeln(tables[0].length);
+  document.writeln(tables.length);
+  for(i=0;i<tables.length;i++){
+    for(s=0;s<tables[i].length;s++){
+      document.write(tables[i][s]+" ");
+    }
+    document.writeln("<br/>");
+  }
+}
+  function go(){
+    n=document.getElementById("chus");
+    var test="";
+    var blockNum=0;
+    for(table=0;table<tables.length;table++){
+    test+="<h3>"+tables[table]+"</h3>";
+      test+="<table>";
+      for(i=0;i<parseInt(tables[table].length/layout);i++){
+        test+="<tr>";
+          for(s=0;s<layout;s++){
+            test+="<td><input type='checkbox' value='"+tables[table][blockNum*layout+s]+"'/></td><td>"+tables[table][blockNum*layout+s]+"</td>";
+          }
+          test+="</tr>";
+          blockNum++;
+      }
+      
+      test+="<tr>";
+      //alert(tables[table].length%layout);
+      for(i=0;i<(tables[table].length%layout);i++){
+      //alert(tables[table][blockNum*layout+i]);
+        test+="<td><input type='checkbox' value='"+tables[table][blockNum*layout+i]+"'/></td><td>"+tables[table][blockNum*layout+i]+"</td>";
+      }
+      test+="</tr></table><hr/>"
+      blockNum=0;
+    }
+     n.innerHTML=test;
+  }
+ 
+</script>
+</head>
+
+<body>
+<div style="width:300px;height:300px;overflow:auto;" id="chus"></div>
+<input style="margin:5px;"type="button" onclick=""value="Project the checked columns"/>
+</body>

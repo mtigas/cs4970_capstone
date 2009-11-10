@@ -1,0 +1,50 @@
+<html>
+
+<head>
+  <title>Fuck</title>
+
+  <link type="text/css" href="./js/css/ui-lightness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <script type="text/javascript" src="./js/js/jQuery.js"></script>
+  <script type="text/javascript" src="./js/js/jquery-ui-1.7.2.custom.min.js"></script>
+  
+  <style type="text/css">
+    dragDrop{
+      background-color:gray;
+      width:100px;
+      height:70px;
+    }
+       .ofTable { width: 100px; height: 70px; background: silver; }
+        .ofWorkspace{
+      width:256px;
+      height:256px;
+      background-color:#3333ff;
+      
+      border:1px solid black;
+    }
+    .ofTableStore{
+      background-color:lime;
+      border:1px solid black;
+    }
+  </style>
+  
+  <script>
+  var ws,ts;
+    $(document).ready(function(){
+      /* drag and drop */
+      ws = new Workspace( document.getElementById("ws") ); 
+      
+      ts = new TableStore( document.getElementById("tableStore") );
+      
+    });
+  </script>
+</head>
+<body>
+
+  <div id="ws" style="float:left;"></div>
+  
+  <div id="tableStore"></div>
+  
+  <div>  <input type="button" onclick="ws.clear_ws();" value="Clear"></div>
+
+</body>
+</html>
