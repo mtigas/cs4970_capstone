@@ -1,0 +1,45 @@
+<head>
+<script>
+
+var URL ="";
+var GET_STRING="?";
+
+function addOptionToDivId(tdId,options){
+  n=document.getElementById(tdId);
+  
+  test="<select>";
+  for(i=0;i<options.length;i++){
+    test+="<option value='"+options[i]+"'>"+options[i]+"</option>";
+  }
+  test+="</select>";
+  n.innerHTML=test;
+}
+
+function selection(){}
+$(document).ready(function(){
+
+  //column data from somewhere...
+  sailor=["sname","sid","rating","age","one","two","three","four"];
+ ops=[">","<",">=","<=","LIKE","IS","="];
+ boat=["bid","color","bname"];
+  
+
+  
+  //document.write( wsRef.joinSet );
+  
+  addOptionToDivId("col1",sailor); //array combination of all tabs
+  addOptionToDivId("op1",ops);
+});
+</script>
+</head>
+
+<body>
+<div id="selection">
+<table><tr><td>x</td><td>></td>
+<td id="col1"></td>
+<td id="op1"></td>
+<td id="val1"><input type="text" name="testVal"/></td>
+</tr></table>
+<div id="writeWsRef"></div>
+</div>
+</body>

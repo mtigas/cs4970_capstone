@@ -1,0 +1,94 @@
+<head>
+<script>
+  //sailor=["sname","sid","rating","age","one","two","three","four"];
+ // reserves=["bid","sid"];
+  //boat=["bid","color","bname"];
+  //var tables=new Array();
+
+  //tables[0]=sailor;
+  //tables[1]=boat;
+  //tables[2]=boat;
+  //tables[3]=reserves;
+ var tables;
+layout=3;
+$(document).ready(scream);
+
+function scream(){
+
+  var GET_STRING="";
+  var URL = "http://nationbrowse.com/querybuilder/get_columns/";
+  
+  //create a get
+    n=document.getElementById("writeWsRef");
+  //gets the table names from the join set, puts into comma sepd string
+  //post to server , get back col names
+  for(i=0;i<wsRef.joinSet.length;i++){
+    j = document.getElementById(wsRef.joinSet[i])
+    if(j){
+      GET_STRING += j.innerHTML+",";
+    }
+  }
+  GET_STRING += ".js";
+  
+  
+  
+  //use ajax to submit
+  $.getJSON(URL+GET_STRING,function(data){
+  
+    if(data==null){
+      document.getElementById("chus").innerHTML="Could not load columns..";
+      return;
+    }
+    tables=data.columns;
+    go();
+  });
+  
+  //tables = ...
+  
+  
+  //document.writeln("HEY!");
+  //document.writeln(sailor.length);
+  //document.writeln(tables[0].length);
+  //document.writeln(tables.length);
+  //for(i=0;i<tables.length;i++){
+   // for(s=0;s<tables[i].length;s++){
+     // document.write(tables[i][s]+" ");
+    //}
+   // document.writeln("<br/>");
+  //}
+}
+  function go(){
+    n=document.getElementById("chus");
+    var test="";
+    var blockNum=0;
+    for(table=0;table<tables.length;table++){
+    test+="<h3>"+tables[table]+"</h3>";
+      test+="<table>";
+      for(i=0;i<parseInt(tables[table].length/layout);i++){
+        test+="<tr>";
+          for(s=0;s<layout;s++){
+            test+="<td><input type='checkbox' value='"+tables[table][blockNum*layout+s]+"'/></td><td>"+tables[table][blockNum*layout+s]+"</td>";
+          }
+          test+="</tr>";
+          blockNum++;
+      }
+      
+      test+="<tr>";
+      //alert(tables[table].length%layout);
+      for(i=0;i<(tables[table].length%layout);i++){
+      //alert(tables[table][blockNum*layout+i]);
+        test+="<td><input type='checkbox' value='"+tables[table][blockNum*layout+i]+"'/></td><td>"+tables[table][blockNum*layout+i]+"</td>";
+      }
+      test+="</tr></table><hr/>"
+      blockNum=0;
+    }
+     n.innerHTML=test;
+  }
+ 
+</script>
+</head>
+
+<body>
+<div style="width:300px;height:300px;overflow:auto;" id="chus">Loading...</div>
+<input style="margin:5px;"type="button" onclick=""value="Project the checked columns"/>
+</body>
