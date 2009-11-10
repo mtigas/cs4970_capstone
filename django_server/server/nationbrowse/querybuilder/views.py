@@ -6,7 +6,7 @@ from django.db.models.loading import AppCache
 
 import string
 import json
-from querybuilder import APP_MAP
+from nationbrowse.querybuilder import APP_MAP
 
 @cache_control(public=True,max_age=604800)
 def get_columns(request,tables):
