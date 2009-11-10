@@ -1,5 +1,9 @@
 <head>
 <script>
+
+var URL ="";
+var GET_STRING="?";
+
 function addOptionToDivId(tdId,options){
   n=document.getElementById(tdId);
   
@@ -11,13 +15,17 @@ function addOptionToDivId(tdId,options){
   n.innerHTML=test;
 }
 
-function selection
+function selection(){}
 $(document).ready(function(){
 
   //column data from somewhere...
   sailor=["sname","sid","rating","age","one","two","three","four"];
  ops=[">","<",">=","<=","LIKE","IS","="];
-  boat=["bid","color","bname"];
+ boat=["bid","color","bname"];
+  
+
+  
+  //document.write( wsRef.joinSet );
   
   addOptionToDivId("col1",sailor); //array combination of all tabs
   addOptionToDivId("op1",ops);
@@ -32,5 +40,6 @@ $(document).ready(function(){
 <td id="op1"></td>
 <td id="val1"><input type="text" name="testVal"/></td>
 </tr></table>
+<div id="writeWsRef"></div>
 </div>
 </body>

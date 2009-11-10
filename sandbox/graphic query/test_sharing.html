@@ -1,35 +1,61 @@
 <head>
 <script>
-  sailor=["sname","sid","rating","age","one","two","three","four"];
-  reserves=["bid","sid"];
-  boat=["bid","color","bname"];
-  var tables=new Array();
+  //sailor=["sname","sid","rating","age","one","two","three","four"];
+ // reserves=["bid","sid"];
+  //boat=["bid","color","bname"];
+  //var tables=new Array();
 
-  tables[0]=sailor;
-  tables[1]=boat;
-  tables[2]=boat;
-  tables[3]=reserves;
+  //tables[0]=sailor;
+  //tables[1]=boat;
+  //tables[2]=boat;
+  //tables[3]=reserves;
+ var tables;
 layout=3;
-$(document).ready(go);
-function count(array){
-  count=0;
-  while(typeof(eval(object)[array[count]]) != 'undefined'){
-    count++;
-  }
-  return count;
-}
+$(document).ready(scream);
+
 function scream(){
 
-  document.writeln("HEY!");
-  document.writeln(sailor.length);
-  document.writeln(tables[0].length);
-  document.writeln(tables.length);
-  for(i=0;i<tables.length;i++){
-    for(s=0;s<tables[i].length;s++){
-      document.write(tables[i][s]+" ");
+  var GET_STRING="";
+  var URL = "http://nationbrowse.com/querybuilder/get_columns/";
+  
+  //create a get
+    n=document.getElementById("writeWsRef");
+  //gets the table names from the join set, puts into comma sepd string
+  //post to server , get back col names
+  for(i=0;i<wsRef.joinSet.length;i++){
+    j = document.getElementById(wsRef.joinSet[i])
+    if(j){
+      GET_STRING += j.innerHTML+",";
     }
-    document.writeln("<br/>");
   }
+  GET_STRING += ".js";
+  
+  
+  
+  //use ajax to submit
+  $.getJSON(URL+GET_STRING,function(data){
+  
+    if(data==null){
+      document.getElementById("chus").innerHTML="Could not load columns..";
+      return;
+    }
+    tables=data.columns;
+    go();
+  });
+  
+  //tables = ...
+  
+  
+  //document.writeln("HEY!");
+  //document.writeln(sailor.length);
+  //document.writeln(tables[0].length);
+  //document.writeln(tables.length);
+  //for(i=0;i<tables.length;i++){
+   // for(s=0;s<tables[i].length;s++){
+     // document.write(tables[i][s]+" ");
+    //}
+   // document.writeln("<br/>");
+  //}
 }
   function go(){
     n=document.getElementById("chus");
@@ -63,6 +89,6 @@ function scream(){
 </head>
 
 <body>
-<div style="width:300px;height:300px;overflow:auto;" id="chus"></div>
+<div style="width:300px;height:300px;overflow:auto;" id="chus">Loading...</div>
 <input style="margin:5px;"type="button" onclick=""value="Project the checked columns"/>
 </body>
