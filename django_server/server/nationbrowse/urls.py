@@ -11,6 +11,7 @@ urlpatterns = patterns('',
 	}),
     (r'^graphs/', include('nationbrowse.graphs.urls',namespace="graphs")),
     (r'^places/', include('nationbrowse.places.urls',namespace="places")),
+    (r'^querybuilder/', include('nationbrowse.querybuilder.urls',namespace="querybuilder")),
     (r'^admin/', include(admin.site.urls)),
 )
 
