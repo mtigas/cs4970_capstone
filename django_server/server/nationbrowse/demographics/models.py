@@ -170,41 +170,13 @@ class PlacePopulation(CachedModel):
         verbose_name = "population set"
         verbose_name_plural = "population sets"
         ordering = ('place_type','place_id')
-        unique_together = (('place_type','place_id'),)
+        unique_together = (('place_type','place_id','source'),)
 	
     def __unicode__(self):
         return u"%s population demographics" % (self.place)
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
-
+    __unicode__ = cached_clsmethod(__unicode__, 604800)
 
 """
-Used for converting data from tl_2008_us_county.shp. Process:
- * Create model
- * Perform syncdb to create table.
- * Remove top two lines of dc_dec_2000_sf1_u_data1.txt
- * Replace all || with |0| in dc_dec_2000_sf1_u_data1.txt
- * For counties, non-ASCII characters needed to be replaced (in Puerto Rican region names)
- * in dbshell,
-   * COPY dc_dec_2000_sf1 (geo_id,geo_id2,sumlevel,geo_name,p001001,p002001,p002002,p002003,p002004,p002005,
-     p002006,p003001,p003002,p003003,p003004,p003005,p003006,p003007,p003008,p003009,p003010,p003011,p003012,
-     p003013,p003014,p003015,p003016,p003017,p003018,p003019,p003020,p003021,p003022,p003023,p003024,p003025,
-     p003026,p003027,p003028,p003029,p003030,p003031,p003032,p003033,p003034,p003035,p003036,p003037,p003038,
-     p003039,p003040,p003041,p003042,p003043,p003044,p003045,p003046,p003047,p003048,p003049,p003050,p003051,
-     p003052,p003053,p003054,p003055,p003056,p003057,p003058,p003059,p003060,p003061,p003062,p003063,p003064,
-     p003065,p003066,p003067,p003068,p003069,p003070,p003071,p009001,p009002,p009003,p009004,p009005,p009006,
-     p009007,p012001,p012002,p012003,p012004,p012005,p012006,p012007,p012008,p012009,p012010,p012011,p012012,
-     p012013,p012014,p012015,p012016,p012017,p012018,p012019,p012020,p012021,p012022,p012023,p012024,p012025,
-     p012026,p012027,p012028,p012029,p012030,p012031,p012032,p012033,p012034,p012035,p012036,p012037,p012038,
-     p012039,p012040,p012041,p012042,p012043,p012044,p012045,p012046,p012047,p012048,p012049,p015001,p016001,
-     p017001,p031001,p032001,p033001) from '/tmp/dc_dec_2000_sf1_u_data1.txt' WITH DELIMITER '|';
-
-State, County, and ZipCode demographic data were done one at a time (and this table dropped after each import,
-because this table was used for each import.
-
-See the scripts under management/commands/convert_*_data.py to see how this was converted into PlacePopulation.
-
-
-
 class PopulationImport(models.Model):
     geo_id = models.CharField(max_length=255)
     fips_code = models.CharField(max_length=5,db_column="geo_id2")
