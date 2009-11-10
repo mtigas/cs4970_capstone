@@ -43,4 +43,4 @@ def get_columns(request,tables):
             "real_tables":real_tables,
             "columns":columns
         }, indent=4),
-        mimetype="text/plain")
+        mimetype="text/javascript")
