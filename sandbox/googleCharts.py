@@ -19,9 +19,6 @@ chxl - specify labels on axis
 chbh - bar thickness and spacing
 """
 
-def fuck(x):
-	print x
-
 def pie_chart(values, labels=None, colors=None, size=(400,200), in_3d=False):
 	"""returns a string of the url for the generated pie graph via google"""
 	valueList = []; labelList = []; colorList = []
