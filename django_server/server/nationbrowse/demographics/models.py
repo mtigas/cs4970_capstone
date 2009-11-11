@@ -69,6 +69,10 @@ class PlacePopulation(CachedModel):
     fiverace = models.PositiveIntegerField(default=0,db_index=True)
     sixrace = models.PositiveIntegerField(default=0,db_index=True)
     
+    @property
+    def total_mixed(self):
+        return self.tworace + self.threerace + self.fourrace + self.fiverace + self.sixrace
+    
     # Census P9 = Race (Tallied)
     white = models.PositiveIntegerField("White, alone or in combination with other races",default=0,db_index=True)
     black = models.PositiveIntegerField("African American, alone or in combination with other races",default=0,db_index=True)
@@ -175,6 +179,33 @@ class PlacePopulation(CachedModel):
     def __unicode__(self):
         return u"%s population demographics" % (self.place)
     __unicode__ = cached_clsmethod(__unicode__, 604800)
+    
+    field_descriptions = [
+        # field, shortname, longname
+        ("age_0_4","0-4","0-4 years old"),
+        ("age_5_9","5-9","5-9 years old"),
+        ("age_10_14","10-14","10-14 years old"),
+        ("age_15_17","15-17","15-17 years old"),
+        ("age_18_19","18-19","18-19 years old"),
+        ("age_20","20","20 years old"),
+        ("age_21","21","21 years old"),
+        ("age_22_24","22-24","22-24 years old"),
+        ("age_25_29","25-29","25-29 years old"),
+        ("age_30_34","30-34","30-34 years old"),
+        ("age_35_39","35-39","35-39 years old"),
+        ("age_40_44","40-44","40-44 years old"),
+        ("age_45_49","45-49","45-49 years old"),
+        ("age_50_54","50-54","50-54 years old"),
+        ("age_55_59","55-59","55-59 years old"),
+        ("age_60_61","60-61","60-61 years old"),
+        ("age_62_64","62-64","62-64 years old"),
+        ("age_65_66","65-66","65-66 years old"),
+        ("age_67_69","67-69","67-69 years old"),
+        ("age_70_74","70-74","70-74 years old"),
+        ("age_75_79","75-79","75-79 years old"),
+        ("age_80_84","80-84","80-84 years old"),
+        ("age_85_plus","85+","85+ years old")
+    ]
 
 """
 class PopulationImport(models.Model):
