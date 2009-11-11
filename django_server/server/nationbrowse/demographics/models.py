@@ -248,6 +248,52 @@ class PlacePopulation(CachedModel):
         ("age_85_plus","85+","85+ years old")
     ]
 
+class CrimeData(CachedModel):
+    objects = CachingManager()
+    
+    place_type = models.ForeignKey(ContentType)
+    place_id = models.PositiveIntegerField(db_index=True)
+    place = generic.GenericForeignKey(ct_field='place_type',fk_field='place_id')
+    
+    source = models.ForeignKey(DataSource,db_index=True)
+    
+    """
+    UCR Table 1  = violent crimes, national
+    UCR Table 5  = violent crimes, by state
+    UCR Table 10 = violent crimes, by county
+    """
+    violent_crime = models.PositiveIntegerField(default=0,db_index=True)
+    murder = models.PositiveIntegerField("murders and nonnegligent manslaughter",default=0,db_index=True)
+    rape = models.PositiveIntegerField("forcible rape",default=0,db_index=True)
+    robbery = models.PositiveIntegerField(default=0,db_index=True)
+    assault = models.PositiveIntegerField("aggravated assault",default=0,db_index=True)
+    
+    property_crime = models.PositiveIntegerField(default=0,db_index=True)
+    burglary = models.PositiveIntegerField(default=0,db_index=True)
+    larceny_theft = models.PositiveIntegerField("larceny-theft",default=0,db_index=True)
+    auto_theft = models.PositiveIntegerField("motor vehicle theft",default=0,db_index=True)
+    
+    """
+    UCR Table 77 = Law enforcement employees, by state
+    UCR Table 80 = Law enforcement employees, by county
+    """
+    law_enforcement_employees = models.PositiveIntegerField("total law enforcement employees",default=0,db_index=True)
+    male_officers = models.PositiveIntegerField(default=0,db_index=True)
+    female_officers = models.PositiveIntegerField(default=0,db_index=True)
+    male_civilians = models.PositiveIntegerField("male civilian employees",default=0,db_index=True)
+    female_civilians = models.PositiveIntegerField("female civilian employees",default=0,db_index=True)
+    employing_agencies = models.PositiveIntegerField("number of employing agencies",default=0,db_index=True)
+    
+    class Meta:
+        verbose_name = "crime data"
+        verbose_name_plural = "crime data"
+        ordering = ('place_type','place_id')
+        unique_together = (('place_type','place_id','source'),)
+	
+    def __unicode__(self):
+        return u"%s crime data" % (self.place)
+    __unicode__ = cached_clsmethod(__unicode__, 604800)
+
 """
 class PopulationImport(models.Model):
     geo_id = models.CharField(max_length=255)
