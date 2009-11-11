@@ -192,11 +192,11 @@ class AgeBarchartNode(template.Node):
             place = PlaceClass.objects.get(slug=slug)
             
             # Labels, values, and colors for each race.
-            field_names, labels, nul = zip(*PlacePopulation.field_descriptions)
+            field_names, labels, nul = zip(*PlacePopulation.age_fields)
             values = map(lambda field_name: getattr(place.population_demographics,field_name), field_names)
             
-            x_labels = ('0-4','','','15-17','','','21','','','30-34','','','45-49','','','60-61','','','67-69','','','','85%2B')
-                
+            x_labels = ('0-4', '', '', '15-19', '', '', '30-34', '', '', '45-49', '', '', '60-64', '', '', '75-79', '', '85%2B')
+            #('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80-84', '85+')
             google_graph_url = google_graphs.bar_chart(values, x_labels=x_labels, size=(400,200))
             
             # Generate an HTML output legend (where the box shows the color corresponding to the chart). i.e.:

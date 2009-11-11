@@ -106,6 +106,22 @@ class PlacePopulation(CachedModel):
     male_75_79 = models.PositiveIntegerField(default=0,db_index=True)
     male_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     male_85_plus = models.PositiveIntegerField(default=0,db_index=True)
+    
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def male_15_19(self):
+        return self.male_15_17 + self.male_18_19
+    @property
+    def male_20_24(self):
+        return self.male_20 + self.male_21 + self.male_22_24
+    @property
+    def male_60_64(self):
+        return self.male_60_61 + self.male_62_64
+    @property
+    def male_65_69(self):
+        return self.male_65_66 + self.male_67_69
+    
     female = models.PositiveIntegerField(default=0,db_index=True)
     female_0_4 = models.PositiveIntegerField(default=0,db_index=True)
     female_5_9 = models.PositiveIntegerField(default=0,db_index=True)
@@ -130,6 +146,21 @@ class PlacePopulation(CachedModel):
     female_75_79 = models.PositiveIntegerField(default=0,db_index=True)
     female_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     female_85_plus = models.PositiveIntegerField(default=0,db_index=True)
+
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def female_15_19(self):
+        return self.female_15_17 + self.female_18_19
+    @property
+    def female_20_24(self):
+        return self.female_20 + self.female_21 + self.female_22_24
+    @property
+    def female_60_64(self):
+        return self.female_60_61 + self.female_62_64
+    @property
+    def female_65_69(self):
+        return self.female_65_66 + self.female_67_69
 
     # Derived from above set:
     age_0_4 = models.PositiveIntegerField(default=0,db_index=True)
@@ -156,6 +187,21 @@ class PlacePopulation(CachedModel):
     age_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     age_85_plus = models.PositiveIntegerField(default=0,db_index=True)
     
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def age_15_19(self):
+        return self.age_15_17 + self.age_18_19
+    @property
+    def age_20_24(self):
+        return self.age_20 + self.age_21 + self.age_22_24
+    @property
+    def age_60_64(self):
+        return self.age_60_61 + self.age_62_64
+    @property
+    def age_65_69(self):
+        return self.age_65_66 + self.age_67_69
+    
     # P15 Households
     # P16 Population in Households
     # P17 Avg household size
@@ -180,16 +226,13 @@ class PlacePopulation(CachedModel):
         return u"%s population demographics" % (self.place)
     __unicode__ = cached_clsmethod(__unicode__, 604800)
     
-    field_descriptions = [
+    age_fields = [
         # field, shortname, longname
         ("age_0_4","0-4","0-4 years old"),
         ("age_5_9","5-9","5-9 years old"),
         ("age_10_14","10-14","10-14 years old"),
-        ("age_15_17","15-17","15-17 years old"),
-        ("age_18_19","18-19","18-19 years old"),
-        ("age_20","20","20 years old"),
-        ("age_21","21","21 years old"),
-        ("age_22_24","22-24","22-24 years old"),
+        ("age_15_19","15-19","15-19 years old"),
+        ("age_20_24","20-24","20-24 years old"),
         ("age_25_29","25-29","25-29 years old"),
         ("age_30_34","30-34","30-34 years old"),
         ("age_35_39","35-39","35-39 years old"),
@@ -197,10 +240,8 @@ class PlacePopulation(CachedModel):
         ("age_45_49","45-49","45-49 years old"),
         ("age_50_54","50-54","50-54 years old"),
         ("age_55_59","55-59","55-59 years old"),
-        ("age_60_61","60-61","60-61 years old"),
-        ("age_62_64","62-64","62-64 years old"),
-        ("age_65_66","65-66","65-66 years old"),
-        ("age_67_69","67-69","67-69 years old"),
+        ("age_60_64","60-64","60-64 years old"),
+        ("age_65_69","65-69","65-69 years old"),
         ("age_70_74","70-74","70-74 years old"),
         ("age_75_79","75-79","75-79 years old"),
         ("age_80_84","80-84","80-84 years old"),
