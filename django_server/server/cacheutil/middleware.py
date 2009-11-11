@@ -17,13 +17,8 @@ class NginxMemcacheMiddleWare(object):
         anon_only = getattr(settings,"CACHE_MIDDLEWARE_ANONYMOUS_ONLY",False)
         
         # A few conditions that cause us not to cache.
-        # Especially note that any response that adds a "Vary" HTTP
-        # header will not be cached to nginx (because nginx can only use
-        # path-based cache keys only)
         if request.method != "GET" \
-          or not response.status_code == 200 \
-          or not response.has_header('Content-Type') \
-          or not ("text/html" in response['Content-Type']):
+          or not response.status_code == 200:
             return response
         
         # The cache key prefix (should match what is in the site's nginx config)

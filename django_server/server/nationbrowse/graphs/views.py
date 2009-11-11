@@ -2,6 +2,7 @@
 from __future__ import division
 from django.http import HttpResponse
 from cacheutil import safe_get_cache,safe_set_cache
+from django.views.decorators.cache import cache_control,never_cache
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
@@ -13,6 +14,7 @@ from django.db.models.loading import get_model
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import graph_maker
 
+@cache_control(public=True,max_age=604800)
 def render_graph(request,place_type,slug,graph_type,size=700):
     """
     Generates a png pie graph of the given location's racial breakdown. Example
@@ -55,11 +57,12 @@ def render_graph(request,place_type,slug,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,604800)
 
     # Return the response that was either cached OR generated just now.
     return response
 
+@cache_control(public=True,max_age=604800)
 def render_graph_county(request,state_abbr,name,graph_type,size=700):
     """
     An alternative view to above, with nicer URL structure for county browsing:
@@ -82,8 +85,7 @@ def render_graph_county(request,state_abbr,name,graph_type,size=700):
         canvas.print_png(response)
         
         # Save the response to cache
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,604800)
 
     # Return the response that was either cached OR generated just now.
     return response
-

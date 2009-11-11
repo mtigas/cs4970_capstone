@@ -35,7 +35,7 @@ def seed_next_random():
             if not all_ids:
                 all_ids = PlaceClass.objects.only('id').order_by().values_list('pk') # [(0,),(1,),...]
                 all_ids = map(lambda x: x[0], all_ids) # pull ID out of tuples for a "regular" list
-                safe_set_cache(cache_key,all_ids,1209600) # 14 days
+                safe_set_cache(cache_key,all_ids,604800)
             
             rand_id = rand_choice(all_ids)
             
@@ -82,7 +82,7 @@ def random_place(request):
     
     return response
 
-@cache_control(public=True,max_age=86400*14)
+@cache_control(public=True,max_age=604800)
 def state_detail(request,slug):
     cache_key = "state_detail slug=%s GET=%s" % (slug, request.GET)
     response = safe_get_cache(cache_key)
@@ -97,11 +97,11 @@ def state_detail(request,slug):
             'place_type':"state"
         },context_instance=RequestContext(request))
         
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,604800)
 
     return response
 
-@cache_control(public=True,max_age=86400*14)
+@cache_control(public=True,max_age=604800)
 def zipcode_detail(request,slug):
     cache_key = "zipcode_detail slug=%s" % slug
     response = safe_get_cache(cache_key)
@@ -122,7 +122,7 @@ def zipcode_detail(request,slug):
             'place_type':"zipcode"
         },context_instance=RequestContext(request))
         
-        safe_set_cache(cache_key,response,86400)
+        safe_set_cache(cache_key,response,604800)
 
         # It's likely that the user will go to the State's page from here (since it's linked
         # from the detail page). Call it right now to pre-cache it.
@@ -131,7 +131,7 @@ def zipcode_detail(request,slug):
 
     return response
 
-@cache_control(public=True,max_age=86400*14)
+@cache_control(public=True,max_age=604800)
 def county_detail(request,state_abbr,name):
     cache_key = "county_detail state_abbr=%s name=%s" % (state_abbr, name)
     response = safe_get_cache(cache_key)
