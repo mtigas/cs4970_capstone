@@ -200,6 +200,25 @@ class PolyModel(CachedModel):
 
 # --------------------------------------------------------------
 
+class Nation(PolyModel):
+    if USE_GIS:
+        objects = PolyDeferGeoManager()
+        pobjects = GeoCachingManager()
+    else:
+        objects = CachingManager()
+    
+    class Meta:
+        ordering = ('name',)
+	
+    def __unicode__(self):
+        return u"%s" % (self.name)
+    
+    #@models.permalink
+    #def get_absolute_url(self):
+    #    return ('places:nation_detail', (), {
+    #        'slug' : self.id
+    #    })
+
 class State(PolyModel):
     if USE_GIS:
         objects = PolyDeferGeoManager()
@@ -314,67 +333,3 @@ class ZipCode(PolyModel):
         return ('places:zipcode_detail', (), {
             'slug' : self.id
         })
-
-"""
-Used for converting data from tl_2008_us_zcta5.shp, imported via:
-ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -overwrite tl_2008_us_zcta5.shp
-
-See also management/commands/import_zipcode.py
-
-class ConversionZipCode(CachedModel):
-    id = models.PositiveIntegerField(db_column="ogc_fid",primary_key=True)
-    wkb_geometry = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
-    zipcode_x = models.CharField(max_length=5,blank=True,null=True,db_column="zcta5ce")
-
-    @cached_property
-    def zipcode(self):
-        a = self.zipcode_x.strip()
-        if a.isdigit():
-            return a
-        else:
-            return None
-        
-    def __unicode__(self):
-        return u"%s" % self.zipcode
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
-
-    class Meta:
-        db_table = 'tl_2008_us_zcta5'
-"""         
-
-"""
-Used for converting data from tl_2008_us_county.shp, imported via:
-ogr2ogr -f PostgreSQL "PG:dbname=cs4970_capstone" -nlt MULTIPOLYGON -t_srs EPSG:4326 -skipfailures -overwrite tl_2008_us_county.shp
-Import failures were handled manually (some Puerto Rico Municipios had non-ASCII chars, causing ogr2ogr to throw warnings)
-
-See also management/commands/import_counties.py
-        
-class ConversionCounty(CachedModel):
-    id = models.PositiveIntegerField(db_column="ogc_fid",primary_key=True)
-    wkb_geometry = models.MultiPolygonField(verbose_name="geographic area data",blank=True,null=True)
-    statefp = models.CharField(max_length=2,blank=True,null=True)
-    countyfp = models.CharField(max_length=3,blank=True,null=True)
-    name_x = models.CharField(max_length=100,blank=True,null=True,db_column='name')
-    namelsad_x = models.CharField(max_length=100,blank=True,null=True,db_column='namelsad')
-    csafp = models.CharField(verbose_name="Statistical Area Code",max_length=3,blank=True,null=True)
-    cbsafp = models.CharField(verbose_name="Metropolitan Area Code",max_length=5,blank=True,null=True)
-    metdivfp = models.CharField(verbose_name="Metropolitan Division Code",max_length=5,blank=True,null=True)
-
-    @cached_property
-    def name(self):
-        if self.name_x.strip():
-            return self.name_x.strip()
-        else:
-            return self.namelsad.replace(" Municipio","")
-
-    @cached_property
-    def namelsad(self):
-        return self.namelsad_x.strip()
-
-    def __unicode__(self):
-        return u"%s" % self.namelsad
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
-
-    class Meta:
-        db_table = 'tl_2008_us_county'
-"""
