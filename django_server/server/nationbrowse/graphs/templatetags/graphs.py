@@ -1,15 +1,12 @@
 # coding=utf-8
+from __future__ import division
 from django import template
-from django.template import resolve_variable
 from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.utils.encoding import force_unicode
 from django.contrib.humanize.templatetags import humanize
-from urllib import urlencode
 
 from nationbrowse import graphs
-from nationbrowse.graphs import graph_maker
-from nationbrowse.demographics.models import PlacePopulation
+from nationbrowse.graphs import googleGraphs as google_graphs
+from nationbrowse.demographics.models import *
 
 from django.db.models.loading import get_model
 
@@ -27,22 +24,22 @@ class StaticMapHTMLNode(template.Node):
     def __init__(self, place_type, slug):
         self.place_type = place_type
         self.slug = slug
-
+    
     def render(self, context):
         try:
-            place_type = force_unicode(resolve_variable(self.place_type, context))
+            place_type = template.resolve_variable(self.place_type, context)
         except:
-            place_type = force_unicode(self.place_type)
+            place_type = self.place_type
         
         try:
-            slug = force_unicode(resolve_variable(self.slug, context))
+            slug = template.resolve_variable(self.slug, context)
         except:
-            slug = force_unicode(self.slug)
+            slug = self.slug
                 
         try:
             PlaceClass = get_model("places",place_type)
             if not PlaceClass:
-                return u""
+                return ""
             place = PlaceClass.objects.get(slug__iexact=slug)
             
             if place_type == 'state':
@@ -58,56 +55,44 @@ class StaticMapHTMLNode(template.Node):
                     settings.GOOGLE_MAPS_API_KEY
                 )
             else:
-                return u""
+                return ""
         except Exception:
             from traceback import print_exc
             print_exc()
-            return u""
-
+            return ""
 
 @register.tag
-def show_graph(parser,token):
+def race_piechart(parser,token):
     """
     Creates the image tag that renders a static (non-javascript) map.
 
     Usage:
-        {% show_graph [place_type] [place.slug] [graph_type] %}
-        {% show_graph county boone-missouri race_pie %}
-        {% show_graph zipcode zip_obj.slug race_pie %}
+        {% race_piechart [place_type] [place.slug] %}
+        {% race_piechart county boone-missouri %}
+        {% race_piechart zipcode zip_obj.slug %}
     """
     try:
         # Get the tag's contents and parse it out into what we expect
-        tag_name, place_type, slug, graph_type = token.split_contents()
+        tag_name, place_type, slug = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, "%r tag requires three arguments: place_type, slug, graph_type" % tag_name
-    return GraphHTMLNode(place_type, slug, graph_type)
+        raise template.TemplateSyntaxError, "%r tag requires two arguments: place_type, slug" % tag_name
+    return RacePiechartNode(place_type, slug)
 
-class GraphHTMLNode(template.Node):
-    def __init__(self, place_type, slug, graph_type):
+class RacePiechartNode(template.Node):
+    def __init__(self, place_type, slug):
         self.place_type = place_type
         self.slug = slug
-        self.graph_type = graph_type
 
     def render(self, context):
         try:
-            place_type = force_unicode(resolve_variable(self.place_type, context))
+            place_type = template.resolve_variable(self.place_type, context)
         except:
-            place_type = force_unicode(self.place_type)
+            place_type = self.place_type
 
         try:
-            slug = force_unicode(resolve_variable(self.slug, context))
+            slug = template.resolve_variable(self.slug, context)
         except:
-            slug = force_unicode(self.slug)
-        
-        try:
-            graph_type = force_unicode(resolve_variable(self.graph_type, context))
-        except:
-            graph_type = force_unicode(self.graph_type)
-        
-        # Only implement race_pie graph chart for now.
-        if "race_pie" not in graph_type:
-            print "wat"
-            return ""
+            slug = self.slug
         
         try:
             PlaceClass = get_model("places",place_type)
@@ -115,52 +100,116 @@ class GraphHTMLNode(template.Node):
                 return ""
             place = PlaceClass.objects.get(slug=slug)
             
-            # This needs a SERIOUS refactor.
-            # Just assume that labels, values, and colors all return lists
-            # where labels[0] is the label for the population number in values[0]
-            # and likewise for colors[0].
-            labels = getattr(graph_maker, '%s_labels' % graph_type)
-            values = getattr(graph_maker, '%s_values' % graph_type)(place.population_demographics)
-            colors = getattr(graph_maker, '%s_colors' % graph_type)
+            # Labels, values, and colors for each race.
+            labels = [
+                "White",
+                "Black",
+                "Native American",
+                "Asian",
+                "Pacific Islander",
+                "Other",
+                "Mixed descent",
+            ]
+            values = [
+                place.population_demographics.onerace_white,
+                place.population_demographics.onerace_black,
+                place.population_demographics.onerace_amerindian,
+                place.population_demographics.onerace_asian,
+                place.population_demographics.onerace_pacislander,
+                place.population_demographics.onerace_other,
+                place.population_demographics.total_mixed
+            ]
+            colors = graphs.COLORS7
             
-            # Google Charts pie chart does not like huge numbers, so turn these into percents (from 0-100)
-            total = sum(values)
-            percents = map(lambda x: (float(x)/float(total)*100.0), values)
-            
-            # The resulting `percents` list is a list of floats. Cast these as 
-            # formatted strings, so we can "join" the sequence when we output the string.
-            # Only go to two decimal points when formatting the string.
-            percents = map(lambda x: "%.2f"%x, percents)
-            
-            # Build the request parameters as a dictionary so we can use urllib.urlencode
-            # to create a nice and safe string.
-            request_parameters = {
-                'cht':"p",
-                'chs':"400x200"
-            }
-            
-            # Chart data is percents list as a comma-delimited string starting with "t:"
-            # i.e.: chd=t:8.75,1.1,10.2
-            request_parameters['chd'] = "t:" + ",".join(percents)
-            
-            # Labels is pipe-delimited.
-            request_parameters['chl'] = "|".join(labels)
-            
-            # Colors is pipe-delimited. We also remove leading # from hex colors since
-            # google takes the hex value straight up.
-            request_parameters['chco'] = "|".join(map(lambda x: x.replace("#",'').upper(), colors))
-            
-            # The URL, hooray.
-            google_graph_url = "http://chart.apis.google.com/chart?%s" % urlencode(request_parameters)
+            google_graph_url = google_graphs.pie_chart(values, labels, colors, size=(400,200))
             
             # Generate an HTML output legend (where the box shows the color corresponding to the chart). i.e.:
             # [] White: 115714 (87.11%)
             # [] Black: 11572 (8.71%)
             # ...
+            total = sum(values)
+            percents = map(lambda x: (x/total*100.0), values)
+            percents = map(lambda x: "%.2f"%x, percents)
+            
             legend = ''
             for v in xrange(0,len(labels)):
                 legend += '\n<div class="graph_label_icon" style="background-color:%s;">&nbsp;</div> %s: %s (%s%%)<br class="clear"/>' % (
                     colors[v],
+                    labels[v],
+                    humanize.intcomma(values[v]),
+                    percents[v]
+                )
+            
+            # Add some CSS so the legends look right.
+            # Throw in the <img> tag for the Google Chart.
+            return """<style type="text/css">
+                .graph_label_icon{width:1em;height:1em;display:block;float:left;clear:left;border:1px solid #444;margin-right:5px;}
+                .clear{clear:both}
+                </style>
+                <p><img src="%s"></p>%s""" % (google_graph_url, legend) 
+        except Exception:
+            from traceback import print_exc
+            print_exc()
+            return ""
+
+@register.tag
+def age_barchart(parser,token):
+    """
+    Creates the image tag that renders a static (non-javascript) map.
+
+    Usage:
+        {% age_barchart [place_type] [place.slug] %}
+        {% age_barchart county boone-missouri %}
+        {% age_barchart zipcode zip_obj.slug %}
+    """
+    try:
+        # Get the tag's contents and parse it out into what we expect
+        tag_name, place_type, slug = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires two arguments: place_type, slug" % tag_name
+    return AgeBarchartNode(place_type, slug)
+
+class AgeBarchartNode(template.Node):
+    def __init__(self, place_type, slug):
+        self.place_type = place_type
+        self.slug = slug
+
+    def render(self, context):
+        try:
+            place_type = template.resolve_variable(self.place_type, context)
+        except:
+            place_type = self.place_type
+
+        try:
+            slug = template.resolve_variable(self.slug, context)
+        except:
+            slug = self.slug
+        
+        try:
+            PlaceClass = get_model("places",place_type)
+            if not PlaceClass:
+                return ""
+            place = PlaceClass.objects.get(slug=slug)
+            
+            # Labels, values, and colors for each race.
+            field_names, labels, nul = zip(*PlacePopulation.field_descriptions)
+            values = map(lambda field_name: getattr(place.population_demographics,field_name), field_names)
+            
+            x_labels = ('0-4','','','15-17','','','21','','','30-34','','','45-49','','','60-61','','','67-69','','','','85%2B')
+                
+            google_graph_url = google_graphs.bar_chart(values, x_labels=x_labels, size=(400,200))
+            
+            # Generate an HTML output legend (where the box shows the color corresponding to the chart). i.e.:
+            # [] White: 115714 (87.11%)
+            # [] Black: 11572 (8.71%)
+            # ...
+            total = sum(values)
+            percents = map(lambda x: (x/total*100.0), values)
+            percents = map(lambda x: "%.2f"%x, percents)
+            
+            legend = ''
+            for v in xrange(0,len(labels)):
+                legend += '\n%s: %s (%s%%)<br class="clear"/>' % (
                     labels[v],
                     humanize.intcomma(values[v]),
                     percents[v]

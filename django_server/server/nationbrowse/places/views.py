@@ -12,7 +12,6 @@ from django.views.decorators.cache import cache_control,never_cache
 
 from nationbrowse.places.models import State,ZipCode,County
 
-from nationbrowse.graphs.views import render_graph
 from threadutil import call_in_bg
 
 def seed_next_random():

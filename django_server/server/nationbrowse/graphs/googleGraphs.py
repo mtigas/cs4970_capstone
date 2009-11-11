@@ -22,7 +22,6 @@ chbh - bar thickness and spacing
 def pie_chart(values, labels=None, colors=None, size=(400,200), in_3d=False):
 	"""returns a string of the url for the generated pie graph via google"""
 	valueList = []; labelList = []; colorList = []
-	print values
 	#lambda functions to check params, convert and format strings
 	param3D = lambda x: ["p3","p"][x==False]
 	paramColors = lambda x: [''.join([z for z in colorList]),'None'][x==None]
@@ -38,24 +37,28 @@ def pie_chart(values, labels=None, colors=None, size=(400,200), in_3d=False):
 	labelList = ''.join([z for z in labelList]) #list contents to a string value
 	return "http://chart.apis.google.com/chart?chco=%s&chd=t:%s&chs=%s&cht=%s&chl=%s" % \
 		(paramColors(colors), valueList[0:len(valueList)-1], ("%sx%s" % (size[0], size[1])), param3D(in_3d), paramLabels(labels))
-		
-def bar_chart(values, labels=None, colors=None, size=(400,200)):
+
+def bar_chart(values, labels=None, colors=None, size=(400,200), x_labels=None):
 	"""returns a string of the url for the generated bar chart via google"""
-	print values
 	valueList = []; labelList = []; colorList = []
 	paramColors = lambda x: [''.join([z for z in colorList]),'None'][x==None]
 	paramLabels = lambda x: [''.join([z for z in labelList]),''][x==None]
 	chdlBool = lambda x: ["&chdl=",''][x==None] #check if the chart legend needs to be included in the graph
 	valueList = ''.join(['%i,' % s for s in values]) #convert numerical list to string seperated by commas
+	chxt = "y"
 	chxlFormat = lambda x: "0:%%7C0%%7C%s%%7C%s%%7C%s%%7C%s" % (max(x)/4, max(x)/2, max(x)*0.75, max(x)) #0:|0|(max/4)|(max/2)|(max*0.75)|(max)
-	if colors != None: 
+	if colors: 
 		for x in colors: colorList.append("%s%%7C" % x.strip("#"))
 		colorList[len(colorList)-1] = colorList[len(colorList)-1].strip('%7C')
-	if labels != None:
+	if labels:
 		for y in labels: labelList.append(("%s%%7C" % y).replace(" ", "%20")) #replace spaces with +, put a | in between individual labels
 		labelList[len(labelList)-1] = labelList[len(labelList)-1].strip('%7c') #remove last seperatng value from labelList
-	return "http://chart.apis.google.com/chart?cht=bvs&chs=%s%s%s&chd=t:%s&chco=%s&chds=0,%s&chxt=y&chxl=%s&chbh=a" % \
-		(("%sx%s" % (size[0], size[1])), chdlBool(labels), paramLabels(labels), valueList[0:len(valueList)-1], paramColors(colors), max(values), chxlFormat(values))
+	chxl = chxlFormat(values)
+	if x_labels:
+	    chxt  = "y,x"
+	    chxl += "|1:|%s" % "|".join(x_labels).replace(" ", "%20")
+	return "http://chart.apis.google.com/chart?cht=bvs&chs=%s%s%s&chd=t:%s&chco=%s&chds=0,%s&chxt=%s&chxl=%s&chbh=a" % \
+		(("%sx%s" % (size[0], size[1])), chdlBool(labels), paramLabels(labels), valueList[0:len(valueList)-1], paramColors(colors), max(values), chxt, chxl)
 
 # colors_b Is optional if colors_a is set in grouped_bar_chart (Google will just make all matched pairs the same color if colors_b is not set).
 def grouped_bar_chart(values_a, values_b, labels=None, colors_a=None, colors_b=None, size=(400,200)):
