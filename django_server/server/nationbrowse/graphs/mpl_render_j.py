@@ -21,7 +21,7 @@ def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,2
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
     
     #...
-    
+    #Comment wheee!
     # scatter() wants all of the X coordinates in one list and all of the Y coordinates in
     # another. You can "unpack" values [(x1,y1),(x2,y2),...] into these (x1,x2),(y1,y2),... by doing:
     x_values, y_values = zip(*values)
