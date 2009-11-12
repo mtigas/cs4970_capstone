@@ -15,12 +15,13 @@
 	<Layer name="state_base" srs="+proj=latlong +datum=WGS84" status="1" clear_label_cache="0">
         <StyleName>State Base</StyleName>
         <Datasource>
-            <Parameter name="dbname">cs4970_capstone</Parameter>
-            <Parameter name="host">127.0.0.1</Parameter>
-            <Parameter name="password"></Parameter><!--intentionally left blank due to public repo; server will trust connection from localhost on this DB-->
-            <Parameter name="table">places_state</Parameter>
             <Parameter name="type">postgis</Parameter>
+            <Parameter name="host">172.21.0.41</Parameter>
+            <Parameter name="port">5433</Parameter>
+            <Parameter name="dbname">cs4970_capstone</Parameter>
+            <Parameter name="table">places_state</Parameter>
             <Parameter name="user">cs4970_capstone</Parameter>
+            <Parameter name="password"></Parameter>
         </Datasource>
     </Layer>
 </Map>

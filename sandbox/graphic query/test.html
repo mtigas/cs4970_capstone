@@ -5,30 +5,59 @@
   <script type="text/javascript" src="./js/js/jquery-ui-1.7.2.custom.min.js"></script>
   
   <script type="text/javascript" src="Workspace.js"></script>
+  <script type="text/javascript" src="TableStore.js"></script>
   
   <style type="text/css">
     .ofTable { width: 100px; height: 70px; background: silver; }
         .ofWorkspace{
-      width:256px;
-      height:256px;
-      background-color:#3333ff;
+     
+          height:444px;
+          width:540px;
+          background-color:blue;
+      
       
       border:1px solid black;
+    }
+    .ofTableStore{
+     
+      height:200px;
+      width:200px;
+      background-color:yellow;
+      border:2px solid red;
+      
+    }
+    .ofTableItem{
+      height:50px;
+      width:50px;
+      border:1px solid black;
+      background-color:green;
     }
   </style>
   
   <script type="text/javascript">
-  var ws;
+  var ws,ts,x,y;
   $(document).ready(function(){
-    ws = new Workspace( document.getElementById("ws") ); 
+    ws = new Workspace( "ws" ); 
+    
+    ts = new TableStore( 
+    document.getElementById("ts") );
+    
+   x=document.getElementById("TableStore").firstChild.style.left;
+    y = document.getElementById("TableStore").firstChild.style.top;
+    //alert("hery");
+    //alert(x+","+y);
   });
       
   </script>
 </head>
-<body style="font-size:62.5%;">
+<body style="font-size:62.5%;"><div style="height:300px"id="fragment-1">
   <div id="ws" style="float:left;"></div>
-  <div> <input type="button" onclick="ws.addNewTable('Sailor');" value="Push to Close"> <br>
-        <input type="button" onclick="ws.clear_ws();" value="Clear">
+  <div id="ts" style="float:left;"></div>
+  <div> 
+       <!-- <input type="button" onclick="ws.addNewTable('Sailor');" value="Push to Close"> <br> -->
+        <input type="button" onclick="ws.clear();" value="Clear">
+        <br/><input type="button"onclick="ws.showJoins();"value="Show join set"/><br/><input type="button"onclick="ws.showJoinCount();"value="Show join set count"/>
+  </div>
   </div>
 </body>
 </html>

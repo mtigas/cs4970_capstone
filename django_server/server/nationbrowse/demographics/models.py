@@ -1,9 +1,9 @@
 # coding=utf-8
 from django.db import models
 
+from cacheutil import cached_clsmethod
 from django_caching.models import CachedModel
 from django_caching.managers import CachingManager
-from cacheutil import cached_clsmethod,cached_property
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -69,6 +69,10 @@ class PlacePopulation(CachedModel):
     fiverace = models.PositiveIntegerField(default=0,db_index=True)
     sixrace = models.PositiveIntegerField(default=0,db_index=True)
     
+    @property
+    def total_mixed(self):
+        return self.tworace + self.threerace + self.fourrace + self.fiverace + self.sixrace
+    
     # Census P9 = Race (Tallied)
     white = models.PositiveIntegerField("White, alone or in combination with other races",default=0,db_index=True)
     black = models.PositiveIntegerField("African American, alone or in combination with other races",default=0,db_index=True)
@@ -102,6 +106,22 @@ class PlacePopulation(CachedModel):
     male_75_79 = models.PositiveIntegerField(default=0,db_index=True)
     male_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     male_85_plus = models.PositiveIntegerField(default=0,db_index=True)
+    
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def male_15_19(self):
+        return self.male_15_17 + self.male_18_19
+    @property
+    def male_20_24(self):
+        return self.male_20 + self.male_21 + self.male_22_24
+    @property
+    def male_60_64(self):
+        return self.male_60_61 + self.male_62_64
+    @property
+    def male_65_69(self):
+        return self.male_65_66 + self.male_67_69
+    
     female = models.PositiveIntegerField(default=0,db_index=True)
     female_0_4 = models.PositiveIntegerField(default=0,db_index=True)
     female_5_9 = models.PositiveIntegerField(default=0,db_index=True)
@@ -126,6 +146,21 @@ class PlacePopulation(CachedModel):
     female_75_79 = models.PositiveIntegerField(default=0,db_index=True)
     female_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     female_85_plus = models.PositiveIntegerField(default=0,db_index=True)
+
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def female_15_19(self):
+        return self.female_15_17 + self.female_18_19
+    @property
+    def female_20_24(self):
+        return self.female_20 + self.female_21 + self.female_22_24
+    @property
+    def female_60_64(self):
+        return self.female_60_61 + self.female_62_64
+    @property
+    def female_65_69(self):
+        return self.female_65_66 + self.female_67_69
 
     # Derived from above set:
     age_0_4 = models.PositiveIntegerField(default=0,db_index=True)
@@ -152,6 +187,21 @@ class PlacePopulation(CachedModel):
     age_80_84 = models.PositiveIntegerField(default=0,db_index=True)
     age_85_plus = models.PositiveIntegerField(default=0,db_index=True)
     
+    # Alternate properties (so ages can be bracketed by five year intervals
+    # since some of the given data has more specific intervals)
+    @property
+    def age_15_19(self):
+        return self.age_15_17 + self.age_18_19
+    @property
+    def age_20_24(self):
+        return self.age_20 + self.age_21 + self.age_22_24
+    @property
+    def age_60_64(self):
+        return self.age_60_61 + self.age_62_64
+    @property
+    def age_65_69(self):
+        return self.age_65_66 + self.age_67_69
+    
     # P15 Households
     # P16 Population in Households
     # P17 Avg household size
@@ -170,41 +220,35 @@ class PlacePopulation(CachedModel):
         verbose_name = "population set"
         verbose_name_plural = "population sets"
         ordering = ('place_type','place_id')
-        unique_together = (('place_type','place_id'),)
+        unique_together = (('place_type','place_id','source'),)
 	
     def __unicode__(self):
         return u"%s population demographics" % (self.place)
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
-
+    __unicode__ = cached_clsmethod(__unicode__, 604800)
+    
+    age_fields = [
+        # field, shortname, longname
+        ("age_0_4","0-4","0-4 years old"),
+        ("age_5_9","5-9","5-9 years old"),
+        ("age_10_14","10-14","10-14 years old"),
+        ("age_15_19","15-19","15-19 years old"),
+        ("age_20_24","20-24","20-24 years old"),
+        ("age_25_29","25-29","25-29 years old"),
+        ("age_30_34","30-34","30-34 years old"),
+        ("age_35_39","35-39","35-39 years old"),
+        ("age_40_44","40-44","40-44 years old"),
+        ("age_45_49","45-49","45-49 years old"),
+        ("age_50_54","50-54","50-54 years old"),
+        ("age_55_59","55-59","55-59 years old"),
+        ("age_60_64","60-64","60-64 years old"),
+        ("age_65_69","65-69","65-69 years old"),
+        ("age_70_74","70-74","70-74 years old"),
+        ("age_75_79","75-79","75-79 years old"),
+        ("age_80_84","80-84","80-84 years old"),
+        ("age_85_plus","85+","85+ years old")
+    ]
 
 """
-Used for converting data from tl_2008_us_county.shp. Process:
- * Create model
- * Perform syncdb to create table.
- * Remove top two lines of dc_dec_2000_sf1_u_data1.txt
- * Replace all || with |0| in dc_dec_2000_sf1_u_data1.txt
- * For counties, non-ASCII characters needed to be replaced (in Puerto Rican region names)
- * in dbshell,
-   * COPY dc_dec_2000_sf1 (geo_id,geo_id2,sumlevel,geo_name,p001001,p002001,p002002,p002003,p002004,p002005,
-     p002006,p003001,p003002,p003003,p003004,p003005,p003006,p003007,p003008,p003009,p003010,p003011,p003012,
-     p003013,p003014,p003015,p003016,p003017,p003018,p003019,p003020,p003021,p003022,p003023,p003024,p003025,
-     p003026,p003027,p003028,p003029,p003030,p003031,p003032,p003033,p003034,p003035,p003036,p003037,p003038,
-     p003039,p003040,p003041,p003042,p003043,p003044,p003045,p003046,p003047,p003048,p003049,p003050,p003051,
-     p003052,p003053,p003054,p003055,p003056,p003057,p003058,p003059,p003060,p003061,p003062,p003063,p003064,
-     p003065,p003066,p003067,p003068,p003069,p003070,p003071,p009001,p009002,p009003,p009004,p009005,p009006,
-     p009007,p012001,p012002,p012003,p012004,p012005,p012006,p012007,p012008,p012009,p012010,p012011,p012012,
-     p012013,p012014,p012015,p012016,p012017,p012018,p012019,p012020,p012021,p012022,p012023,p012024,p012025,
-     p012026,p012027,p012028,p012029,p012030,p012031,p012032,p012033,p012034,p012035,p012036,p012037,p012038,
-     p012039,p012040,p012041,p012042,p012043,p012044,p012045,p012046,p012047,p012048,p012049,p015001,p016001,
-     p017001,p031001,p032001,p033001) from '/tmp/dc_dec_2000_sf1_u_data1.txt' WITH DELIMITER '|';
-
-State, County, and ZipCode demographic data were done one at a time (and this table dropped after each import,
-because this table was used for each import.
-
-See the scripts under management/commands/convert_*_data.py to see how this was converted into PlacePopulation.
-
-
-
 class PopulationImport(models.Model):
     geo_id = models.CharField(max_length=255)
     fips_code = models.CharField(max_length=5,db_column="geo_id2")

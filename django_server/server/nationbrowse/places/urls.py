@@ -9,9 +9,14 @@ urlpatterns = patterns('',
         name    = 'random_place',
     ),
     url(
-        regex   = '^(?P<place_type>[-\w]+)/(?P<slug>[-\w]+)/$',
-        view    = views.place_detail,
-        name    = 'place_detail',
+        regex   = '^state/(?P<slug>[-\w]+)/$',
+        view    = views.state_detail,
+        name    = 'state_detail',
+    ),
+    url(
+        regex   = '^zipcode/(?P<slug>[-\w]+)/$',
+        view    = views.zipcode_detail,
+        name    = 'zipcode_detail',
     ),
     url(
         regex   = '^county/(?P<state_abbr>[-\w]+)/(?P<name>[-\s\w]+)/$',
