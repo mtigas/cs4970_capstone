@@ -274,12 +274,12 @@ class County(PolyModel):
     
     class Meta:
         verbose_name_plural = "counties"
-        ordering = ('name',)
+        ordering = ('state','name',)
         unique_together = (('name', 'state'))
 	
     def __unicode__(self):
         return u"%s, %s" % (self.long_name, self.state.name)
-    __unicode__ = cached_clsmethod(__unicode__, 1800)
+    __unicode__ = cached_clsmethod(__unicode__, 15552000)
     
     @models.permalink
     def get_absolute_url(self):
