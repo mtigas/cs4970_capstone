@@ -326,8 +326,17 @@ Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_sour
             <li><b>Male Population:</b> {{ demographics.male|intcomma }}</li>
             <li><b>Female Population:</b> {{ demographics.female|intcomma }}</li>
         </ul>
-        <p>Proportion of race (non-mixed descent):</p>
-        {% show_graph place_type place.slug race_pie %}
+        <table style="vertical-align:top">
+            <tr><th>Proportion of race:</th><th>Population by age:</th></tr>
+            <tr>
+                <td style="vertical-align:top">
+                    {% race_piechart place_type place.slug %}
+                </td>
+                <td style="vertical-align:top">
+                    {% age_barchart place_type place.slug %}
+                </td>
+            </tr>
+        </table>
         {% comment %}
         <h2>Demographics</h2>
         <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>

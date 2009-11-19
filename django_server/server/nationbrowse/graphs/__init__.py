@@ -14,4 +14,13 @@ COLORS6 = getattr(settings,"GRAPHS_DEFAULT_COLORS6",[
     '#FF00FF',
     '#FFFF00'
 ])
+COLORS7 = getattr(settings,"GRAPHS_DEFAULT_COLORS7",[
+    '#0000FF',
+    '#5555FF',
+    '#999911',
+    '#00FF00',
+    '#FF00FF',
+    '#FFFF00',
+    '#888888'
+])
 USE_PLAINFORMAT = getattr(settings,"GRAPHS_USE_PLAINFORMAT",True)

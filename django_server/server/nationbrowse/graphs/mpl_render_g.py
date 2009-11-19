@@ -23,7 +23,7 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     *Labels & Colors are indexed to values so that colors[0] is the background color
     for the dataset values[0] which is named labels[0].
     
-    >>> values = [[115714,1400,32823],[250105, 130275, 01239, 5996969, 130203, 123050, 230597]]
+    >>> values = [[115714,1400,32823],[250105, 130275, 1239, 5996969, 130203, 123050, 230597]]
     >>> labels = ["Someplace","Somewhere Else"]
     >>> colors = ["#0000FF","#5555FF"]
     """
@@ -31,8 +31,9 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     height = int(size[1])/100
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
     
-    #...
-    raise NotImplementedError
+    # ... do things ...
+    
+    return fig
 
 def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200)):
     """
@@ -51,5 +52,48 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     # Haven't looked at it, but if you need to unpack [(x1,y1),(x2,y2),...] into
     # (x1,x2),(y1,y2),... -- see scatterplot() below.
     
-    #...
-    raise NotImplementedError
+    # ... do things ...
+    
+    return fig
+
+if __name__ == "__main__":
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    from traceback import print_exc
+    
+    print "Testing boxplot:"
+    values = [[115714,1400,32823],[250105, 130275, 1239, 5996969, 130203, 123050, 230597]]
+    labels = ["Someplace","Somewhere Else"]
+    colors = ["#0000FF","#5555FF"]
+
+    print "\tvalues = %s\n\tlabels = %s\n\tcolors = %s" % (values,labels,colors)
+    try:
+        fig = boxplot(values,labels,colors)
+        canvas=FigureCanvas(fig)
+        file_out = open("boxplot.png","wb")
+        canvas.print_png(file_out)
+        file_out.close()
+        print "\t===== Saved to boxplot.png ====="
+    except:
+        print_exc()
+    
+    # ==============================
+    
+    print
+    print "Testing histogram:"
+    values  = [(0,100),(15,2500),(20,3000),(25,2700),(30,2800),(35,3600),(40,4200),(45,3500),(50,2100)]
+    label_x = "Age"
+    label_y = "Population"
+    
+    print "\tvalues = %s\n\tlabel_x = %s\n\tlabel_y = %s" % (values,label_x,label_y)
+    try:
+        fig = histogram(values,label_x,label_y)
+        canvas=FigureCanvas(fig)
+        file_out = open("histogram.png","wb")
+        canvas.print_png(file_out)
+        file_out.close()
+        print "\t===== Saved to histogram.png ====="
+    except:
+        print_exc()
+    
+    print
+    raw_input("Press enter to continue...")

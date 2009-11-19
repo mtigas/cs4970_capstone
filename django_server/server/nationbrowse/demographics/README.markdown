@@ -1,6 +1,12 @@
-2008 American Community Survey
-2007 American Community Survey
-2007 Economic Census
+FBI UCR (Uniform Crime Reporting) Data
+Crime Totals:
+    table 1 = national
+    table 5 = by state
+    table 10 = by county
+
+Law Enforcement Statistics:
+    table 77 = Law enforcement employees, by state
+    table 80 = Law enforcement employees, by county
 
 
 

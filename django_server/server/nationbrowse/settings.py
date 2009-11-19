@@ -22,7 +22,7 @@ MANAGERS = ()
 INTERNAL_IPS = ('127.0.0.1',)
 
 DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = os.path.join(DJANGO_SERVER_DIR, 'nationbrowse', 'site_database.db')
+DATABASE_NAME = os.path.join(DJANGO_SERVER_DIR, 'server', 'nationbrowse', 'site_database.db')
 SECRET_KEY = '&(r^)05jawv58_e4hs2t@n(j&)tr@a6t_25xaq&e^+efy1e=zy'
 
 CACHE_BACKEND = 'dummy:///'
