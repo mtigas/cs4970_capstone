@@ -7,9 +7,9 @@ function TableStore(node){
     this.myDiv = node;
     
     /* get table names from ... */
-    this.tableNames = new Array( "state","county","zipcode","datasource","placepopulation" );
+    this.tableNames = ["state","county","zipcode","datasource","placepopulation"];
     
-    for( i=0;i<this.tableNames.length;i++){
+    for( var i=0;i<this.tableNames.length;i++){
      
      /* adding a node to my div adds a table item to the table store */     
      this.myDiv.appendChild( ti = document.createElement('div') );
@@ -17,11 +17,12 @@ function TableStore(node){
      ti.id = this.tableNames[i];
       
      /* Set the class oftableitem to this table item (for ie) */
-     //$("#"+ti.id).addClass("OfTableItem");
+     ti.setAttribute("class","ofTableItem");
+    
      ti.iClass = "TableItem"; //ws examines iclass to know what was dropped on it (ti or table)
      ti.appendChild( document.createTextNode( ti.id ) ); //set the text of this table item from tablenames[]
-      
-     //alert(ti.style.left+","+ti.style.top);
+     
+     //set style tops and lefts. set absolute postioning to lay the tabs out correctly****************
       
      /* register this table item as draggable */
      $("#"+ti.id).draggable({

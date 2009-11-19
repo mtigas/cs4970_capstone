@@ -1,10 +1,9 @@
-var wsRef;
-
 function Workspace(divId){
-
+  var window.wsRef;
   wsRef = this;
   
   /* Definitions */
+  /* IE doesnt support const... */
   var MAX_TABLES = 5;
   
   var TAB_WIDTH = 100;
@@ -15,11 +14,13 @@ function Workspace(divId){
 
   /* Wo-mandeer this node */
   this.myDivNode = document.getElementById(divId); 
+  //this.myDivNode.setAttribute('class','ofWorkspace');
+ // $.('this.myDivNode').css('class','ofWorkspace');
   
   /* workspace members */
   this.current = 0; 
   this.joinSet = new Array();
-  for(i=0;i<MAX_TABLES;i++){
+  for(var i=0;i<MAX_TABLES;i++){
     this.joinSet[i]="";
   }
   this.E_joinSet = false;
@@ -29,9 +30,10 @@ function Workspace(divId){
     if(this.current>=MAX_TABLES) return;
     
     //create table node, set attributes
-    t = document.createElement('div');
+    var t = document.createElement('div');
     t.setAttribute("id","Table"+this.current);
     //t.setAttribute("class","ofTable");
+    
     
     t.style.position = "absolute";    
     t.style.top = location.top;
@@ -55,7 +57,7 @@ function Workspace(divId){
       },
       
       start:function(e,ui){
-        index=wsRef.find(e.target.id);
+        var index=wsRef.find(e.target.id);
         if(index>-1 && !(index+1>=MAX_TABLES || index-1<0) &&wsRef.areBothOccupied(e.target.id) )
           alert("Cant drag tables out of the middle of the join set! Drag tables off the ends.");
       },
@@ -72,7 +74,7 @@ function Workspace(divId){
   /* remove table divs from the dom */ 
   this.clear = function(){
 
-    for(i=this.current-1;i>=0;i--){
+    for(var i=this.current-1;i>=0;i--){
       this.myDivNode.removeChild(this.myDivNode.childNodes[i]);
     }
 
@@ -94,8 +96,8 @@ function Workspace(divId){
   
   this.find = function(tableId){
     
-    for(i=0;i<this.joinSet.length;i++){
-      if(tableId == this.joinSet[i]){
+    for(var i=0;i<this.joinSet.length;i++){
+      if(tableId === this.joinSet[i]){
         return i;
       } 
     }
@@ -112,9 +114,9 @@ function Workspace(divId){
   };
   
   this.areBothOccupied = function(tableId){
-      index = this.find(tableId);
+      var index = this.find(tableId);
       if(index+1>MAX_TABLES || index-1<0) return true;   
-    return this.joinSet[index+1]!="" && this.joinSet[index-1]!=""; 
+    return this.joinSet[index+1]!=="" && this.joinSet[index-1]!==""; 
   };
   
   this.isRightOccupied = function(tableId){
@@ -126,8 +128,8 @@ function Workspace(divId){
   };
   
   this.countJoinSet = function(){
-    count=0;
-    for(i=0;i<this.joinSet.length;i++){
+    var count=0;
+    for(var i=0;i<this.joinSet.length;i++){
       if(this.joinSet[i]!="") count++;
     }
     
@@ -135,22 +137,22 @@ function Workspace(divId){
   };
   
   this.showJoinCount=function(){
-    c=this.countJoinSet();
+    var c=this.countJoinSet();
     alert(c);
   };
   
   this.showJoins = function(){
-    for(i=0;i<this.joinSet.length;i++){
+    for(var i=0;i<this.joinSet.length;i++){
       alert(i+" "+this.joinSet[i]);
     }
-    for(i=0;i<this.myDivNode.childNodes.length;i++){
+    for(var i=0;i<this.myDivNode.childNodes.length;i++){
       alert(i+" "+this.myDivNode.childNodes[i].isJoined);
     }
   };
   
   /* Check if argument overlaps any other child */
   this.check = function(draggingId){
-    dragging = document.getElementById(draggingId);
+    var dragging = document.getElementById(draggingId);
     
     if(dragging.isJoined){
       dragging.isJoined = false;
@@ -158,13 +160,13 @@ function Workspace(divId){
       
       //is there one tab left?
       //alert(this.countJoinSet());
-      if( this.countJoinSet()==1 ){
+      if( this.countJoinSet()===1 ){
       //alert("left 1 tab in join set...");
-        for(i=0;i<this.joinSet.length;i++){
+        for(var i=0;i<this.joinSet.length;i++){
           this.joinSet[i]="";          
         }
        // alert(this.myDivNode.childNodes.length);
-        for(i=0;i<this.myDivNode.childNodes.length;i++){
+        for(var i=0;i<this.myDivNode.childNodes.length;i++){
           this.myDivNode.childNodes[i].isJoined=false;
           //alert("unsetting border "+i);
           this.myDivNode.childNodes[i].style.border="";
@@ -173,15 +175,15 @@ function Workspace(divId){
         this.E_joinSet=false;
       }
     }
-    for(i=0;i<this.myDivNode.childNodes.length;i++){
-      sibling = this.myDivNode.childNodes[i];
-      siblingId = sibling.id;
-      if(siblingId == draggingId) continue;
+    for(var i=0;i<this.myDivNode.childNodes.length;i++){
+      var sibling = this.myDivNode.childNodes[i];
+      var siblingId = sibling.id;
+      if(siblingId === draggingId) continue;
       
-      dt = parseInt(dragging.style.top);
-      dl = parseInt(dragging.style.left);
-      st = parseInt(sibling.style.top);
-      sl = parseInt(sibling.style.left);
+      var dt = parseInt(dragging.style.top);
+      var dl = parseInt(dragging.style.left);
+      var st = parseInt(sibling.style.top);
+      var sl = parseInt(sibling.style.left);
       
       if(sl <= dl+TAB_WIDTH && 
     			dl <= sl+TAB_WIDTH &&
@@ -247,17 +249,18 @@ function Workspace(divId){
     
     /* Repositioning */
 
-    for(i=0;i<this.joinSet.length;i++){
+
+    for(var i=0;i<this.joinSet.length;i++){
     //alert(i+" "+this.joinSet[i]);
       if(this.joinSet[i]!=""){
-        n = document.getElementById(this.joinSet[i]);
+        var n = document.getElementById(this.joinSet[i]);
         n.style.left = 10+TAB_WIDTH*i;
         n.style.top = (WS_HEIGHT-(2*TAB_HEIGHT))/3;
       }
     }
     
-    for(i=0;i<this.myDivNode.childNodes.length;i++){
-      n=this.myDivNode.childNodes[i];
+    for(var i=0;i<this.myDivNode.childNodes.length;i++){
+      var n=this.myDivNode.childNodes[i];
       if(!n.isJoined){
      // alert(i+" "+this.myDivNode.childNodes[i].isJoined);
         n.style.left = i*(10+TAB_WIDTH);
@@ -275,6 +278,7 @@ function Workspace(divId){
   
   /* Jquery */
   //add class. setting the class otherwise wont work in ie
+  this.myDivNode.setAttribute("class","ofWorkspace");
   $("#"+this.myDivNode.id).addClass("ofWorkspace");
   
   //add as droppable 
