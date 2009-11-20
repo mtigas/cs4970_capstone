@@ -1,6 +1,7 @@
 function Workspace(divId){
-  var window.wsRef;
-  wsRef = this;
+
+  
+  window.wsRef = this;
   
   /* Definitions */
   /* IE doesnt support const... */
@@ -223,9 +224,9 @@ function Workspace(divId){
   
   /* Reposition the children tables */
   this.reposition = function(draggingId){
+    var dragging = document.getElementById(draggingId);
+
     if(dragging.overlaps == "") return;
-    
-    dragging = document.getElementById(draggingId);
     
     if(this.E_joinSet){
       if( !this.areBothOccupied(dragging.overlaps) ){
@@ -290,3 +291,263 @@ function Workspace(divId){
     }
   });
 }
+
+/* functions for selection */
+function  addSelector(containerId){
+//alert("hey13");
+  if(count>=SELECTION_MAX){
+    return;
+  }
+  //alert("hey17");
+  //create a div for this selector
+  newSelectionDiv = document.createElement('div');
+  newSelectionDiv.id = "selector"+count;
+  //alert("hey21");
+  
+  //create the buttons
+  innerHt = "<input id=\"del"+count+"\" type=\"button\" value=\"Del\" onclick=\"delSelector('selector"+count+"');\"/>";
+  innerHt += "<input id=\"addButton\" type=\"button\" value=\"Add\" onclick=\"addSelector('selections');\"/>";
+  //alert("hey26");
+  //add the option box
+  innerHt+= addOptionToSelector("column"+count,tables);
+  
+  //add the ops box
+  innerHt+= "<select id=\"op"+count+"\"><option>></option><option><</option><option>=</option><option>>=</option><option><=</option></select>";
+  //alert("hey32");
+  //add textfield
+  innerHt+="<input id=\"val"+count+"\" />";
+  
+  newSelectionDiv.innerHTML=innerHt;
+  document.getElementById(containerId).appendChild(newSelectionDiv);
+  //alert("hey38");
+  count++;
+  //alert("created a selector");
+}
+
+function addOptionToSelector(id,options){
+  //alert("hey44");
+  var test="";
+  test+="<select id=\""+id+"\" width=\"99\">";
+  //alert("hey46");
+  for(i=0;i<options.length;i++){
+    for(s=0;s<options[i].length;s++){
+    test+="<option value='"+aliass[i]+"."+options[i][s]+"'>"+aliass[i]+options[i][s]+"</option>";
+    //alert("hey");
+    }
+  }
+  test+="</select>";
+  return test;
+}
+
+function delSelector(selectId){
+  if(count-1==0){
+    return;
+  }
+  
+  document.getElementById("selections").removeChild( document.getElementById(selectId) ); //uh, yeah..
+  count--;
+}
+
+/* Tablestore */
+function TableStore(node){
+
+    //control my node
+    node.setAttribute("id","TableStore");
+   // node.setAttribute("class","ofTableStore"); 
+
+    this.myDiv = node;
+    
+    /* get table names from ... */
+    this.tableNames = ["state","county","zipcode","datasource","placepopulation"];
+    
+    for( var i=0;i<this.tableNames.length;i++){
+     
+     /* adding a node to my div adds a table item to the table store */     
+     this.myDiv.appendChild( ti = document.createElement('div') );
+     
+     ti.id = this.tableNames[i];
+      
+     /* Set the class oftableitem to this table item (for ie) */
+     ti.setAttribute("class","ofTableItem");
+    
+     ti.iClass = "TableItem"; //ws examines iclass to know what was dropped on it (ti or table)
+     ti.appendChild( document.createTextNode( ti.id ) ); //set the text of this table item from tablenames[]
+     
+     //set style tops and lefts. set absolute postioning to lay the tabs out correctly****************
+      
+     /* register this table item as draggable */
+     $("#"+ti.id).draggable({
+        stop:function(e,ui){
+                  
+          //will have to move div back to tablestore so it can be dragged again
+          e.target.style.top=0;
+          e.target.style.left=0;          
+        }
+      });
+       $("#"+ti.id).addClass("OfTableItem");
+    }
+    
+    
+    
+    $("#"+this.myDiv.id).addClass("ofTableStore");
+    /* tablestore needs to know where its associated ws is ??*/
+    
+    /* access items with tab store node children */
+    
+}
+
+/* for projection */
+function scream(){
+
+  var GET_STRING="";
+  var URL = "http://nationbrowse.com/querybuilder/get_columns/";
+  
+  //create a get
+
+  //gets the table names from the join set, puts into comma sepd string
+  //post to server , get back col names
+  for(i=0;i<wsRef.joinSet.length;i++){
+    j = document.getElementById(wsRef.joinSet[i]);
+    if(j){
+      GET_STRING += j.innerHTML+",";
+    }
+  }
+  GET_STRING += ".js"; 
+  
+/*    sailor=["sname","sid","rating","age","one","two","three","four"];
+  reserves=["bid","sid"];
+  boat=["bid","color","bname"];
+   tables=new Array();
+
+  tables[0]=sailor;
+  tables[1]=boat;
+  tables[2]=boat;
+  tables[3]=reserves;
+  
+  tNames=new Array();
+  tNames[0] ="Sailor";
+  tNames[1] = "Boat";
+  tNames[2]="Boat";
+  tNames[3]="Reserves"; 
+  tNames[4]="Boat";
+  tNames[5]="Pigeon";
+  tNames[6]="Reserves";
+  tNames[7]="Poopy"; */
+  
+  
+  //use ajax to submit
+  $.getJSON(URL+GET_STRING,function(data){
+  
+    if(data==null){
+      document.getElementById("chus").innerHTML="Could not load columns..";
+      return;
+    }
+    tables=data.columns;
+
+    tNames=data.tables;
+    
+    //examine for duplicates 
+    handle_duplicates();
+    go();
+    
+  }); 
+  
+}
+  function go(){
+  //document.getElementById("test").innerHTML=aliass[1];
+    n=document.getElementById("chus");
+    var test="";
+    var blockNum=0;
+    for(table=0;table<tables.length;table++){
+    test+="<h3>"+aliass[table]+"</h3>";
+      test+="<table>";
+      for(i=0;i<parseInt(tables[table].length/layout);i++){
+        test+="<tr>";
+          for(s=0;s<layout;s++){
+          //alert(aliass[tables]);
+            test+="<td><input type='checkbox' value='"+aliass[table]+"."+tables[table][blockNum*layout+s]+"'/></td><td>"+tables[table][blockNum*layout+s]+"</td>";
+          }
+          test+="</tr>";
+          blockNum++;
+      }
+      
+      test+="<tr>";
+      
+      for(i=0;i<(tables[table].length%layout);i++){
+      
+        test+="<td><input type='checkbox' value='"+aliass[table]+"."+tables[table][blockNum*layout+i]+"'/></td><td>"+tables[table][blockNum*layout+i]+"</td>";
+      }
+      test+="</tr></table><hr/>"
+      blockNum=0;
+    }
+     n.innerHTML=test;
+  }
+
+  function handle_duplicates(){
+  
+    //if joinsets contained ids whose node has the same name, create alias appropriately
+    counts = new Array(); 
+    var test="";
+    for(i=0;i<tNames.length;i++){
+     // alert(tNames[i]);
+      
+      counts[tNames[i]]=1;
+     // alert(count[tNames[i]]);
+    }
+    
+    aliass[0]=tNames[0];
+    counts[tNames[0]]=1;
+   
+    for(i=1;i<tNames.length;i++){
+     
+      test=tNames[i];
+     
+      for(s=i-1;s>=0;s--){
+        if(test==tNames[s]){
+          //theres another duplicate for this tName
+          counts[test]++;
+          
+          aliass[i]=test+counts[test];
+          break;
+        }
+        if(!s){
+          aliass[i] = test;
+        }
+        
+      }
+    }
+     
+    //document.getElementById("test").innerHTML = aliass+"<hr/>";
+    
+  }
+
+  function finish_project(){
+    //publish the projection info
+    inputs=document.getElementsByTagName("input");
+    count=0;
+    projections = new Array();
+    
+    for(i=0;i<inputs.length;i++){
+      
+      if(inputs[i].checked){
+       // alert(inputs[i].type);
+        
+        projections[count++]=inputs[i].value;
+      }
+    }
+    
+    //if no cols selected, project all cols (or only the pks)
+    if(!count){
+      for(i=0;i<inputs.length;i++){
+      if(inputs[i].type=="checkbox"){
+        projections[count++]=inputs[i].value;
+      }
+      }
+    }
+      // document.getElementById("test").innerHTML = projections; 
+    //select next tab
+    TAB_SELECT_OK=true;
+    $tabs.tabs('select',2);
+    TAB_SELECT_OK=false;
+  }
+ 
