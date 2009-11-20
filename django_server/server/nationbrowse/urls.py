@@ -5,9 +5,14 @@ from django.conf import settings
 from django.contrib import admin
 admin.autodiscover()
 
+from nationbrowse.places.models import State
+
 urlpatterns = patterns('',
 	url(r'^$', 'django.views.generic.simple.direct_to_template', {
 		'template': 'homepage.html',
+		'extra_context' : {
+		    'states':State.objects.only('name','slug',).all()
+		}
 	}),
     (r'^graphs/', include('nationbrowse.graphs.urls',namespace="graphs")),
     (r'^places/', include('nationbrowse.places.urls',namespace="places")),

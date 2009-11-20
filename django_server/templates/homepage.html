@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
 {% block body %}
-<p>Nothing to see here, move along.</p>
+<ul>{% for state in states %}
+    <li><a href="{% url places:state_detail state.slug %}">{{ state }}</a></li>{% endfor %}
+</ul>
 {% endblock %}
