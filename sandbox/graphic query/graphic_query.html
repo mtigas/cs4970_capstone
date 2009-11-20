@@ -65,7 +65,7 @@
       // Handle finishing on the join tab
       
       //check there is tables in join set or 1 tab in the ws. if not alert the user.
-      if (true) {
+      if (false) {
         if( true){
           alert("You have to join tables or have only one table in the workspace.");
           return;
@@ -82,18 +82,17 @@
       //activate/display the next tab
       
       
-      /* start tabs */
-      $tabs.tabs('select',1);
-      TAB_SELECT_OK = false;
-    $tabs = $("#tabs").tabs({select:function(e,ui){
-        return TAB_SELECT_OK;
-      }
-    });
+
     
-    
-    /* finish the ready method */
   });
   
+       /* start tabs */
+      TAB_SELECT_OK = false;
+     $tabs = $("#tabs").tabs({select:function(e,ui){
+         return TAB_SELECT_OK;
+       }
+     });
+       /* finish the ready method */
   });
   </script>
 </head>
