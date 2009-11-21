@@ -36,9 +36,10 @@ function Workspace(divId){
     //t.setAttribute("class","ofTable");
     
     
-    t.style.position = "absolute";    
-    t.style.top = location.top;
-    t.style.left = location.left;
+    t.style.position = "absolute";   
+    //alert(location.top+","+location.left); 
+    t.style.top = parseInt(location.top)+"px";
+    t.style.left = parseInt(location.left)+"px";
     
     //convenient storage in the node
     t.isJoined = false;
@@ -54,17 +55,17 @@ function Workspace(divId){
     //tables are draggable
     $("#"+t.id).draggable( {containment:'parent',
       drag:function(e,ui){
-        wsRef.check(e.target.id);
+        window.wsRef.check(e.target.id);
       },
       
       start:function(e,ui){
-        var index=wsRef.find(e.target.id);
-        if(index>-1 && !(index+1>=MAX_TABLES || index-1<0) &&wsRef.areBothOccupied(e.target.id) )
+        var index=window.wsRef.find(e.target.id);
+        if(index>-1 && !(index+1>=MAX_TABLES || index-1<0) &&window.wsRef.areBothOccupied(e.target.id) )
           alert("Cant drag tables out of the middle of the join set! Drag tables off the ends.");
       },
       
       stop:function(e,ui){
-        wsRef.reposition(e.target.id);
+        window.wsRef.reposition(e.target.id);
       } });
       
     //jQuery for class...(ie)
@@ -185,6 +186,7 @@ function Workspace(divId){
       var dl = parseInt(dragging.style.left);
       var st = parseInt(sibling.style.top);
       var sl = parseInt(sibling.style.left);
+      //alert(dt);
       
       if(sl <= dl+TAB_WIDTH && 
     			dl <= sl+TAB_WIDTH &&
@@ -224,6 +226,8 @@ function Workspace(divId){
   
   /* Reposition the children tables */
   this.reposition = function(draggingId){
+ // alert("Repostion");//debug
+  //this.showJoins();//debug
     var dragging = document.getElementById(draggingId);
 
     if(dragging.overlaps == "") return;
@@ -246,6 +250,7 @@ function Workspace(divId){
       this.E_joinSet = true;
       dragging.isJoined = true;
       document.getElementById(dragging.overlaps).isJoined = true;
+      //this.showJoins();//debug
     }
     
     /* Repositioning */
@@ -255,8 +260,12 @@ function Workspace(divId){
     //alert(i+" "+this.joinSet[i]);
       if(this.joinSet[i]!=""){
         var n = document.getElementById(this.joinSet[i]);
-        n.style.left = 10+TAB_WIDTH*i;
-        n.style.top = (WS_HEIGHT-(2*TAB_HEIGHT))/3;
+       // alert(this.joinSet[i]+": "+n.style.left+","+n.style.top);
+        n.style.left = parseInt(10+TAB_WIDTH*i)+"px";
+        n.style.top = parseInt((WS_HEIGHT-(2*TAB_HEIGHT))/3)+"px";
+        //n.style.left+="px";
+        //n.style.top+="px";
+       // alert(this.joinSet[i]+": "+n.style.left+","+n.style.top);
       }
     }
     
@@ -264,8 +273,12 @@ function Workspace(divId){
       var n=this.myDivNode.childNodes[i];
       if(!n.isJoined){
      // alert(i+" "+this.myDivNode.childNodes[i].isJoined);
-        n.style.left = i*(10+TAB_WIDTH);
-        n.style.top = 2*((WS_HEIGHT-2*TAB_HEIGHT)/3)+TAB_HEIGHT;
+     //alert(n.id+": "+n.style.left+","+n.style.top);
+        n.style.left = parseInt(i*(10+TAB_WIDTH))+"px";
+        n.style.top = parseInt(2*((WS_HEIGHT-2*TAB_HEIGHT)/3)+TAB_HEIGHT)+"px";
+        //alert(n.id+": "+n.style.left+","+n.style.top);
+        //n.style.left+="px";
+        //n.style.top+="px";
       }
     }
     
@@ -279,7 +292,7 @@ function Workspace(divId){
   
   /* Jquery */
   //add class. setting the class otherwise wont work in ie
-  this.myDivNode.setAttribute("class","ofWorkspace");
+ // this.myDivNode.setAttribute("class","ofWorkspace");
   $("#"+this.myDivNode.id).addClass("ofWorkspace");
   
   //add as droppable 
@@ -287,7 +300,7 @@ function Workspace(divId){
     drop:function(e,ui){
     //alert(ui.draggable[0].iClass);
       if(ui.draggable[0].iClass == "TableItem")
-        wsRef.addNewTable( ui.draggable[0].id,ui.offset );
+        window.wsRef.addNewTable( ui.draggable[0].id,ui.offset );
     }
   });
 }
@@ -380,8 +393,8 @@ function TableStore(node){
         stop:function(e,ui){
                   
           //will have to move div back to tablestore so it can be dragged again
-          e.target.style.top=0;
-          e.target.style.left=0;          
+          e.target.style.top=0+"px";
+          e.target.style.left=0+"Px";          
         }
       });
        $("#"+ti.id).addClass("OfTableItem");
@@ -406,13 +419,14 @@ function scream(){
 
   //gets the table names from the join set, puts into comma sepd string
   //post to server , get back col names
-  for(i=0;i<wsRef.joinSet.length;i++){
-    j = document.getElementById(wsRef.joinSet[i]);
+  for(i=0;i<window.wsRef.joinSet.length;i++){
+    j = document.getElementById(window.wsRef.joinSet[i]);
     if(j){
       GET_STRING += j.innerHTML+",";
     }
   }
   GET_STRING += ".js"; 
+  alert(URL+GET_STRING);
   
 /*    sailor=["sname","sid","rating","age","one","two","three","four"];
   reserves=["bid","sid"];
@@ -437,7 +451,7 @@ function scream(){
   
   //use ajax to submit
   $.getJSON(URL+GET_STRING,function(data){
-  
+  alert("returned");//debug
     if(data==null){
       document.getElementById("chus").innerHTML="Could not load columns..";
       return;
