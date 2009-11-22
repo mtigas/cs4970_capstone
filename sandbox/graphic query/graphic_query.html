@@ -1,22 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+  
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/jquery-ui.min.js"></script>
+  
+  <script type="text/javascript" src="Workspace.js"></script>
+  
   <link type="text/css" href="./js/css/ui-lightness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   
-  <script type="text/javascript">
-  var $tabs;
-  var TAB_SELECT_OK=false;
-  //check verbatim copy of example - check requirement of link to their code
-  //could be problem with api
   
-  //try example in firefox
+  <style type="text/css">
+    .ofTable { 
+      width: 101px; 
+      height: 71px; 
+      background-color:silver;
+    }
+    
+    .ofWorkspace{
+      height:444px;
+      width:540px;
+      background-color:blue;
+      border:1px solid black;
+    }
+    
+    .ofTableStore{    
+      height:444px;
+      width:200px;
+      background-color:yellow;
+      border:1px solid black;    
+    }
+    
+    .ofTableItem{
+      height:50px;
+      width:80px;
+      border:1px solid black;
+      background-color:green;
+    }
+  </style>
+  
+  <script type="text/javascript">
+  
+  /* start join */
+  var $tabs;
+  var ws;
+  var ts;
+  var TAB_SELECT_OK=false;
+  
+  /* start project */
+var tables,tNames;
+var aliass=new Array();
+
+var projections;
+var layout=5;
+
+  /* start selection */
+  
+  
+  /* ready */
   $(function(){
-    $tabs = $("#tabs").tabs({select:function(e,ui){
-        return TAB_SELECT_OK;
+  
+    /* join */
+   ws = new Workspace( "ws" ); 
+    ts = new TableStore( document.getElementById("ts") );
+
+     $("#join_button").click(function (){
+      // Handle finishing on the join tab
+      //alert("handling join finish");
+      //check there is tables in join set or 1 tab in the ws. if not alert the user.
+      if (window.wsRef.countJoinSet()<1) {
+        if( window.wsRef.myDivNode.childNodes.length!=1){
+          alert("You have to join tables or have only one table in the workspace.");
+          return;
+        }
+        //can move on with 1 tab in ws
+        ws.addInMiddle("Table0");
       }
-    });
+      
+      //deactivate this tab
+      TAB_SELECT_OK = true;
+      
+      //join  set is published to wsRef.joinSet (as array of strings=ids)
+      //join set has >=1 childs
+      //activate/display the next tab
+      //alert($tabs);//debug
+     // alert('about to select');//debug
+      $tabs.tabs('select',1);
+      alert('screaming');
+      scream();
+     TAB_SELECT_OK = false;
+  });
+  
+       /* start tabs */
+     
+     $tabs = $("#tabs").tabs({select:function(e,ui){
+     alert(TAB_SELECT_OK);
+         return TAB_SELECT_OK;
+       }
+     });
+       /* finish the ready method */
   });
   </script>
 </head>
@@ -24,12 +107,41 @@
   
 <div id="tabs">
     <ul>
-        <li><a href="join.html#fragment-1"><span>Join</span></a></li>
-        <li><a href="project.html"><span>Project</span></a></li>
-        <li><a href="select.html#selections"><span>Select</span></a></li>
-        <li><a href="results.html"><span>Results</span></a></li>
+        <li><a href="#fragment-1"><span>Join</span></a></li>
+        <li><a href="#test"><span>Project</span></a></li>
+        <li><a href="#selections"><span>Select</span></a></li>
+        <li><a href="#results"><span>Results</span></a></li>
     </ul>
     
+    <div style="height:500px" id="fragment-1">
+
+        <div id="ws" style="float:left;"></div>
+  
+        <div id="ts" style="float:left;"></div>
+  
+        <div> 
+       <!-- <input type="button" onclick="ws.addNewTable('Sailor');" value="Push to Close"> <br> -->
+       <input type="button" onclick="ws.clear();" value="Clear"/> <br/>
+       <!-- <input type="button"onclick="ws.showJoins();"value="Show join set"/><br/> -->
+       <!-- <input type="button"onclick="ws.showJoinCount();"value="Show join set count"/> -->
+       <br/> <input type="button" id="join_button" value="Join the tables"/>
+        </div>
+
+    </div>
+    
+    <div id="test">
+      <div style="width:500px;height:400px;overflow:auto;" id="chus">Loading...</div>
+      <input style="margin:5px;"type="button" onclick="finish_project();" value="Project the checked columns"/>
+      
+    </div>
+    
+    <div id="selections">
+      
+    </div>
+    
+    <div id="results">
+      No resutls yet.
+    </div>
     
 </div>
 </body>
