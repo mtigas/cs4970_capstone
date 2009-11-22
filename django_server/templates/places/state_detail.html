@@ -312,8 +312,11 @@
 {% endcomment %}
 
 {# TODO: Note that calculation uses SRID=2163, the National Atlas Equal Area projection. #}
+
 <p>
+{% if place.area.sq_inch %}
 <b>Total Area:</b> <span title="...Or {{place.area.sq_inch|intword}} square inches.">{{ place.area.sq_mi|floatformat:3|intcomma }} sq. mi. ({{ place.area.sq_km|floatformat:3|intcomma }} sq. km)</span><br />
+{% endif %}
 Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_source }}</a>
 </p>
 
