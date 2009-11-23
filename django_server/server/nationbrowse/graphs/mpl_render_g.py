@@ -56,10 +56,84 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     
     return fig
 
+
+def demo_race_pie():
+    width, height = 600, 600
+    
+    # convert to 100 DPI values
+    width = int(width)/100
+    height = int(height)/100
+    
+    # ===== Initialize the Figure and Axes =====
+    
+    # instead of calling figure() in the example, actually instantiate a "raw" Figure
+    fig = Figure(figsize=(width,height), dpi=100, facecolor='#ffffff', frameon=False)
+    
+    # instead of calling axes() in the example the example
+    ax = fig.add_subplot(111)
+
+    # ===== Sample data =====
+
+    labels = [
+        "White",
+        "Black",
+        "Native American",
+        "Asian",
+        "Pacific Islander",
+        "Other",
+        "Mixed descent"
+    ]    
+    values = [
+        4748083,
+        629391,
+        25076,
+        61595,
+        3178,
+        45827,
+        82061
+    ]
+    colors = [
+        '#0000FF',
+        '#5555FF',
+        '#999911',
+        '#00FF00',
+        '#FF00FF',
+        '#FFFF00',
+        '#888888',
+        '#888888'
+    ]
+    pct_fmt = '%1.2f%%' # string format (sprintf-like) for the float value
+
+    # ===== Render the pie =====
+
+    # instead of just calling pie() from the example
+    ax.pie(values, colors=colors, labels=labels, autopct=pct_fmt, labeldistance=1.15, shadow=True)
+    
+    # instead of just calling title() from the example
+    ax.set_title("Race in Missouri\n(total pop 5595211)")
+    
+    return fig
+
+
+
 if __name__ == "__main__":
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     from traceback import print_exc
     
+    print "Outputting test pie chart"
+    try:
+        fig = demo_race_pie()
+        canvas = FigureCanvas(fig)
+        file_out = open("demo_race_pie.png","wb")
+        canvas.print_png(file_out)
+        file_out.close()
+        print "\t===== Saved to demo_race_pie.png ====="
+    except:
+        print_exc()
+        
+    # ==============================
+    
+    print
     print "Testing boxplot:"
     values = [[115714,1400,32823],[250105, 130275, 1239, 5996969, 130203, 123050, 230597]]
     labels = ["Someplace","Somewhere Else"]
