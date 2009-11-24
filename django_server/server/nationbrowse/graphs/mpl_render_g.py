@@ -52,7 +52,13 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     # Haven't looked at it, but if you need to unpack [(x1,y1),(x2,y2),...] into
     # (x1,x2),(y1,y2),... -- see scatterplot() below.
     
-    # ... do things ...
+    ax = fig.add_subplot(111)
+    # the histogram of the data
+    n, bins, patches = ax.hist(values, len(values), facecolor=color)
+    
+    if label_x: ax.set_xlabel(label_x)
+    if label_y: ax.set_ylabel(label_y)
+    ax.grid(True)
     
     return fig
 
