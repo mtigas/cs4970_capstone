@@ -5,13 +5,11 @@ Contains graph-rendering functions that use the matplotlib library.
 from __future__ import division
 from matplotlib.figure import Figure
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid import make_axes_locatable
 
 def boxplot(values, labels=None, colors=None, size=(400,200)):
     """
-    http://matplotlib.sourceforge.net/examples/pylab_examples/boxplot_demo.html
-    http://matplotlib.sourceforge.net/examples/pylab_examples/boxplot_demo2.html
-    (mostly look at the last example of the first one)
-    
     Values will be a list of lists. Each list represents one dataset (or one box
     to be plotted), where the sublist is that data.
     
@@ -38,60 +36,70 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
 
 def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200)):
     """
-    http://matplotlib.sourceforge.net/examples/pylab_examples/histogram_demo.html
-    
     Values will come as a list of tuples representing (x,y) values.
     
     values  = [(0,100),(15,2500),(20,3000),(25,2700),(30,2800),(35,3600),(40,4200),(45,3500),(50,2100)]
     label_x = "Age"
     label_y = "Population"
     """
-    x = []; y = [] # the individual values of (x,y) unpacked from the tuple list
-    width = int(size[0])/100
-    height = int(size[1])/100
-    fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
-
-    # unpack the tuple list
+   
+    # unpack the tuple value list into x and y lists
+    x_vals = []; y_vals = []
     for tuple in values:
-        first, second = tuple
-        x.append(first)
-        y.append(second)
+        first, second = tuple;
+        x_vals.append(first)
+        y_vals.append(second)
 
-    axScatter = fig.subplot(111)
+    # convert the data to a numpy list
+    x = np.array(x_vals)
+    y = np.array(y_vals)
+
+    # the width and height of the figure
+    fig_w = int(size[0])/40
+    fig_h = int(size[1])/40
+
+    # set up the graph descriptor object and prefrences for it
+    fig = plt.figure(1, figsize=(fig_w,fig_h), dpi=100, facecolor='#ffffff', frameon=False)
+
+    axScatter = plt.subplot(111)
     divider = make_axes_locatable(axScatter)
-    # create a new axes w/ a height of 1.2 inch above the axScatter
+
+    # create a new axes with a height of 1.2 inch above the axScatter
     axHistx = divider.new_vertical(1.2, pad=0.1, sharex=axScatter)
-    # create a new axis w/ a width of 1.2 inch on the right side of axScatter
+
+    # create a new axes with a width of 1.2 inch on the right side of the axScatter
     axHisty = divider.new_horizontal(1.2, pad=0.1, sharey=axScatter)
 
     fig.add_axes(axHistx)
     fig.add_axes(axHisty)
 
     # make some labels invisible
-    fig.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
-    # the scatter plot
+    plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
+
+    # plot the scatterplot and set aspect ratio
     axScatter.scatter(x, y)
     axScatter.set_aspect(1.)
 
-    # determine the limits manually
+    # now determine limits manually and set the bin number
     binwidth = 0.25
-    xymax = np.max([np.max(np.fabs(x)), np.max(np.fabs(y))])
-    lim = (int(xymax/binwidth) + 1) * binwidth
-    
+    xymax = np.max( [np.max(np.fabs(x)), np.max(np.fabs(y))] )
+    lim = ( int(xymax/binwidth) + 1) * binwidth
     bins = np.arange(-lim, lim + binwidth, binwidth)
+
+    # plot the histograms for x and y
     axHistx.hist(x, bins=bins)
     axHisty.hist(y, bins=bins, orientation='horizontal')
-    
+
     # the xaxis of axHistx and yaxis of axHisty are shared with axScatter,
     # thus there is no need to manually adjust the xlim and ylim of these
     # axis.
 
-    #axHistx.axis["bottom"].major_ticklabels.set_visible(False)
+    # axHistx.axis["bottom"].major_ticklabels.set_visible(False)
     for tl in axHistx.get_xticklabels():
         tl.set_visible(False)
     axHistx.set_yticks([0, 50, 100])
 
-    #axHisty.axis["left"].major_ticklabels.set_visible(False)
+    # axHisty.axis["left"].major_ticklabels.set_visible(False)
     for tl in axHisty.get_yticklabels():
         tl.set_visible(False)
     axHisty.set_xticks([0, 50, 100])
