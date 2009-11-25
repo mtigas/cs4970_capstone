@@ -4,6 +4,7 @@ Contains graph-rendering functions that use the matplotlib library.
 """
 from __future__ import division
 from matplotlib.figure import Figure
+import numpy as np
 
 def boxplot(values, labels=None, colors=None, size=(400,200)):
     """
@@ -45,21 +46,56 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     label_x = "Age"
     label_y = "Population"
     """
+    x = []; y = [] # the individual values of (x,y) unpacked from the tuple list
     width = int(size[0])/100
     height = int(size[1])/100
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
+
+    # unpack the tuple list
+    for tuple in values:
+        first, second = tuple
+        x.append(first)
+        y.append(second)
+
+    axScatter = fig.subplot(111)
+    divider = make_axes_locatable(axScatter)
+    # create a new axes w/ a height of 1.2 inch above the axScatter
+    axHistx = divider.new_vertical(1.2, pad=0.1, sharex=axScatter)
+    # create a new axis w/ a width of 1.2 inch on the right side of axScatter
+    axHisty = divider.new_horizontal(1.2, pad=0.1, sharey=axScatter)
+
+    fig.add_axes(axHistx)
+    fig.add_axes(axHisty)
+
+    # make some labels invisible
+    fig.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
+    # the scatter plot
+    axScatter.scatter(x, y)
+    axScatter.set_aspect(1.)
+
+    # determine the limits manually
+    binwidth = 0.25
+    xymax = np.max([np.max(np.fabs(x)), np.max(np.fabs(y))])
+    lim = (int(xymax/binwidth) + 1) * binwidth
     
-    # Haven't looked at it, but if you need to unpack [(x1,y1),(x2,y2),...] into
-    # (x1,x2),(y1,y2),... -- see scatterplot() below.
+    bins = np.arange(-lim, lim + binwidth, binwidth)
+    axHistx.hist(x, bins=bins)
+    axHisty.hist(y, bins=bins, orientation='horizontal')
     
-    ax = fig.add_subplot(111)
-    # the histogram of the data
-    n, bins, patches = ax.hist(values, len(values), facecolor=color)
-    
-    if label_x: ax.set_xlabel(label_x)
-    if label_y: ax.set_ylabel(label_y)
-    ax.grid(True)
-    
+    # the xaxis of axHistx and yaxis of axHisty are shared with axScatter,
+    # thus there is no need to manually adjust the xlim and ylim of these
+    # axis.
+
+    #axHistx.axis["bottom"].major_ticklabels.set_visible(False)
+    for tl in axHistx.get_xticklabels():
+        tl.set_visible(False)
+    axHistx.set_yticks([0, 50, 100])
+
+    #axHisty.axis["left"].major_ticklabels.set_visible(False)
+    for tl in axHisty.get_yticklabels():
+        tl.set_visible(False)
+    axHisty.set_xticks([0, 50, 100])
+
     return fig
 
 
