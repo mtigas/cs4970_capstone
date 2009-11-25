@@ -50,6 +50,8 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
         x_vals.append(first)
         y_vals.append(second)
 
+    tick_val = max(min(x_vals, y_vals))
+
     # convert the data to a numpy list
     x = np.array(x_vals)
     y = np.array(y_vals)
@@ -66,9 +68,11 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
 
     # create a new axes with a height of 1.2 inch above the axScatter
     axHistx = divider.new_vertical(1.2, pad=0.1, sharex=axScatter)
-
+    axHistx.grid(True)
+    
     # create a new axes with a width of 1.2 inch on the right side of the axScatter
     axHisty = divider.new_horizontal(1.2, pad=0.1, sharey=axScatter)
+    axHisty.grid(True)
 
     fig.add_axes(axHistx)
     fig.add_axes(axHisty)
@@ -79,6 +83,7 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     # plot the scatterplot and set aspect ratio
     axScatter.scatter(x, y)
     axScatter.set_aspect(1.)
+    axScatter.grid(True)
 
     # now determine limits manually and set the bin number
     binwidth = 0.25
@@ -87,8 +92,9 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     bins = np.arange(-lim, lim + binwidth, binwidth)
 
     # plot the histograms for x and y
-    axHistx.hist(x, bins=bins)
-    axHisty.hist(y, bins=bins, orientation='horizontal')
+    axHistx.hist(x, bins=bins, facecolor=color, alpha=0.75)
+    
+    axHisty.hist(y, bins=bins, orientation='horizontal', facecolor=color, alpha=0.75)
 
     # the xaxis of axHistx and yaxis of axHisty are shared with axScatter,
     # thus there is no need to manually adjust the xlim and ylim of these
@@ -97,12 +103,13 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     # axHistx.axis["bottom"].major_ticklabels.set_visible(False)
     for tl in axHistx.get_xticklabels():
         tl.set_visible(False)
-    axHistx.set_yticks([0, 50, 100])
-
+    axHistx.set_yticks([0, tick_val/8, tick_val/4])
+    axHistx.set_title(label_x)
     # axHisty.axis["left"].major_ticklabels.set_visible(False)
     for tl in axHisty.get_yticklabels():
         tl.set_visible(False)
-    axHisty.set_xticks([0, 50, 100])
+    axHisty.set_xticks([0, tick_val/8, tick_val/4])
+    axHisty.set_title(label_y)
 
     return fig
 
@@ -132,7 +139,13 @@ if __name__ == "__main__":
     
     print
     print "Testing histogram:"
-    values  = [(0,100),(15,2500),(20,3000),(25,2700),(30,2800),(35,3600),(40,4200),(45,3500),(50,2100)]
+    values = []
+    x_test = np.random.random_integers(0, high=100, size=30)
+    y_test = np.random.random_integers(80, high=7000, size=30)
+    for foo in x_test:
+        for bar in y_test:
+            values.append((int(foo), int(bar)))
+    #values  = [(0,100),(15,2500),(20,3000),(25,2700),(30,2800),(35,3600),(40,4200),(45,3500),(50,2100)]
     label_x = "Age"
     label_y = "Population"
     
