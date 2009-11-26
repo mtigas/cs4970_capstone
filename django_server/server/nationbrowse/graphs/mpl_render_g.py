@@ -30,7 +30,11 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     height = int(size[1])/100
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
     
-    # ... do things ...
+    # determine the amount of sublists which is the amount of boxplots to render
+    plotNum = len(values)
+
+    ax = fig.add_subplot(111)
+    ax.boxplot(values, notch=1, vert=1)
     
     return fig
 
@@ -80,7 +84,7 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
     # make some labels invisible
     plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
 
-    # plot the scatterplot and set aspect ratio
+    # plot the scatterplot and set aspect ratio, grid lines
     axScatter.scatter(x, y)
     axScatter.set_aspect(1.)
     axScatter.grid(True)
