@@ -29,12 +29,11 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     width = int(size[0])/100
     height = int(size[1])/100
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
-    
-    # determine the amount of sublists which is the amount of boxplots to render
-    plotNum = len(values)
 
     ax = fig.add_subplot(111)
     ax.boxplot(values, notch=1, vert=1)
+    ax.set_xticklabels(labels)
+    ax.grid(True)
     
     return fig
 
@@ -91,14 +90,14 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(400,200
 
     # now determine limits manually and set the bin number
     binwidth = 0.25
-    xymax = np.max( [np.max(np.fabs(x)), np.max(np.fabs(y))] )
-    lim = ( int(xymax/binwidth) + 1) * binwidth
-    bins = np.arange(-lim, lim + binwidth, binwidth)
+    #xymax = np.max( [np.max(np.fabs(x)), np.max(np.fabs(y))] )
+    #lim = ( int(xymax/binwidth) + 1) * binwidth
+    #bins = np.arange(-lim, lim + binwidth, binwidth)
 
     # plot the histograms for x and y
-    axHistx.hist(x, bins=bins, facecolor=color, alpha=0.75)
+    axHistx.hist(x, bins=9, facecolor=color, alpha=0.75)
     
-    axHisty.hist(y, bins=bins, orientation='horizontal', facecolor=color, alpha=0.75)
+    axHisty.hist(y, bins=9, orientation='horizontal', facecolor=color, alpha=0.75)
 
     # the xaxis of axHistx and yaxis of axHisty are shared with axScatter,
     # thus there is no need to manually adjust the xlim and ylim of these
