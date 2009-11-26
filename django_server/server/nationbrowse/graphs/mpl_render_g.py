@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid import make_axes_locatable
 
+# note: the histogram will look terrable if not enough width is given to the image if there are many boxplots to be rendered in the same space
+# that is, the labels at the bottom of the image will overlap so they won't become readable
 def boxplot(values, labels=None, colors=None, size=(400,200)):
     """
     Values will be a list of lists. Each list represents one dataset (or one box
@@ -31,7 +33,7 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
 
     ax = fig.add_subplot(111)
-    ax.boxplot(values, notch=1, vert=1)
+    ax.boxplot(values, notch=0, sym='rs', vert=1, whis=1.5)
     ax.set_xticklabels(labels)
     ax.grid(True)
     
@@ -123,13 +125,16 @@ if __name__ == "__main__":
     
     print
     print "Testing boxplot:"
-    values = [[115714,1400,32823],[250105, 130275, 1239, 5996969, 130203, 123050, 230597]]
-    labels = ["Someplace","Somewhere Else"]
+    boxplot_one = np.random.random_integers(50, 300, 20)
+    boxplot_two = np.random.random_integers(10, 500, 20)
+    boxplot_values = [boxplot_one,boxplot_two]
+    #values = [[115714,1400,32823],[250105, 130275, 1239, 5996969, 130203, 123050, 230597]]
+    labels = ["Columbia, MO","Urbana, IL"]
     colors = ["#0000FF","#5555FF"]
 
-    print "\tvalues = %s\n\tlabels = %s\n\tcolors = %s" % (values,labels,colors)
+    print "\tvalues = %s\n\tlabels = %s\n\tcolors = %s" % (boxplot_values,labels,colors)
     try:
-        fig = boxplot(values,labels,colors)
+        fig = boxplot(boxplot_values,labels,colors)
         canvas=FigureCanvas(fig)
         file_out = open("boxplot.png","wb")
         canvas.print_png(file_out)
@@ -144,7 +149,7 @@ if __name__ == "__main__":
     print "Testing histogram:"
     values = []
     x_test = np.random.random_integers(0, high=100, size=30)
-    y_test = np.random.random_integers(80, high=7000, size=30)
+    y_test = np.random.random_integers(80, high=700, size=30)
     for foo in x_test:
         for bar in y_test:
             values.append((int(foo), int(bar)))
