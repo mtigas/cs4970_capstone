@@ -4,7 +4,7 @@ import views
 
 urlpatterns = patterns('',
     url(
-        regex   = '^scatterhist_test/$',
+        regex   = '^scatterhist_test\.png$',
         view    = views.scatterhist_test,
         name    = 'scatterhist_test',
     ),
