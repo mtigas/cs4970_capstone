@@ -28,12 +28,13 @@ def boxplot(values, labels=None, colors=None, size=(400,200)):
     >>> colors = ["#0000FF","#5555FF"]
     """
     width = int(size[0])/100
-    height = int(size[1])/100
+    height = int(size[1])/50
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
 
     ax = fig.add_subplot(111)
+    ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
     ax.boxplot(values, notch=0, sym='rs', vert=1, whis=1.5)
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels(labels, fontsize=8, weight='bold')
     ax.grid(True)
     
     return fig
@@ -68,21 +69,27 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(650,650
     fig = Figure(figsize=(fig_w,fig_h), dpi=100, facecolor='#ffffff', frameon=False)
 
     axScatter = fig.add_subplot(111)
+
+    axScatter.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
+    axScatter.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
+
     divider = make_axes_locatable(axScatter)
 
     # create a new axes with a height of 1.2 inch above the axScatter
     axHistx = divider.new_vertical(1.2, pad=0.1, sharex=axScatter)
-    axHistx.grid(True)
+    axHistx.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
+    axHistx.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
     
     # create a new axes with a width of 1.2 inch on the right side of the axScatter
     axHisty = divider.new_horizontal(1.2, pad=0.1, sharey=axScatter)
-    axHisty.grid(True)
+    axHisty.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)
+    axHisty.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',alpha=0.5)    
 
     fig.add_axes(axHistx)
     fig.add_axes(axHisty)
 
     # plot the scatterplot and set aspect ratio, grid lines
-    axScatter.scatter(x, y)
+    axScatter.scatter(x, y, facecolors=color)
     axScatter.set_aspect("auto")
     axScatter.grid(True)
 
@@ -94,7 +101,6 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(650,650
 
     # plot the histograms for x and y
     axHistx.hist(x, bins=9, facecolor=color, alpha=0.75)
-    
     axHisty.hist(y, bins=9, orientation='horizontal', facecolor=color, alpha=0.75)
 
     # the xaxis of axHistx and yaxis of axHisty are shared with axScatter,
@@ -104,12 +110,12 @@ def histogram(values, label_x=None, label_y=None, color="#00ff00", size=(650,650
     # axHistx.axis["bottom"].major_ticklabels.set_visible(False)
     for tl in axHistx.get_xticklabels():
         tl.set_visible(False)
-    axHistx.set_yticks([0, tick_val/8, tick_val/4])
+    axHistx.set_yticks([0, int(tick_val/8), int(tick_val/4)])
     axHistx.set_title(label_x)
     # axHisty.axis["left"].major_ticklabels.set_visible(False)
     for tl in axHisty.get_yticklabels():
         tl.set_visible(False)
-    axHisty.set_xticks([0, tick_val/8, tick_val/4])
+    axHisty.set_xticks([0, int(tick_val/8), int(tick_val/4)])
     axHisty.set_title(label_y)
 
     return fig
