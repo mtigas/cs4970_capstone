@@ -23,7 +23,7 @@ from django.db import models
 from django_caching.models import CachedModel
 from django_caching.managers import CachingManager
 
-from nationbrowse.demographics.models import PlacePopulation
+from nationbrowse.demographics.models import PlacePopulation,CrimeData
 from django.contrib.gis.measure import Area
 from django.contrib.contenttypes import generic
 from threadutil import call_in_bg
@@ -194,6 +194,22 @@ class PolyModel(CachedModel):
             except:
                 return None
     population_demographics = cached_property(population_demographics, 15552000)
+
+    # Special fake foreign key that checks the PlacePopulation table for a record
+    # that corresponds with this Place.
+    crime_fkey = generic.GenericRelation(CrimeData, content_type_field='place_type', object_id_field='place_id')
+    
+    def crime_data(self):
+        """
+        If this place has a record in CrimeData, retrieve and return that.
+        """
+        if self.crime_fkey and self.crime_fkey.count() > 0:
+            try:
+                return self.crime_fkey.all()[0]
+            except:
+                return None
+    crime_data = cached_property(crime_data, 15552000)
+
 
     class Meta:
         abstract = True
