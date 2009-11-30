@@ -1,7 +1,349 @@
 {% extends "base.html" %}
 
+{% load graphs humanize safecache inline_jsmin %}
+
+{% block extrahead %}
+	<style type="text/css">
+	.smallmap {
+    width: 400px;
+    height: 400px;
+    border: 2px solid #ccc;
+	}
+	</style>
+    {# TODO: OVER 60KB OF EXTERNAL JS. Can we do better? #}
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js" type="text/javascript"></script>
+	<script src="http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.2-min.js" type="text/javascript"></script>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key={{GOOGLE_MAPS_API_KEY}}" type="text/javascript"></script>
+    <script src="http://media2.nationbrowse.com/js/OpenLayers.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        // JSmin'd for the time being (until shared code can be refactored out later)
+        {% safecache 86400 nation_overview request.GET.crime_map request.GET.density jsmin %}
+        {% startjsmin %}
+        {% comment %}
+        TODO: fork out a LOT of this JS into an external file so that every page can benefit
+        from having this rendering code shared (and not downloaded again and again and again)
+        {% endcomment %}
+        var $j = jQuery.noConflict();
+        OpenLayers.IMAGE_RELOAD_ATTEMPTS = 2;
+        OpenLayers.Util.onImageLoadErrorColor = "transparent";
+        
+        // In case OpenLayers doesn't load, define these out here
+        // since some functions may call on them on the global namespace (and null
+        // is way better than undefined).
+        var states_map = null;
+        var wkt_parser = null;
+        var sourceProj = null;
+        var targetProj = null;
+        
+        // global var so this can be disabled on certain conditions (like when mousing
+        // over the list -- we don't want it to scroll then)
+        var list_autoscroll = true;
+        
+        var wkt_to_vector = function(wkt) {
+            // Converts WKT text (in WGS84) to a vector image (in the Google spherical mercator)
+
+            // Punt on empty polygons or other bad data.
+        	var tempObj = wkt_parser.read(wkt);
+        	if (!tempObj) return null;
+        	
+        	var tempGeom = tempObj.geometry.clone();
+        	tempGeom.transform(sourceProj, targetProj);
+        	var obj = wkt_parser.read(tempGeom);
+        	return obj
+        };
+        var cloneObj = function(what) {
+            for (i in what) {
+                this[i] = what[i];
+            }
+        };
+        
+		var init = function(){
+        	sourceProj = new OpenLayers.Projection("EPSG:4326");
+        	targetProj = new OpenLayers.Projection("EPSG:900913");
+            
+            var default_style = new OpenLayers.Style({
+            	strokeColor : '#777777',
+            	strokeWidth: 1,
+            	strokeOpacity: 0.5,
+            	fillColor : '#FFFFFF', // Should be overridden by data styles
+            	fillOpacity : 0.7,
+            	pointRadius : 3,
+            	strokeLinecap: "round"
+            });
+            var hover_style = new OpenLayers.Style({
+            	fillOpacity : 1,
+            	strokeWidth: 3,
+            	strokeOpacity: 1,
+            	strokeColor : '#000000'
+            });
+            function create_rule_style_array(rule_property,in_arr) {
+                // OpenLayers has the most verbose rule definition syntax
+                // ever. Add the ability to create quick color-shading rules
+                // based on a given attribute.
+
+                // [[0,"#FEE391"],[10000,"FEC44F"],...]
+                
+                var out_arr = new Array();
+                for(var i = 0; i<in_arr.length; i++){
+                    out_arr.push(new OpenLayers.Rule({
+                        filter: new OpenLayers.Filter.Comparison({
+                            type: OpenLayers.Filter.Comparison.GREATER_THAN_OR_EQUAL_TO,
+                            property: rule_property,
+                            value: in_arr[i][0]
+                        }),
+                        symbolizer: {
+                            fillColor:in_arr[i][1]
+                        }
+                    }));
+                }
+                return out_arr;
+            };
+
+            {% ifequal request.GET.crime_map "1" %}
+                default_style.addRules(create_rule_style_array(
+                    "violent_crime_rate", [
+                    [0,"#FFFFE5"],
+                    [25,"#FFF7BC"],
+                    [50,"#FEE391"],
+                    [100,"#EC7014"],
+                    [250,"#CC4C02"],
+                    [500,"#662506"],
+                ]));            
+            {% else %}
+                {% ifequal request.GET.density "1" %}
+                default_style.addRules(create_rule_style_array(
+                    "pop_density", [
+                    [0,"#FFFFE5"],
+                    [25,"#FFF7BC"],
+                    [50,"#FEE391"],
+                    [100,"#FEC44F"],
+                    [250,"#FE9929"],
+                    [500,"#EC7014"],
+                    [1000,"#CC4C02"],
+                    [2500,"#993404"],
+                    [5000,"#662506"]
+                ]));
+                {% else %}
+                default_style.addRules(create_rule_style_array(
+                    "total_pop", [
+                    [0,"#FFFFE5"],
+                    [10000,"#FFF7BC"],
+                    [50000,"#FEE391"],
+                    [75000,"#FEC44F"],
+                    [100000,"#FE9929"],
+                    [250000,"#EC7014"],
+                    [500000,"#CC4C02"],
+                    [1000000,"#993404"],
+                    [2000000,"#662506"]
+                ]));
+                {% endifequal %}
+            {% endifequal %}
+            
+            
+            var style_map = new OpenLayers.StyleMap({
+                "default":default_style,
+                "select":hover_style
+            });
+            
+            // Initialize the map object
+            states_map = new OpenLayers.Map('states_map' , {
+                projection: targetProj,
+                displayProjection: sourceProj,
+                units: "m",
+                numZoomLevels: 18,
+                maxResolution: 156543.0339,
+                maxExtent: new OpenLayers.Bounds(-20037508, -20037508,
+                                                 20037508, 20037508.34),
+				controls: [
+					new OpenLayers.Control.ZoomPanel(),
+					new OpenLayers.Control.MouseDefaults(),
+					new OpenLayers.Control.LayerSwitcher(),
+					new OpenLayers.Control.ScaleLine()
+				]
+			});
+			wkt_parser = new OpenLayers.Format.WKT();
+			
+            // ===== Map layers =====
+            var vectors = new OpenLayers.Layer.Vector("States", {
+                styleMap: style_map
+            });
+            var google = new OpenLayers.Layer.Google("Google Terrain", {
+                'type': G_PHYSICAL_MAP,
+                'displayInLayerSwitcher': false, // don't allow disabling this layer
+                'numZoomLevels': 22,
+                'sphericalMercator': true
+            });
+
+            // Dump states in via Django template forloop.
+            var state_tmp = [];
+            {% for state in states %}
+            {% ifnotequal state.simple_wkt "POLYGON EMPTY" %}
+                state_tmp[{{forloop.counter0}}] = wkt_to_vector('{{state.simple_wkt|escapejs}}');
+                state_tmp[{{forloop.counter0}}].attributes = {
+                    'total_pop':{% if state.population_demographics.total %}{{ state.population_demographics.total }}{% else %}0{% endif %},
+                    'pop_density':Math.round({% if state.population_demographics.total %}{{ state.population_demographics.total }}{% else %}0{% endif %}/{{ state.area.sq_mi }}),
+                    'area':'{{ state.area.sq_mi|floatformat:3|intcomma }} sq. mi.',
+                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|floatformat:2|intcomma }}{% else %}0{% endif %}
+                };
+                state_tmp[{{forloop.counter0}}].data = {
+                    'id':{{state.id}},
+                    'name':'{{state.name|escapejs}}',
+                    'url':'{{state.get_absolute_url}}',
+                    'total_pop':'{{ state.population_demographics.total|intcomma }}',
+                    'male':'{{ state.population_demographics.male|intcomma }}',
+                    'female':'{{ state.population_demographics.female|intcomma }}',
+                    'violent_crime_rate':'{{ state.crime_data.violent_crimes_per100k }} (per 100,000 residents)'
+                };
+            {% endifnotequal %}
+            {% endfor %}
+            
+            // Since some of the above items will be null, recreate the array
+            // so we have consequtive IDs on the array (because OpenLayers expects
+            // 0...n objects and fails on nulls).
+            var states = new Array();
+            for(var i = 0; i<state_tmp.length; i++){
+                if (state_tmp[i]){
+                    states.push(state_tmp[i]);
+                }
+            }
+            
+            // Destroy 'temporary' array
+            state_tmp.length = 0;
+            state_tmp = null;
+            
+            vectors.addFeatures(states);
+            states_map.addLayers([google,vectors]);
+            
+            // ===== Center the map on the State's center. =====
+            var nation_center = new OpenLayers.LonLat(-92.8125, 38.8225909761771);
+            // Need to reproject the lat/lon into spherical mercator
+			states_map.setCenter(nation_center.transform(sourceProj, targetProj));
+			
+			// Zoom to the closest zoom that shows every state.
+			states_map.zoomTo(3);
+
+            // ===== Handle mouseover/mouseout/click events =====
+        	var hover_control = new OpenLayers.Control.SelectFeature(vectors, {
+        		hover:true,
+        		onSelect: function(feature) {
+        		    // Hover will bold the name of the state in the list
+        		    // and also scroll the state's name into the view
+                    var label = jQuery('#link_state_'+feature.data.id);
+                    label.css('font-weight','bold');
+                    label.css('font-size','larger');
+                    if (list_autoscroll)
+                        jQuery("#states_list").scrollTo(label);
+                    
+                    var data_html = '<h2 style="margin:0">'+feature.data.name+"</h2>";
+                    data_html += '<table style="margin:0;width:190px">';
+                    data_html += "<tr><td><b>Population</b></td><td>"+feature.data.total_pop+"</td></tr>"
+                    data_html += "<tr><td><b>Male pop.</b></td><td>"+feature.data.male+"</td></tr>"
+                    data_html += "<tr><td><b>Female pop.</b></td><td>"+feature.data.female+"</td></tr>";
+                    //data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
+                    //data_html += "<tr><td><b>Violent crime rate</b></td><td>"+feature.data.violent_crime_rate+"</td></tr>"
+                    data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
+                    data_html += "<tr><td><b>Area</b></td><td>"+feature.attributes.area+"</td></tr>"
+                    data_html += "<tr><td><b>Pop. density</b></td><td>"+feature.attributes.pop_density+" (per sq. mi.)</td></tr>"
+
+                    data_html += "</table>";
+                    jQuery('#states_data_pane').html(data_html);
+                },
+        		onUnselect: function(feature) {
+        		    // When the mouse leaves the poly, unbold the name in list.
+                    var label = jQuery('#link_state_'+feature.data.id);
+                    label.css('font-weight','normal');
+                    label.css('font-size','medium');
+                },
+        		callbacks: {
+        		    'click': function(feature) {
+        		        // On click, destroy the map obj (to prevent browser memory 
+        		        // leaks) and redirect to the page for the state.
+                		var url = feature.data.url;
+                		states_map.destroy();
+                		window.location.href = url;
+                		return false;
+                	}
+        		}
+        	});
+        	states_map.addControl(hover_control);
+            hover_control.activate();
+
+            // Magics to get the "reverse" hover working:
+            // Hover over the label and you get the *poly* highlighted.
+            jQuery.each(states,function(i, obj){
+                var label = jQuery('#link_state_'+obj.data.id);
+                label.mouseover(function(){
+                    // Disable the "scrollTo" hook because we don't want the list
+                    // to scroll while we're mousing over the list!
+                    list_autoscroll = false;
+                    
+                    // Externally calls the .overFeature in our hover_control handler (above)
+                    hover_control.overFeature(obj);
+                });
+                label.mouseout(function(){
+                    // Same as above, except for the .outFeature method
+                    hover_control.outFeature(obj);
+                    
+                    // Re-enable "scrollTo" hook so the list will autoscroll if
+                    // user mouses over the map.
+                    list_autoscroll = true;
+                });
+            });
+        }
+        window.onload = init;
+    </script>
+    {% endjsmin %}
+    {% endsafecache %}
+{% endblock %}
+
+
 {% block body %}
-<ul>{% for state in states %}
-    <li><a href="{% url places:state_detail state.slug %}">{{ state }}</a></li>{% endfor %}
+    <h1>Nationbrowse: National Overview</h1>
+{% ifequal request.GET.density "1" %}<p>Shaded by population density. (<a href="{{ request.path }}">View by population size</a>.)</p>
+{% else %}<p>Shaded by population size. (<a href="{{ request.path }}?density=1">View by population density</a>.)</p>
+{% endifequal %}
+
+<div style="width:830px;border:1px solid #999">
+<div id="states_map" class="smallmap" style="float:left"></div>
+<ul id="states_list" style="float:left;width:200px;height:400px;margin:0 0 0 5px;padding:0;overflow:auto;list-style-type:none;list-style-position:outside">
+{% for state in states %}
+<li style="margin:0"><a href="{{ state.get_absolute_url }}" id="link_state_{{state.id}}" onMouseOver="">{{ state.name }}</a></li>{% endfor %}
 </ul>
+<div id="states_data_pane" style="float:left;width:200px;height:400px;margin:0 0 0 10px;overflow:auto">
+</div>
+<br style="clear:both"/>
+</div>
+
+    {% if not demographics %}
+        <p>This location has no demographic data.</p>
+    {% else %}
+        <h2>Demographics</h2>
+        <ul>
+            <li><b>Total Population:</b> {{ demographics.total|intcomma }}</li>
+            <li><b>Male Population:</b> {{ demographics.male|intcomma }}</li>
+            <li><b>Female Population:</b> {{ demographics.female|intcomma }}</li>
+        </ul>
+        <table style="vertical-align:top">
+            <tr><th>Proportion of race:</th><th>Population by age:</th></tr>
+            <tr>
+                <td style="vertical-align:top">
+                    {% race_piechart place_type place.slug %}
+                </td>
+                <td style="vertical-align:top">
+                    {% age_barchart place_type place.slug %}
+                </td>
+            </tr>
+        </table>
+        {% comment %}
+        <h2>Demographics</h2>
+        <p>Need a better way of outputting this. Need to find a way to output the "descriptive name" of each field without resorting to hard-coding.</p>
+        <table><tr><th>Demographic</th><th>Population</tr>
+            {% for d,p in demographics.items %}
+            <tr><td><b>{{ d }}</b></td><td style="text-align:right">{{ p|intcomma }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endcomment %}
+
+        <p>Demographic data source: <a href="{{ place.population_demographics.source.url }}">{{ place.population_demographics.source }}</a></p>
+    {% endif %}
 {% endblock %}

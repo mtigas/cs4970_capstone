@@ -268,6 +268,14 @@ class CrimeData(CachedModel):
     robbery = models.PositiveIntegerField(default=0,db_index=True)
     assault = models.PositiveIntegerField("aggravated assault",default=0,db_index=True)
     
+    @property
+    def violent_crimes_per100k(self):
+        """ Violent Crime rate (per 100,000 residents) """
+        if self.place and self.place.population_demographics and self.place.population_demographics.total:
+            return self.violent_crime / (self.place.population_demographics.total / 100000.0)
+        else:
+            return None
+
     property_crime = models.PositiveIntegerField(default=0,db_index=True)
     burglary = models.PositiveIntegerField(default=0,db_index=True)
     larceny_theft = models.PositiveIntegerField("larceny-theft",default=0,db_index=True)
