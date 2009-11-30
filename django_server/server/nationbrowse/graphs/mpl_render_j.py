@@ -4,6 +4,12 @@ Contains graph-rendering functions that use the matplotlib library.
 """
 from __future__ import division
 from matplotlib.figure import Figure
+from pylab import *
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
 
 def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,200)):
     """
@@ -16,8 +22,8 @@ def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,2
     label_x = "Population Density"
     label_y = "# of Crimes"
     """
-    width = int(size[0])/100
-    height = int(size[1])/100
+    width = int(size[0])/50
+    height = int(size[1])/50
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
     
     #...
@@ -26,7 +32,19 @@ def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,2
     x_values, y_values = zip(*values)
     
     # ... do things ...
+    w = max(x_values)
+    h = max(y_values)
+ 
+    ax = fig.add_subplot(111)
+    ax.scatter(x_values,y_values,s=10, marker='o', c='r')
+    ax.set_xbound(0, 100)
+    ax.set_ybound(0, (h + h/10))
+    ax.set_xlabel(label_x)
+    ax.set_ylabel(label_y)
     
+
+	
+	
     return fig
 
 def threed_bar_chart(values, label_x=None, label_y=None, label_z=None, color="#00ff00", size=(400,200)):
@@ -48,14 +66,80 @@ def threed_bar_chart(values, label_x=None, label_y=None, label_z=None, color="#0
     label_y = "Something Else" # Independent Variable B (depth)
     label_z = "Crimes"    # Dependent Variable (height)
     """
-    width = int(size[0])/100
-    height = int(size[1])/100
+    width = int(size[0])/50
+    height = int(size[1])/50
     fig = Figure(figsize=(width, height), dpi=100, facecolor='#ffffff', frameon=False)
     
     # Haven't looked at bar3d() specifically, but if you need to unpack [(x1,y1,z1),(x2,y2,z2),...] into
     # (x1,x2),(y1,y2),... -- see scatterplot() above for a start.
+    x_values, y_values, z_values = zip(*values)
+
     
     # ... do things ...
+    
+    ax = Axes3D(fig)
+    x_start = min(x_values)
+    x_stop = (max(x_values) + (max(x_values) / 10))
+    y_start = min(y_values)
+    y_stop = (max(y_values) + (max(y_values) / 10))
+    z_start = min(z_values)
+    z_stop = (max(z_values) + (max(z_values) / 10))
+
+    print (max(z_values))
+    print (len(z_values))
+    z_list = list(z_values)
+    z_reverse = []
+    z_counter = range(0,len(z_values),1)
+    print z_reverse
+    print z_list
+    print z_counter
+    for x in z_counter:
+            print x
+            print z_list[x]
+            z_reverse.append(-(z_list[x]))
+            print z_reverse[x]
+    """
+    for x in z_reverse:
+            print x
+    """
+    
+    x, y = np.random.rand(2, 100) * 4
+    hist, xedges, yedges = np.histogram2d(x_values, z_values, bins=4)
+	
+    elements = (len(xedges) - 1) * (len(yedges) - 1)
+    xpos, ypos = np.meshgrid(xedges[:-1]+0.25, yedges[:-1]+0.25)
+
+    xpos = xpos.flatten()
+    ypos = ypos.flatten()
+    zpos = np.zeros(elements)
+    dx = 0.5 * np.ones_like(zpos)
+    dy = dx.copy()
+    dz = hist.flatten()
+    ax.bar3d(x_values, y_values, z_values, dx, dy, dz, color='b')
+    
+    
+    """
+    for x in z_values:
+        ax.bar(x_values, y_values, x, zdir='y', color='b', alpha=0.6)
+
+    
+    for c, z in zip(['r', 'g', 'b', 'y'], [30, 20, 10, 0]):
+        xs = np.arange(20)
+        ys = np.random.rand(20)
+        ax.bar(x_values, y_values, z_values, zdir='z', color=c, alpha=0.8)
+    """
+    """
+    ax.bar(x_values, y_values, z_values, zdir='z', color='b', alpha=0.6)
+    """
+    """
+    ax.bar(3,5,zs=10,zdir='z',color='b',alpha=0.6)
+    """
+    ax.set_xlabel(label_x)
+    ax.set_ylabel(label_y)
+    ax.set_zlabel(label_z)
+    
+
+
     
     return fig
 
