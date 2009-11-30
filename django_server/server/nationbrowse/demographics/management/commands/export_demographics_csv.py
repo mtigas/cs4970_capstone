@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from nationbrowse.places.models import State,County,ZipCode
+from nationbrowse.places.models import State,County
 import csv
 
 def create_export(filename, qs):
@@ -37,7 +37,6 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
         print "Saving Demographics to CSV..."
-        #create_export("/Users/mtigas/Desktop/csv/1-state.csv",State.objects.order_by('name').defer('poly').all().iterator())
+        create_export("/Users/mtigas/Desktop/csv/1-state.csv",State.objects.order_by('name').defer('poly').all().iterator())
         create_export("/Users/mtigas/Desktop/csv/2-county.csv",County.objects.order_by('state__name','name').defer('poly').all().iterator())
-        #create_export("/Users/mtigas/Desktop/csv/3-zipcode.csv",ZipCode.objects.order_by('name').defer('poly').all().iterator())
         

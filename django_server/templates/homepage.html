@@ -186,7 +186,7 @@
                 };
                 state_tmp[{{forloop.counter0}}].data = {
                     'id':{{state.id}},
-                    'name':'{{state.name|escapejs}}',
+                    'name':'{{state|escapejs}}',
                     'url':'{{state.get_absolute_url}}',
                     'total_pop':'{{ state.population_demographics.total|intcomma }}',
                     'male':'{{ state.population_demographics.male|intcomma }}',
@@ -306,7 +306,7 @@
 <div id="states_map" class="smallmap" style="float:left"></div>
 <ul id="states_list" style="float:left;width:200px;height:400px;margin:0 0 0 5px;padding:0;overflow:auto;list-style-type:none;list-style-position:outside">
 {% for state in states %}
-<li style="margin:0"><a href="{{ state.get_absolute_url }}" id="link_state_{{state.id}}" onMouseOver="">{{ state.name }}</a></li>{% endfor %}
+<li style="margin:0"><a href="{{ state.get_absolute_url }}" id="link_state_{{state.id}}" onMouseOver="">{{ state }}</a></li>{% endfor %}
 </ul>
 <div id="states_data_pane" style="float:left;width:200px;height:400px;margin:0 0 0 10px;overflow:auto">
 </div>

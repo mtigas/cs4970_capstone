@@ -7,7 +7,7 @@ function TableStore(node){
     this.myDiv = node;
     
     /* get table names from ... */
-    this.tableNames = ["state","county","zipcode","datasource","placepopulation"];
+    this.tableNames = ["state","county","datasource","placepopulation"];
     
     for( var i=0;i<this.tableNames.length;i++){
      

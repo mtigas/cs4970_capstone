@@ -10,13 +10,13 @@ from django.template import RequestContext
 from django.template.defaultfilters import urlencode
 from django.views.decorators.cache import cache_control,never_cache
 
-from nationbrowse.places.models import State,ZipCode,County
+from nationbrowse.places.models import State,County
 
 from threadutil import call_in_bg
 
 def seed_next_random():
     """
-    Generates a redirect view to a random Place object (State, ZipCode, or County)
+    Generates a redirect view to a random Place object (State or County)
     and caches it. Picking a random place is expensive on the DB and CPU since there
     are over 40000 objects that it picks from, which strains the DB (since it causes
     an iteration over the objects to select the ID).
@@ -26,7 +26,7 @@ def seed_next_random():
     response = None
     while not response:
         try:
-            PlaceClass = rand_choice([State,ZipCode,County])
+            PlaceClass = rand_choice([State,County])
             
             # Cached list of all of the ID numbers for this place type.
             cache_key = "all_ids: %s" % (PlaceClass.__name__)
@@ -42,14 +42,10 @@ def seed_next_random():
                 place = PlaceClass.objects.get(pk=rand_id)
                 url = reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
                 call_in_bg(county_detail, (None, place.state.abbr.lower(),urlencode(place.name.lower())))
-            elif PlaceClass.__name__ == "State":
+            else:
                 place = PlaceClass.objects.only('slug').get(pk=rand_id)
                 url = reverse("places:state_detail",args=(place.slug,),current_app="places")
                 call_in_bg(state_detail, (None, place.slug))
-            else:
-                place = PlaceClass.objects.only('slug').get(pk=rand_id)
-                url = reverse("places:zipcode_detail",args=(place.slug,),current_app="places")
-                call_in_bg(zipcode_detail, (None, place.slug))
             response = HttpResponseRedirect(url)
         except:
             from traceback import print_exc
@@ -97,36 +93,6 @@ def state_detail(request,slug):
         },context_instance=RequestContext(request))
         
         safe_set_cache(cache_key,response,604800)
-
-    return response
-
-@cache_control(public=True,max_age=604800)
-def zipcode_detail(request,slug):
-    cache_key = "zipcode_detail slug=%s" % slug
-    response = safe_get_cache(cache_key)
-    
-    if not response:
-        place = get_object_or_404(ZipCode,id=slug)
-        
-        #title = "ZIP Code %s in %s, %s" % (place, place.county.long_name, place.county.state)
-        if place.state:
-            title = "ZIP Code %s, %s" % (place, place.state)
-        else:
-            title = "ZIP Code %s" % place
-
-        response=render_to_response("places/place_detail.html",{
-            'title':title,
-            'place':place,
-            'demographics':getattr(place.population_demographics,'__dict__',{}),
-            'place_type':"zipcode"
-        },context_instance=RequestContext(request))
-        
-        safe_set_cache(cache_key,response,604800)
-
-        # It's likely that the user will go to the State's page from here (since it's linked
-        # from the detail page). Call it right now to pre-cache it.
-        if (not USING_DUMMY_CACHE) and (place.state):
-            call_in_bg(state_detail,(None,place.state.slug))
 
     return response
 

@@ -326,16 +326,6 @@
 </div>
 {% endif %}
 
-{% comment %}
-{% if place.zipcodes %}<h2>ZIP Code{{ place.zipcode_set.count|pluralize }}:</h2>
-<ul style="width:300px;max-height:150px;overflow-y:auto;-moz-column-count:3;column-count:3">
-    {% for zipcode in place.zipcodes %}
-    <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endcomment %}
-
 {# TODO: Note that calculation uses SRID=2163, the National Atlas Equal Area projection. #}
 
 <p>

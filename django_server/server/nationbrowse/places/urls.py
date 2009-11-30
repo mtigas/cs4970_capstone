@@ -14,11 +14,6 @@ urlpatterns = patterns('',
         name    = 'state_detail',
     ),
     url(
-        regex   = '^zipcode/(?P<slug>[-\w]+)/$',
-        view    = views.zipcode_detail,
-        name    = 'zipcode_detail',
-    ),
-    url(
         regex   = '^county/(?P<state_abbr>[-\w]+)/(?P<name>[-\s\w]+)/$',
         view    = views.county_detail,
         name    = 'county_detail',

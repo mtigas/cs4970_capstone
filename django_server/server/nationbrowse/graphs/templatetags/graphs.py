@@ -69,7 +69,6 @@ def race_piechart(parser,token):
     Usage:
         {% race_piechart [place_type] [place.slug] %}
         {% race_piechart county boone-missouri %}
-        {% race_piechart zipcode zip_obj.slug %}
     """
     try:
         # Get the tag's contents and parse it out into what we expect
@@ -160,7 +159,6 @@ def age_barchart(parser,token):
     Usage:
         {% age_barchart [place_type] [place.slug] %}
         {% age_barchart county boone-missouri %}
-        {% age_barchart zipcode zip_obj.slug %}
     """
     try:
         # Get the tag's contents and parse it out into what we expect

@@ -32,9 +32,6 @@ class DataSource(CachedModel):
 class PlacePopulation(CachedModel):
     """
     Each record represents data from one source, for one particular place.
-    
-    For example, PlacePopulation.objects.get(pk=24703) gets you the Census 2000 population data
-    for ZipCode 65201.
     """
     objects = CachingManager()
     
@@ -42,7 +39,7 @@ class PlacePopulation(CachedModel):
     place_type = models.ForeignKey(ContentType)
     place_id = models.PositiveIntegerField(db_index=True)
     
-    # References one of the models (State, County, ZipCode) in our Places app
+    # References one of the models (State, County) in our Places app
     place = generic.GenericForeignKey(ct_field='place_type',fk_field='place_id')
     
     # To future-proof for things like Census 2010
