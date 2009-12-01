@@ -104,7 +104,8 @@
             {% ifequal request.GET.crime_map "1" %}
                 default_style.addRules(create_rule_style_array(
                     "violent_crime_rate", [
-                    [0,"#FFFFE5"],
+                    [0,"#555555"],
+                    [1,"#FFFFE5"],
                     [25,"#FFF7BC"],
                     [50,"#FEE391"],
                     [100,"#FE9929"],
@@ -184,7 +185,7 @@
                     'total_pop':{% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %},
                     'pop_density':Math.round({% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %}/{{ county.area.sq_mi }}),
                     'area':'{{ county.area.sq_mi|floatformat:3|intcomma }} sq. mi.',
-                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|floatformat:2|intcomma }}{% else %}0{% endif %}
+                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|floatformat:2 }}{% else %}0{% endif %}
                 };
                 county_tmp[{{forloop.counter0}}].data = {
                     'id':{{county.id}},
@@ -193,7 +194,7 @@
                     'total_pop':'{{ county.population_demographics.total|intcomma }}',
                     'male':'{{ county.population_demographics.male|intcomma }}',
                     'female':'{{ county.population_demographics.female|intcomma }}',
-                    'violent_crime_rate':'{{ county.crime_data.violent_crimes_per100k }} (per 100,000 residents)'
+                    'violent_crime_rate':'{{ county.crime_data.violent_crimes_per100k|floatformat:2|intcomma }} (per 100,000 residents)'
                 };
             {% endifnotequal %}
             {% endfor %}
