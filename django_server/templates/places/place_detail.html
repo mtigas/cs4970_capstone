@@ -15,12 +15,6 @@
             {% endfor %}
         </ul></li>
         {% endif %}
-        {% if place.zipcodes %}<li>ZIP Code{{ place.zipcode_set.count|pluralize }}:<ul style="width:400px;max-height:100px;overflow:auto">
-            {% for zipcode in place.zipcodes %}
-            <li><a href="{{ zipcode.get_absolute_url }}">{{ zipcode.name }}</a></li>
-            {% endfor %}
-        </ul></li>
-        {% endif %}
     </ul>
 
     <p>If server resources allow, maybe replace ZIP/County point with a shaded-area version of the map.<br />{% show_on_map place_type place.slug %}</p>

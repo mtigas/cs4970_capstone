@@ -29,17 +29,3 @@ class CountyAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ('name','state__name','long_name')
 admin.site.register(County,CountyAdmin)
-
-class ZipCodeAdmin(admin.ModelAdmin):
-    model = ZipCode
-    list_display = ('name',)
-    ordering = ('name',)
-
-    fieldsets = (
-        (None, {'fields': (('name', 'slug'))}),
-        ('Location', {'fields': ('poly',)}),
-    )
-    prepopulated_fields = {"slug": ("name",)}
-    search_fields = ('name','state__name')
-admin.site.register(ZipCode,ZipCodeAdmin)
-

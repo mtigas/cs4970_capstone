@@ -7,7 +7,6 @@ This file defines the data models for our places.
    all polygonal models should go here.
  * State
  * County
- * ZipCode
 
 To match up with Census-recorded data, we also store the FIPS code of most
 of these objects - they come embedded in the Census' TIGER/Line data, which
@@ -250,10 +249,6 @@ class State(PolyModel):
         return self.county_set.defer('poly',).all()
     counties = cached_clsmethod(counties, 15552000)
     
-    def zipcodes(self):
-        return self.zipcode_set.defer('poly',).all()
-    zipcodes = cached_clsmethod(zipcodes, 15552000)
-    
     class Meta:
         ordering = ('name',)
 	
@@ -281,13 +276,6 @@ class County(PolyModel):
     cbsafp = models.PositiveIntegerField(verbose_name="Metropolitan Area Code",blank=True,null=True)
     metdivfp = models.PositiveIntegerField(verbose_name="Metropolitan Division Code",blank=True,null=True)
 
-    #def zipcodes(self):
-    #    if USE_GIS:
-    #        return ZipCode.objects.filter(poly__intersects=self.poly)
-    #    else:
-    #        return None
-    #zipcodes = cached_property(zipcodes, 15552000)
-    
     class Meta:
         verbose_name_plural = "counties"
         ordering = ('state','name',)
@@ -302,50 +290,4 @@ class County(PolyModel):
         return ('places:county_detail', (), {
             'state_abbr' : self.state.abbr.lower(),
             'name' : self.name.lower()
-        })
-
-class ZipCode(PolyModel):
-    if USE_GIS:
-        objects = PolyDeferGeoManager()
-        pobjects = GeoCachingManager()
-    else:
-        objects = CachingManager()
-    
-    # Technically, ZipCodes can span multiple states. We're only storing the "primary" match.
-    state  = models.ForeignKey('State',blank=True,null=True,db_index=True)
-
-    #def counties(self):
-    #    if USE_GIS:
-    #        return County.objects.filter(state=self.state,poly__intersects=self.poly)
-    #    else:
-    #        return None
-    #counties = cached_property(counties, 15552000)
-
-    #def county(self):
-    #    """
-    #    If this ZIP code belongs to a county, returns that.
-    #    If it belongs to more than one county, returns the first match.
-    #    Otherwise, returns None.
-    #    """
-    #    if USE_GIS:
-    #        c = self.counties
-    #        if c and (c.count() > 0):
-    #            return c[0]
-    #        else:
-    #            return None
-    #    else:
-    #        return None
-    #county = cached_property(county, 15552000)
-
-    class Meta:
-        ordering = ('name',)
-        db_table = "places_zipcode2"
-	
-    def __unicode__(self):
-        return u"%s" % (self.name)
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('places:zipcode_detail', (), {
-            'slug' : self.id
         })

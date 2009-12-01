@@ -66,11 +66,7 @@ def scatterhist_test1(request,place_type,slug,source_id=None):
         if not PlaceClass:
             raise Http404
         
-        if place_type.lower() == "zipcode":
-            # Querying ZipCode by numeric ID is *MUCH* quicker than string
-            place = get_object_or_404(PlaceClass,id=slug)
-        else:
-            place = get_object_or_404(PlaceClass,slug=slug)
+        place = get_object_or_404(PlaceClass,slug=slug)
         
         d = place.population_demographics
         
