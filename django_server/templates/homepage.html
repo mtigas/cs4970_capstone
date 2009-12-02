@@ -191,7 +191,7 @@
                     'total_pop':'{{ state.population_demographics.total|intcomma }}',
                     'male':'{{ state.population_demographics.male|intcomma }}',
                     'female':'{{ state.population_demographics.female|intcomma }}',
-                    'violent_crime_rate':'{{ state.crime_data.violent_crimes_per100k }} (per 100,000 residents)'
+                    'violent_crime_rate':'{{ state.crime_data.violent_crimes_per100k|floatformat:2|intcomma }} (per 100,000 residents)'
                 };
             {% endifnotequal %}
             {% endfor %}

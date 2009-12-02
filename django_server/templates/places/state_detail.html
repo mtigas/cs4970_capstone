@@ -183,9 +183,9 @@
                 county_tmp[{{forloop.counter0}}] = wkt_to_vector('{{county.simple_wkt|escapejs}}');
                 county_tmp[{{forloop.counter0}}].attributes = {
                     'total_pop':{% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %},
-                    'pop_density':Math.round({% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %}/{{ county.area.sq_mi|intcomma:2 }}),
+                    'pop_density':Math.round({% if county.population_demographics.total %}{{ county.population_demographics.total }}{% else %}0{% endif %}/{{ county.area.sq_mi|floatformat:2 }}),
                     'area':'{{ county.area.sq_mi|floatformat:3|intcomma }} sq. mi.',
-                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|intcomma:2 }}{% else %}0{% endif %}
+                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|floatformat:2 }}{% else %}0{% endif %}
                 };
                 county_tmp[{{forloop.counter0}}].data = {
                     'id':{{county.id}},
