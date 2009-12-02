@@ -174,8 +174,7 @@ class PolyModel(CachedModel):
             return False
         
         # Not the most exact, but it applies nationally.
-        p = self.poly
-        p.transform(2163)
+        p = self.poly.transform(2163,True)
         return Area(sq_m=p.area,default_unit="sq_mi")
     area = cached_property(area, 15552000)
     
