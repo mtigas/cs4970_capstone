@@ -37,10 +37,15 @@ def get_columns(request,tables):
         except:
             pass
     
+    json_string = json.dumps({
+        "tables":tables,
+        "real_tables":real_tables,
+        "columns":columns
+    })
+    
+    if request.GET.has_key("callback"):
+        json_string = "%s(%s);" % (request.GET['callback'], json_string)
+    
     return HttpResponse(
-        json.dumps({
-            "tables":tables,
-            "real_tables":real_tables,
-            "columns":columns
-        }, indent=4),
+        json_string,
         mimetype="application/json")
