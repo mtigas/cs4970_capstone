@@ -426,7 +426,6 @@ function scream(){
     }
   }
   GET_STRING += ".js"; 
-  alert(URL+GET_STRING);
   
 /*    sailor=["sname","sid","rating","age","one","two","three","four"];
   reserves=["bid","sid"];
@@ -450,22 +449,29 @@ function scream(){
   
   
   //use ajax to submit
-  $.getJSON(URL+GET_STRING,function(data){
-  alert("returned");//debug
-    if(data==null){
-      document.getElementById("chus").innerHTML="Could not load columns..";
-      return;
-    }
-    tables=data.columns;
+  jQuery.ajax({
+      type:"GET",
+      url:URL+GET_STRING,
+      dataType:"jsonp",
+      success: function(data, status) {
+          alert(data);
+          
+            if(data==null){
+              document.getElementById("chus").innerHTML="Could not load columns..";
+              return;
+            }
+            tables=data.columns;
 
-    tNames=data.tables;
+            tNames=data.tables;
     
-    //examine for duplicates 
-    handle_duplicates();
-    go();
-    
-  }); 
-  
+            //examine for duplicates 
+            handle_duplicates();
+            go();
+      },
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+          document.getElementById("chus").innerHTML="Could not load columns..";
+    }
+  });
 }
   function go(){
   //document.getElementById("test").innerHTML=aliass[1];
@@ -478,7 +484,6 @@ function scream(){
       for(i=0;i<parseInt(tables[table].length/layout);i++){
         test+="<tr>";
           for(s=0;s<layout;s++){
-          //alert(aliass[tables]);
             test+="<td><input type='checkbox' value='"+aliass[table]+"."+tables[table][blockNum*layout+s]+"'/></td><td>"+tables[table][blockNum*layout+s]+"</td>";
           }
           test+="</tr>";
