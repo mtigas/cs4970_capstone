@@ -8,4 +8,9 @@ urlpatterns = patterns('',
         view    = views.get_columns,
         name    = 'get_columns',
     ),
+    url(
+        regex   = '^get_results/$',
+        view    = views.get_results,
+        name    = 'get_results',
+    ),
 )
