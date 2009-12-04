@@ -87,7 +87,7 @@ var layout=5;
       //alert($tabs);//debug
      // alert('about to select');//debug
       $tabs.tabs('select',1);
-      alert('screaming');
+      //alert('screaming');
       scream();
      TAB_SELECT_OK = false;
   });
@@ -95,7 +95,7 @@ var layout=5;
        /* start tabs */
      
      $tabs = $("#tabs").tabs({select:function(e,ui){
-     alert(TAB_SELECT_OK);
+     //alert(TAB_SELECT_OK);
          return TAB_SELECT_OK;
        }
      });
@@ -109,7 +109,7 @@ var layout=5;
     <ul>
         <li><a href="#fragment-1"><span>Join</span></a></li>
         <li><a href="#test"><span>Project</span></a></li>
-        <li><a href="#selections"><span>Select</span></a></li>
+        <li><a href="#selectionsTab"><span>Select</span></a></li>
         <li><a href="#results"><span>Results</span></a></li>
     </ul>
     
@@ -135,8 +135,10 @@ var layout=5;
       
     </div>
     
-    <div id="selections">
-      
+    <div id="selectionsTab">
+      <div id="selections">
+      </div>
+      <p><input type="button" onclick="publishSelections();" value="Submit Query"/></p>
     </div>
     
     <div id="results">
