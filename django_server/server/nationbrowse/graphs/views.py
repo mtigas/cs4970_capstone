@@ -46,7 +46,7 @@ def scatterhist_test(request):
                 continue
             
             var_a = float(socioeco_data.median_income)
-            var_b = float(crime_data.violent_crimes_per100k)
+            var_b = crime_data.violent_crime / (demo_data.total / 100000.0)
             
             if (var_a is 0) or (var_b is 0):
                 continue
