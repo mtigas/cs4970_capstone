@@ -30,7 +30,7 @@ def scatterhist_test(request):
                 continue
             
             try:
-                crime_data = CrimeData.objects.get(
+                crime_data = CrimeData.objects.values().get(
                     place_type=demo_data.place_type,
                     place_id=demo_data.place_id
                 )
@@ -38,15 +38,15 @@ def scatterhist_test(request):
                 continue
             
             try:
-                socioeco_data = SocioEco.objects.get(
+                socioeco_data = SocioEco.objects.values().get(
                     place_type=demo_data.place_type,
                     place_id=demo_data.place_id
                 )
             except SocioEco.DoesNotExist:
                 continue
             
-            var_a = float(socioeco_data.median_income)
-            var_b = crime_data.violent_crime / (demo_data.total / 100000.0)
+            var_a = float(socioeco_data['median_income'])
+            var_b = crime_data['violent_crime'] / (demo_data.total / 100000.0)
             
             if (var_a is 0) or (var_b is 0):
                 continue
