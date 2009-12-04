@@ -1,0 +1,13 @@
+===== Exports: =====
+
+manage.py dumpdata -v 0 --indent=2 contenttypes|bzip2 -z9c >| ~/Desktop/fixtures/00-contenttypes.json.bz2
+manage.py export_places_data
+manage.py export_demographics_data
+
+===== Imports: =====
+
+python manage.py shell
+    from django.contrib.contenttypes.models import ContentType
+    for x in ContentType.objects.all(): x.delete()
+
+python manage.py loaddata ~/fixtures/*

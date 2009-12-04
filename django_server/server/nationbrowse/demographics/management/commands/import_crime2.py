@@ -25,7 +25,7 @@ class Command(NoArgsCommand):
         if created:
             datasource.save()
 
-        data1 = os.path.join(settings.DJANGO_SERVER_DIR, 'server', 'nationbrowse', 'demographics', 'csv_in', '08tbl05.csv')
+        data1 = os.path.join(settings.DJANGO_SERVER_DIR, 'server', 'nationbrowse', 'demographics', 'csv_in', 'ucr_08', '08tbl05.csv')
         f = open(data1)
         csv_reader = csv.reader(f, delimiter=',',quotechar='"')
 

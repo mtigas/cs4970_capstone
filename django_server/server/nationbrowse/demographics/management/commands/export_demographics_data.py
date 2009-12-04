@@ -1,6 +1,6 @@
 from django.core.management.base import NoArgsCommand
 
-from nationbrowse.demographics.models import DataSource,PlacePopulation,CrimeData
+from nationbrowse.demographics.models import DataSource,PlacePopulation,CrimeData,SocialCharacteristics
 from django.contrib.contenttypes.models import ContentType
 
 from string import ascii_uppercase
@@ -41,15 +41,21 @@ class Command(NoArgsCommand):
         
         print "Saving National demographics..."
         create_export("/Users/mtigas/Desktop/fixtures/05-nation-demographics.xml",PlacePopulation.objects.filter(place_type=nation_type))
+        print "Saving National social characteristics data..."
+        create_export("/Users/mtigas/Desktop/fixtures/06-nation-socio_eco.xml",SocialCharacteristics.objects.filter(place_type=nation_type))
         print "Saving National crime data..."
-        create_export("/Users/mtigas/Desktop/fixtures/06-nation-crime.xml",CrimeData.objects.filter(place_type=nation_type))
+        create_export("/Users/mtigas/Desktop/fixtures/07-nation-crime.xml",CrimeData.objects.filter(place_type=nation_type))
         
         print "Saving State demographics..."
-        create_export("/Users/mtigas/Desktop/fixtures/07-state-demographics.xml",PlacePopulation.objects.filter(place_type=state_type))
+        create_export("/Users/mtigas/Desktop/fixtures/08-state-demographics.xml",PlacePopulation.objects.filter(place_type=state_type))
+        print "Saving State social characteristics data..."
+        create_export("/Users/mtigas/Desktop/fixtures/09-state-socio_eco.xml",SocialCharacteristics.objects.filter(place_type=state_type))
         print "Saving State crime data..."
-        create_export("/Users/mtigas/Desktop/fixtures/08-state-crime.xml",CrimeData.objects.filter(place_type=state_type))
+        create_export("/Users/mtigas/Desktop/fixtures/10-state-crime.xml",CrimeData.objects.filter(place_type=state_type))
         
         print "Saving County demographics..."
-        create_export("/Users/mtigas/Desktop/fixtures/09-county-demographics.xml",PlacePopulation.objects.filter(place_type=county_type))
+        create_export("/Users/mtigas/Desktop/fixtures/11-county-demographics.xml",PlacePopulation.objects.filter(place_type=county_type))
+        print "Saving County social characteristics data..."
+        create_export("/Users/mtigas/Desktop/fixtures/12-county-socio_eco.xml",SocialCharacteristics.objects.filter(place_type=county_type))
         print "Saving County crime data..."
-        create_export("/Users/mtigas/Desktop/fixtures/10-county-crime.xml",CrimeData.objects.filter(place_type=county_type))
+        create_export("/Users/mtigas/Desktop/fixtures/13-county-crime.xml",CrimeData.objects.filter(place_type=county_type))

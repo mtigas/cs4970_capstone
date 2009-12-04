@@ -22,7 +22,7 @@ from django.db import models
 from django_caching.models import CachedModel
 from django_caching.managers import CachingManager
 
-from nationbrowse.demographics.models import PlacePopulation,CrimeData
+from nationbrowse.demographics.models import PlacePopulation,CrimeData,SocialCharacteristics
 from django.contrib.gis.measure import Area
 from django.contrib.contenttypes import generic
 from threadutil import call_in_bg
@@ -178,37 +178,44 @@ class PolyModel(CachedModel):
         return Area(sq_m=p.area,default_unit="sq_mi")
     area = cached_property(area, 15552000)
     
-    # Special fake foreign key that checks the PlacePopulation table for a record
-    # that corresponds with this Place.
+    # Special fake foreign keys to models within the Demographics app
     demographic_fkey = generic.GenericRelation(PlacePopulation, content_type_field='place_type', object_id_field='place_id')
-    
+    crime_fkey = generic.GenericRelation(CrimeData, content_type_field='place_type', object_id_field='place_id')
+    socioeco_fkey = generic.GenericRelation(SocialCharacteristics, content_type_field='place_type', object_id_field='place_id')
+
     def population_demographics(self):
         """
         If this place has a record in PlacePopulation, retrieve and return that.
         """
         if self.demographic_fkey and self.demographic_fkey.count() > 0:
             try:
-                return self.demographic_fkey.all()[0]
+                return self.demographic_fkey.order_by('-source__date').all()[0]
             except:
                 return None
     population_demographics = cached_property(population_demographics, 15552000)
-
-    # Special fake foreign key that checks the PlacePopulation table for a record
-    # that corresponds with this Place.
-    crime_fkey = generic.GenericRelation(CrimeData, content_type_field='place_type', object_id_field='place_id')
     
     def crime_data(self):
         """
         If this place has a record in CrimeData, retrieve and return that.
         """
-        if self.crime_fkey and self.crime_fkey.count() > 0:
+        if self.crime_fkey and self.crime_fkey.order_by('-source__date').count() > 0:
             try:
                 return self.crime_fkey.all()[0]
             except:
                 return None
     crime_data = cached_property(crime_data, 15552000)
-
-
+    
+    def socioeco_data(self):
+        """
+        If this place has a record in CrimeData, retrieve and return that.
+        """
+        if self.socioeco_fkey and self.socioeco_fkey.order_by('-source__date').count() > 0:
+            try:
+                return self.socioeco_fkey.all()[0]
+            except:
+                return None
+    socioeco_data = cached_property(socioeco_data, 15552000)
+    
     class Meta:
         abstract = True
 
