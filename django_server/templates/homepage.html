@@ -183,7 +183,7 @@
                     'total_pop':{% if state.population_demographics.total %}{{ state.population_demographics.total }}{% else %}0{% endif %},
                     'pop_density':Math.round({% if state.population_demographics.total %}{{ state.population_demographics.total }}{% else %}0{% endif %}/{{ state.area.sq_mi|floatformat:2 }}),
                     'area':'{{ state.area.sq_mi|floatformat:3|intcomma }} sq. mi.',
-                    'violent_crime_rate':{% if county.crime_data.violent_crimes_per100k %}{{ county.crime_data.violent_crimes_per100k|floatformat:2 }}{% else %}0{% endif %}
+                    'violent_crime_rate':{% if state.crime_data.violent_crimes_per100k %}{{ state.crime_data.violent_crimes_per100k|floatformat:2 }}{% else %}0{% endif %}
                 };
                 state_tmp[{{forloop.counter0}}].data = {
                     'id':{{state.id}},
