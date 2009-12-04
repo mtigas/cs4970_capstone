@@ -6,7 +6,7 @@ from django.db.models.loading import AppCache
 
 import string
 import json
-from nationbrowse.querybuilder import APP_MAP
+from nationbrowse.querybuilder import APP_MAP,PLACES_MODELS,DATA_MODELS
 
 @cache_control(public=True,max_age=604800)
 def get_columns(request,tables):
@@ -62,36 +62,72 @@ def get_results(request):
     
     # Strip leading/trailing whitespace and punctuation (so we only have
     # comma-delimited list)
-    if not (tables or columns or filters):
+    if not (tables or columns):
         raise Http404
-    
-    tables = tables.split(",")
-    columns = columns.split(",")
-    filters = filters.split(",")
-    
+
+    models = {}
+    place_models = []
+    data_models = []
+    model_fields = {}
+    selected_fields = {}
+    qs_filters = {}
     
     app_loader = AppCache()
-    """
-    tables=state,placepopulation
-    columns=state.name,placepopulation.total
-    filters=state.name|contains|missouri,placepopulation.total|gt|100000
-
-
-    /url/?tables=state,placepopulation&columns=state.name,placepopulation.total&filters=state.name|contains|missouri,placepopulation.total|gt|100000
-
-    """
-    models = []
-    selected_fields = {}
+    
+    tables = tables.split(",")
     for table in tables:
-        try:
-            app = APP_MAP[table]
-            
-            model = app_loader.get_model(*app.split("."))
-            
-            models.append(model)
-        except:
-            pass
+        app = APP_MAP[table]
+        model = app_loader.get_model(*app.split("."))
+        model_fields[table] = model.objects.all().values()[0].keys()
+        models[table] = model
+        if table in PLACES_MODELS:
+            place_models.append(table)
+        elif table in DATA_MODELS:
+            data_models.append(table)
+
+    columns = columns.split(",")
+    for c in columns:
+        c_model, c_column = c.split(".")
+        if not selected_fields.has_key(c_model):
+            selected_fields[c_model] = []
+        selected_fields[c_model].append(c_column)
+    
+    if filters:
+        filters = filters.split(",")
+    
+    test_output = "<table><tr>"
+    for table,fields in selected_fields.iteritems():
+        for f in fields:
+            test_output += "<th>%s</th>" % f
+    test_output += "</tr>\n"
+    
+    for table in place_models:
+        AppModel = models[table]
+        fields = selected_fields[table]
+        
+        for item in AppModel.objects.only(*fields):
+            test_output += "<tr>"
+            for field in fields:
+                test_output += "<td>%s</td>" % getattr(item,field,None)
+                
+            # Fields that are in connected tables
+            for join_table in data_models:
+                if join_table == 'placepopulation':
+                    dataset = item.population_demographics
+                elif join_table == 'crimedata':
+                    dataset = item.crime_data
+                elif join_table == 'socialcharacteristics':
+                    dataset = item.socioeco_data
+                else:
+                    continue
+                
+                data_fields = selected_fields[join_table]
+                for data_field in data_fields:
+                    test_output += "<td>%s</td>" % getattr(dataset,data_field,None)
+                
+            test_output += "</tr>\n"
+    test_output += "</table>"
     
     return HttpResponse(
-        "<p>Coming soon</p>"
+        test_output
     )
