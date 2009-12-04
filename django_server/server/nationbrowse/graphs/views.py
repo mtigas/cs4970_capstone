@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404,render_to_response
 from django.http import HttpResponse,Http404
 from django.template import RequestContext
 from django.db.models.loading import get_model
+from django.contrib.contenttypes.models import ContentType
+
 from mpl_render import histogram
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
@@ -12,77 +14,52 @@ def scatterhist_test(request):
     response = safe_get_cache(cache_key)
 
     if not response:
-        """
-        # hella slow
-        County = get_model("places","county")
-        counties = County.objects.only('id',).all()
-        values = []
-        for county in counties:
-            if county.crime_data and county.population_demographics:
-                if (county.population_demographics.total > 0) and (county.crime_data.violent_crime > 0):
-                    values.append(
-                        (county.population_demographics.total, county.crime_data.violent_crime)
-                    )
-        """
         CrimeData = get_model("demographics","crimedata")
         DemographicData = get_model("demographics","placepopulation")
+        SocioEco = get_model("demographics","socialcharacteristics")
         
-        total_pops = dict( DemographicData.objects.filter(place_type__name="county").order_by("place_id").values_list("place_id","total") )
-        violent_crimes = dict( CrimeData.objects.filter(place_type__name="county").order_by("place_id").values_list("place_id","violent_crime") )
+        crime_ctype = ContentType.objects.get_for_model(CrimeData)
+        demographic_ctype = ContentType.objects.get_for_model(DemographicData)
+        socioeco_ctype = ContentType.objects.get_for_model(SocioEco)
         
-        # { place_id: population, place_id: population, ...}
-        # { place_id: violent_crimes, place_id: violent_crimes, ...}
+        demographics = DemographicData.objects.filter(place_type__name="county").order_by("place_id").iterator()
         
         values = []
-        for place_id, population in total_pops.iteritems():
-            if population == 0:
-                continue
-            if not violent_crimes.has_key(place_id):
+        for demo_data in demographics:
+            if (demo_data.total == 0):
                 continue
             
-            crime = violent_crimes[place_id]
-            if crime == 0:
+            try:
+                crime_data = CrimeData.objects.get(
+                    place_type=demo_data.place_type,
+                    place_id=demo_data.place_id
+                )
+            except CrimeData.DoesNotExist:
                 continue
-
+            
+            try:
+                socioeco_data = SocioEco.objects.get(
+                    place_type=demo_data.place_type,
+                    place_id=demo_data.place_id
+                )
+            except SocioEco.DoesNotExist:
+                continue
+            
+            var_a = float(socioeco_data.median_income)
+            var_b = float(crime_data.violent_crime)
+            
+            if (var_a is 0) or (var_b is 0):
+                continue
+            
             values.append(
-                (population, crime)
+                (var_a, var_b)
             )
         
-        fig = histogram(values,"Total Population","Violent Crimes")
+        fig = histogram(values,"Median Income","Total Crimes")
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
         canvas.print_png(response)
 
         safe_set_cache(cache_key,response,86400)
-            
-    return response
-
-def scatterhist_test1(request,place_type,slug,source_id=None):
-    cache_key = "scatterhist_test place_type=%s slug=%s source_id=%s" % (place_type, slug, source_id)
-    response = safe_get_cache(cache_key)
-
-    if not response:
-        PlaceClass = get_model("places",place_type)
-        if not PlaceClass:
-            raise Http404
         
-        place = get_object_or_404(PlaceClass,slug=slug)
-        
-        d = place.population_demographics
-        
-        male_ages = map(lambda f: getattr(d,f[0].replace('age','male')), d.age_fields)
-        female_ages = map(lambda f: getattr(d,f[0].replace('age','female')), d.age_fields)            
-        
-        values = zip(
-            male_ages,
-            female_ages
-        )
-        
-        fig = histogram(values,"Male","Female")
-        canvas=FigureCanvas(fig)
-        response=HttpResponse(content_type='image/png')
-        canvas.print_png(response)
-
-        safe_set_cache(cache_key,response,86400)
-            
     return response
