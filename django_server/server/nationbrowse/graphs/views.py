@@ -46,7 +46,7 @@ def scatterhist_test(request):
                 continue
             
             var_a = float(socioeco_data.median_income)
-            var_b = float(crime_data.violent_crime)
+            var_b = float(crime_data.violent_crimes_per100k)
             
             if (var_a is 0) or (var_b is 0):
                 continue
@@ -55,7 +55,7 @@ def scatterhist_test(request):
                 (var_a, var_b)
             )
         
-        fig = histogram(values,"Median Income","Total Crimes")
+        fig = histogram(values,"Median Income","Crime Rate")
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
         canvas.print_png(response)
