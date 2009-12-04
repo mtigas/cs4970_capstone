@@ -102,7 +102,8 @@
             {% ifequal request.GET.crime_map "1" %}
                 default_style.addRules(create_rule_style_array(
                     "violent_crime_rate", [
-                    [0,"#FFFFE5"],
+                    [0,"#555555"],
+                    [1,"#FFFFE5"],
                     [25,"#FFF7BC"],
                     [50,"#FEE391"],
                     [100,"#FE9929"],
@@ -238,8 +239,8 @@
                     data_html += "<tr><td><b>Population</b></td><td>"+feature.data.total_pop+"</td></tr>"
                     data_html += "<tr><td><b>Male pop.</b></td><td>"+feature.data.male+"</td></tr>"
                     data_html += "<tr><td><b>Female pop.</b></td><td>"+feature.data.female+"</td></tr>";
-                    //data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
-                    //data_html += "<tr><td><b>Violent crime rate</b></td><td>"+feature.data.violent_crime_rate+"</td></tr>"
+                    data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
+                    data_html += "<tr><td><b>Violent crime rate</b></td><td>"+feature.data.violent_crime_rate+"</td></tr>"
                     data_html += '<tr><td colspan="2">&nbsp;</td></tr>';
                     data_html += "<tr><td><b>Area</b></td><td>"+feature.attributes.area+"</td></tr>"
                     data_html += "<tr><td><b>Pop. density</b></td><td>"+feature.attributes.pop_density+" (per sq. mi.)</td></tr>"
@@ -298,8 +299,14 @@
 
 {% block body %}
     <h1>Nationbrowse: National Overview</h1>
-{% ifequal request.GET.density "1" %}<p>Shaded by population density. (<a href="{{ request.path }}">View by population size</a>.)</p>
-{% else %}<p>Shaded by population size. (<a href="{{ request.path }}?density=1">View by population density</a>.)</p>
+{% ifequal request.GET.crime_map "1" %}
+    <p>Shaded by violent crime rate (per 100,000 residents). <a href="{{ request.path }}">View by population size</a> or <a href="{{ request.path }}?density=1">by population density</a>.</p>
+{% else %}
+    {% ifequal request.GET.density "1" %}
+        <p>Shaded by population density. <a href="{{ request.path }}">View by population size</a> or <a href="{{ request.path }}?crime_map=1">by violent crime rate</a>.</p>
+    {% else %}
+        <p>Shaded by population size. <a href="{{ request.path }}?density=1">View by population density</a> or <a href="{{ request.path }}?crime_map=1">by violent crime rate</a>.</p>
+    {% endifequal %}
 {% endifequal %}
 
 <div style="width:830px;border:1px solid #999">

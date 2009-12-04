@@ -14,16 +14,20 @@ from django.template import RequestContext
 from django.template.defaultfilters import urlencode
 from django.views.decorators.cache import cache_control,never_cache
 
-from nationbrowse.places.models import State,County
+from nationbrowse.places.models import Nation,State,County
 
 from threadutil import call_in_bg
 
 @cache_control(public=True,max_age=604800)
 def nation_overview(request):
+    nation = Nation.objects.get(id=1)
     states = State.objects.exclude(poly=None)
 
     response=render_to_response("homepage.html",{
+        'place':nation,
+        'demographics':getattr(nation.population_demographics,'__dict__',{}),
         'states':states,
+        'place_type':"nation"
     },context_instance=RequestContext(request))
 
     return response
