@@ -153,7 +153,6 @@ def get_results(request):
             if qs_filters.has_key(table):
                 for filter_field,f_op in qs_filters[table].iteritems():
                     op, value = f_op
-                    print "%s, %s, %s, %s" % (item, filter_field, op, value)
                     if not process_op( getattr(item,filter_field,None), op, value ):
                         skip = True
                         break
@@ -161,8 +160,6 @@ def get_results(request):
                 d = item.population_demographics
                 for filter_field,f_op in qs_filters['placepopulation'].iteritems():
                     op, value = f_op
-                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
-                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
                     if not d or not process_op( getattr(d,filter_field,None), op, value ):
                         skip = True
                         break
@@ -170,8 +167,6 @@ def get_results(request):
                 d = item.crime_data
                 for filter_field,f_op in qs_filters['crimedata'].iteritems():
                     op, value = f_op
-                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
-                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
                     if not d or not process_op( getattr(d,filter_field,None), op, value ):
                         skip = True
                         break
@@ -179,8 +174,6 @@ def get_results(request):
                 d = item.socioeco_data
                 for filter_field,f_op in qs_filters['socialcharacteristics'].iteritems():
                     op, value = f_op
-                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
-                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
                     if not d or not process_op( getattr(d,filter_field,None), op, value ):
                         skip = True
                         break
