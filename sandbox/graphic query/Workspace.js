@@ -307,33 +307,36 @@ function Workspace(divId){
 
 /* functions for selection */
 function  addSelector(containerId){
-//alert("hey13");
-  if(count>=SELECTION_MAX){
+//alert("hey13")c;
+//alert("addSelector running "+window.scount);
+SELECTION_MAX=5;
+  if(window.scount>=SELECTION_MAX){
+  
     return;
   }
   //alert("hey17");
   //create a div for this selector
   newSelectionDiv = document.createElement('div');
-  newSelectionDiv.id = "selector"+count;
+  newSelectionDiv.id = "selector"+window.scount;
   //alert("hey21");
   
   //create the buttons
-  innerHt = "<input id=\"del"+count+"\" type=\"button\" value=\"Del\" onclick=\"delSelector('selector"+count+"');\"/>";
+  innerHt = "<input id=\"del"+window.scount+"\" type=\"button\" value=\"Del\" onclick=\"delSelector('selector"+window.scount+"');\"/>";
   innerHt += "<input id=\"addButton\" type=\"button\" value=\"Add\" onclick=\"addSelector('selections');\"/>";
   //alert("hey26");
   //add the option box
-  innerHt+= addOptionToSelector("column"+count,tables);
+  innerHt+= addOptionToSelector("column"+window.scount,tables);
   
   //add the ops box
-  innerHt+= "<select id=\"op"+count+"\"><option>></option><option><</option><option>=</option><option>>=</option><option><=</option></select>";
+  innerHt+= "<select id=\"op"+window.scount+"\"><option>></option><option><</option><option>=</option><option>>=</option><option><=</option></select>";
   //alert("hey32");
   //add textfield
-  innerHt+="<input id=\"val"+count+"\" />";
+  innerHt+="<input id=\"val"+window.scount+"\" />";
   
   newSelectionDiv.innerHTML=innerHt;
   document.getElementById(containerId).appendChild(newSelectionDiv);
   //alert("hey38");
-  count++;
+  window.scount++;
   //alert("created a selector");
 }
 
@@ -344,7 +347,7 @@ function addOptionToSelector(id,options){
   //alert("hey46");
   for(i=0;i<options.length;i++){
     for(s=0;s<options[i].length;s++){
-    test+="<option value='"+aliass[i]+"."+options[i][s]+"'>"+aliass[i]+options[i][s]+"</option>";
+    test+="<option value='"+aliass[i]+"."+options[i][s]+"'>"+aliass[i]+"."+options[i][s]+"</option>";
     //alert("hey");
     }
   }
@@ -353,12 +356,12 @@ function addOptionToSelector(id,options){
 }
 
 function delSelector(selectId){
-  if(count-1==0){
+  if(window.scount-1==0){
     return;
   }
   
   document.getElementById("selections").removeChild( document.getElementById(selectId) ); //uh, yeah..
-  count--;
+  window.scount--;
 }
 
 /* Tablestore */
@@ -371,7 +374,7 @@ function TableStore(node){
     this.myDiv = node;
     
     /* get table names from ... */
-    this.tableNames = ["state","county","datasource","placepopulation"];
+    this.tableNames = ["nation","state","county","socialcharacteristics","crimedata","placepopulation"];
     
     for( var i=0;i<this.tableNames.length;i++){
      
@@ -411,10 +414,10 @@ function TableStore(node){
 
 /* for projection */
 function scream(){
+//alert("scream");
 
   var GET_STRING="";
   var URL = "http://nationbrowse.com/querybuilder/get_columns/";
-  
   //create a get
 
   //gets the table names from the join set, puts into comma sepd string
@@ -425,9 +428,12 @@ function scream(){
       GET_STRING += j.innerHTML+",";
     }
   }
+  window.fTables=GET_STRING;
+  //window.tables=GET_STRING;
   GET_STRING += ".js"; 
-  
-/*    sailor=["sname","sid","rating","age","one","two","three","four"];
+  //alert(URL+GET_STRING);
+  /*
+    sailor=["sname","sid","rating","age","one","two","three","four"];
   reserves=["bid","sid"];
   boat=["bid","color","bname"];
    tables=new Array();
@@ -447,31 +453,69 @@ function scream(){
   tNames[6]="Reserves";
   tNames[7]="Poopy"; */
   
-  
+  //alert(URL+GET_STRING);
   //use ajax to submit
+  /*
+  var http = false;
+
+if(navigator.appName == "Microsoft Internet Explorer") {
+  http = new ActiveXObject("Microsoft.XMLHTTP");
+} else {
+  http = new XMLHttpRequest();
+}
+
+http.open("GET", URL+GET_STRING);
+http.onreadystatechange=function() {
+  if(http.readyState == 4) {
+  alert("returned");
+    alert(http.responseText);
+     //tables=data.columns;
+
+    //tNames=data.tables;
+    
+    //examine for duplicates 
+    handle_duplicates();
+    go();
+    
+  }
+}
+http.send(null);*/
   jQuery.ajax({
       type:"GET",
       url:URL+GET_STRING,
       dataType:"jsonp",
       success: function(data, status) {
-          alert(data);
           
             if(data==null){
               document.getElementById("chus").innerHTML="Could not load columns..";
               return;
             }
             tables=data.columns;
-
+ 
             tNames=data.tables;
+            window.ftables=data.tables;
     
-            //examine for duplicates 
+            //examine for duplicates
             handle_duplicates();
+      		window.scount=0;
             go();
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
           document.getElementById("chus").innerHTML="Could not load columns..";
     }
   });
+ /* $.getJSON(URL+GET_STRING,function(data){
+  alert("returned");//debug
+    if(data==null){
+      document.getElementById("chus").innerHTML="Could not load columns..";
+      return;
+    }
+    tables=data.columns;
+
+            tNames=data.tables;
+    
+  }); */
+  
 }
   function go(){
   //document.getElementById("test").innerHTML=aliass[1];
@@ -568,5 +612,115 @@ function scream(){
     TAB_SELECT_OK=true;
     $tabs.tabs('select',2);
     TAB_SELECT_OK=false;
+    addSelector('selections');//debug
   }
  
+ function publishSelections(){
+ //alert(document.getElementById("op0").value);
+ SELECTION_MAX=5;//debug
+   TAB_SELECT_OK=true;
+    $tabs.tabs('select',3);
+    TAB_SELECT_OK=false;
+    
+    window.columns="";
+    for(var i=0;i<projections.length;i++){
+      window.columns+=projections[i]+",";
+    }
+    
+    
+    var URL = "http://nationbrowse.com/querybuilder/get_results/";
+    
+    
+
+    window.selections = "";
+    for(var i=0;i<=SELECTION_MAX;i++){
+    
+      n=document.getElementById("column"+i);
+      m=document.getElementById("op"+i);
+      o=document.getElementById("val"+i);
+      
+      if(n!=null && m!=null & o!=null){
+      
+        if(o.value!='')
+          window.selections+= n.value+"|"+verb(m.value)+"|"+o.value+",";
+      }
+      
+    }
+    
+     t=document.getElementById("results");
+    
+    GET_STRING="tables=";
+    GET_STRING+=window.fTables;
+    
+    GET_STRING+="&"+"columns=";
+    GET_STRING+=window.columns;
+    
+    GET_STRING+="&"+"filters=";
+    GET_STRING+=window.selections;
+    alert(URL+"?"+GET_STRING);
+    jQuery.ajax({
+      type:"GET",
+      url:URL,
+      data:GET_STRING,
+      dataType:"text",
+      success: function(data, status) {
+      	alert(data);
+      	alert(status);
+            if(data==null){
+              document.getElementById("results").innerHTML="Could not load columns..";
+              return;
+            }
+            document.getElementById("results").innerHTML=data;
+    
+            
+      },
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+          document.getElementById("results").innerHTML="Could not load columns..";
+    }
+  });
+  /*
+   var http = false;
+
+if(navigator.appName == "Microsoft Internet Explorer") {
+  http = new ActiveXObject("Microsoft.XMLHTTP");
+} else {
+  http = new XMLHttpRequest();
+}
+
+http.open("GET", URL+"?"+GET_STRING);
+http.onreadystatechange=function() {
+  if(http.readyState == 4) {
+  alert("returned");
+    alert(http.responseText);
+   
+       
+  }
+*/
+  
+ }
+ 
+ function verb(t){
+ switch(t){
+ 
+  case ">":
+    return "gt";
+    break;
+  case "<":
+    return "lt";
+    break;
+  case "=":
+    return "e";
+    break;
+   case ">=":
+   return "gte";
+   break;
+   case "<=":
+   return "lte";
+   break;
+   default:
+   return t;
+   
+  
+  }
+  
+ }
