@@ -58,6 +58,7 @@ MIDDLEWARE_CLASSES = (
 
 # ===== Media =====
 MEDIA_ROOT = os.path.join(DJANGO_SERVER_DIR, 'static')
+SANDBOX_ROOT = os.path.join(DJANGO_SERVER_DIR, '..', 'sandbox')
 MEDIA_URL = 'http://media.nationbrowse.com/'
 ADMIN_MEDIA_PREFIX = 'https://s3.amazonaws.com/django-admin/'
 

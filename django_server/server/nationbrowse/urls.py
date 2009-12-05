@@ -28,3 +28,9 @@ if settings.DEBUG:
             'show_indexes': True
         }),
     )
+urlpatterns += patterns('',
+    (r'^sandbox/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root': settings.SANDBOX_ROOT,
+        'show_indexes': True
+    }),
+)
