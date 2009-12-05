@@ -31,9 +31,12 @@ def get_columns(request,tables):
             
             tables2.append(table)
             real_tables.append(real_table)
-            columns.append(
-                model.objects.all().values()[0].keys()
-            )
+            
+            fieldlist = model.objects.all().values()[0].keys()
+            fieldlist = filter(lambda x: not x.endswith("_err"), fieldlist)
+            fieldlist.sort()
+            
+            columns.append(fieldlist)
         except:
             pass
     
