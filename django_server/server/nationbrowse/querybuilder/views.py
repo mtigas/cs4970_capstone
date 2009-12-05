@@ -54,6 +54,36 @@ def get_columns(request,tables):
         mimetype="application/json"
     )
 
+def is_numeric(value):
+    try:
+        x = float(value)
+    except ValueError:
+        return False
+    else:
+        return True
+
+def process_op(value_a, op, value_b):
+    if not value_a:
+        return False
+    if not value_b:
+        raise Exception
+    
+    if is_numeric(value_a):
+        value_b = float(value_b)
+    
+    if op == 'e':
+        return value_a == value_b
+    elif op == 'gt':
+        return value_a > value_b
+    elif op == 'gte':
+        return value_a >= value_b
+    elif op == 'lt':
+        return value_a < value_b
+    elif op == 'lte':
+        return value_a <= value_b
+    else:
+        raise Exception
+    
 @cache_control(public=True,max_age=604800)
 def get_results(request):
     if not (request.GET.has_key("tables") and request.GET.has_key("columns") and request.GET.has_key("filters")):
@@ -96,7 +126,12 @@ def get_results(request):
         selected_fields[c_model].append(c_column)
     
     if filters:
-        filters = filters.split(",")
+        for f in filters.split(","):
+            filtercol,op,value = f.split("|")
+            f_model, f_column = filtercol.split(".")
+            if not qs_filters.has_key(f_model):
+                qs_filters[f_model] = {}
+            qs_filters[f_model][f_column] = (op, value)
     
     test_output = "<table><tr>"
     for table,fields in selected_fields.iteritems():
@@ -109,11 +144,50 @@ def get_results(request):
         fields = selected_fields[table]
         
         for item in AppModel.objects.only(*fields):
-            test_output += "<tr>"
+            row_output = "<tr>"
             for field in fields:
-                test_output += "<td>%s</td>" % getattr(item,field,None)
+                row_output += "<td>%s</td>" % getattr(item,field,None)
                 
-            # Fields that are in connected tables
+            # ===== Check filters =====
+            skip = False
+            if qs_filters.has_key(table):
+                for filter_field,f_op in qs_filters[table].iteritems():
+                    op, value = f_op
+                    print "%s, %s, %s, %s" % (item, filter_field, op, value)
+                    if not process_op( getattr(item,filter_field,None), op, value ):
+                        skip = True
+                        break
+            if not skip and qs_filters.has_key('placepopulation'):
+                d = item.population_demographics
+                for filter_field,f_op in qs_filters['placepopulation'].iteritems():
+                    op, value = f_op
+                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
+                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
+                    if not d or not process_op( getattr(d,filter_field,None), op, value ):
+                        skip = True
+                        break
+            if not skip and qs_filters.has_key('crimedata'):
+                d = item.crime_data
+                for filter_field,f_op in qs_filters['crimedata'].iteritems():
+                    op, value = f_op
+                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
+                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
+                    if not d or not process_op( getattr(d,filter_field,None), op, value ):
+                        skip = True
+                        break
+            if not skip and qs_filters.has_key('socialcharacteristics'):
+                d = item.socioeco_data
+                for filter_field,f_op in qs_filters['socialcharacteristics'].iteritems():
+                    op, value = f_op
+                    print "%s, %s, %s, %s, %s" % (d, getattr(d,filter_field,None), filter_field, op, value)
+                    print "\t%s" % process_op( getattr(d,filter_field,None), op, value )
+                    if not d or not process_op( getattr(d,filter_field,None), op, value ):
+                        skip = True
+                        break
+            if skip:
+                continue
+            
+            # ===== Perform fake join on PlacePopulation, CrimeData, SocialCharacteristics =====
             for join_table in data_models:
                 if join_table == 'placepopulation':
                     dataset = item.population_demographics
@@ -126,9 +200,9 @@ def get_results(request):
                 
                 data_fields = selected_fields[join_table]
                 for data_field in data_fields:
-                    test_output += "<td>%s</td>" % getattr(dataset,data_field,None)
-                
-            test_output += "</tr>\n"
+                    row_output += "<td>%s</td>" % getattr(dataset,data_field,None)
+            
+            test_output += "%s</tr>\n" % row_output
     test_output += "</table>"
     
     return HttpResponse(
