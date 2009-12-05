@@ -14,30 +14,44 @@
   <style type="text/css">
     .ofTable { 
       width: 101px; 
-      height: 71px; 
+      height: 71px;       
       background-color:silver;
+      background-image:url('image/table.bmp');
+      text-align:center;
     }
     
     .ofWorkspace{
       height:444px;
       width:540px;
-      background-color:blue;
+      
       border:1px solid black;
     }
     
     .ofTableStore{    
       height:444px;
       width:200px;
-      background-color:yellow;
+background-color:#d7881e;
       border:1px solid black;    
+     
     }
     
     .ofTableItem{
       height:50px;
       width:80px;
+      margin:1px;
+      text-align:center;
       border:1px solid black;
-      background-color:green;
+      background-image:url('image/tab_item.bmp');
     }
+    
+    .delBut{
+		background-image:url('image/del.bmp');
+	
+	}
+	.delBut:hover{
+		background-image:url('image/del_hover.bmp');
+	}
+}
   </style>
   
   <script type="text/javascript">
@@ -130,7 +144,7 @@ var layout=5;
     </div>
     
     <div id="test">
-      <div style="width:500px;height:400px;overflow:auto;" id="chus">Loading...</div>
+      <div style="width:1024px;height:500px;overflow-y:auto;" id="chus">Loading...</div>
       <input style="margin:5px;"type="button" onclick="finish_project();" value="Project the checked columns"/>
       
     </div>
