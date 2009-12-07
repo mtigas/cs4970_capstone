@@ -23,6 +23,7 @@ def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,2
     x_values, y_values = zip(*values)
     
     # ... do things ...
+    w = max(x_values)
     h = max(y_values)
  
     ax = fig.add_subplot(111)
@@ -31,9 +32,9 @@ def scatterplot(values, label_x=None, label_y=None, color="#00ff00", size=(400,2
     #makes it a circle, and c='r' makes it red. After making the scatter points, it scales the y axis to something
     #appropriate based on the variables
     ax.scatter(x_values,y_values,s=10, marker='o', c='r')
-    ax.set_xbound(0, 100)
+    ax.set_xbound(0, (w + w/10))
     ax.set_ybound(0, (h + h/10))
-    ax.set_xticks([10,20,30,40,50,60,70,80,90,100])
+    #ax.set_xticks([10,20,30,40,50,60,70,80,90,100])
     ax.set_xlabel(label_x)
     ax.set_ylabel(label_y)
     

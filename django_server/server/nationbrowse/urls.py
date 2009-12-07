@@ -21,13 +21,12 @@ urlpatterns = patterns('',
 
 # If Django DEBUG is disabled, don't serve the static files -- it is
 # assumed that the deployed server is handling that. (See settings.py)
-if settings.DEBUG:
-    urlpatterns += patterns('',
-        (r'^static/(?P<path>.*)$', 'django.views.static.serve', {
-            'document_root': settings.MEDIA_ROOT,
-            'show_indexes': True
-        }),
-    )
+urlpatterns += patterns('',
+    (r'^static/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root': settings.MEDIA_ROOT,
+        'show_indexes': True
+    }),
+)
 urlpatterns += patterns('',
     (r'^sandbox/(?P<path>.*)$', 'django.views.static.serve', {
         'document_root': settings.SANDBOX_ROOT,

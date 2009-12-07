@@ -79,7 +79,7 @@ def random_place(request):
 
 @cache_control(public=True,max_age=604800)
 def state_detail(request,slug):
-    cache_key = "state_detail slug=%s GET=%s" % (slug, request.GET)
+    cache_key = "state_detail slug=%s" % slug
     response = safe_get_cache(cache_key)
     
     if not response:
