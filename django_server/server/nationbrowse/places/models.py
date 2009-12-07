@@ -228,6 +228,13 @@ class Nation(PolyModel):
     else:
         objects = CachingManager()
     
+    def get_states(self):
+        return State.objects.defer('poly',).all()
+    states = cached_property(get_states, 15552000)
+    children = cached_property(get_states, 15552000)
+    
+    parent = None
+    
     class Meta:
         ordering = ('name',)
 	
@@ -251,9 +258,14 @@ class State(PolyModel):
     ap_style = models.CharField(verbose_name="AP style",max_length=75,help_text="AP style abbreviation; i.e. Wash.")
     fips_code = models.PositiveSmallIntegerField(verbose_name="FIPS code",null=True,db_index=True)
     
-    def counties(self):
+    def get_counties(self):
         return self.county_set.defer('poly',).all()
-    counties = cached_clsmethod(counties, 15552000)
+    counties = cached_property(get_counties, 15552000)
+    children = cached_property(get_counties, 15552000)
+    
+    def get_parent(self):
+        return Nation.objects.get(id=1)
+    parent = cached_property(get_parent, 15552000)
     
     class Meta:
         ordering = ('name',)
@@ -281,6 +293,11 @@ class County(PolyModel):
     csafp = models.PositiveIntegerField(verbose_name="Statistical Area Code",blank=True,null=True)
     cbsafp = models.PositiveIntegerField(verbose_name="Metropolitan Area Code",blank=True,null=True)
     metdivfp = models.PositiveIntegerField(verbose_name="Metropolitan Division Code",blank=True,null=True)
+
+    def get_parent(self):
+        return self.state
+    parent = cached_property(get_parent, 15552000)
+    children = []
 
     class Meta:
         verbose_name_plural = "counties"
