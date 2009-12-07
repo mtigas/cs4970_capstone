@@ -8,18 +8,64 @@
 {% block extrahead %}{% endblock %}
 <style type="text/css">
 html, body {
+    background: #999;
+    text-align: center;
+    margin:0;
+    padding:0;
+}
+h1,h2 {
+    margin:0;
+    padding:0;
+}
+#pagehead {
+    width: 100%;
+    text-align:left;
+    background: #000;
+    color: #fff;
+    height:45px;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+    border-bottom:1px solid #333;
+    font-family: "HelveticaNeue","Helvetica","Arial",sans-serif;
+}
+#pagehead a, #pagehead a:link, #pagehead a:visited {
+    color: #eee;
+}
+#pagehead h1 {
+    margin-left: 10px;
+    font-weight: normal;
+}
+#pagehead p {
+    margin-right: 10px;
+}
+#pagecontainer {
+    clear:both;
+    width: 800px;
+    margin:0 auto;
+    padding:1em 2em;
+    text-align:left;
     background: #fff;
+    border-left:1px solid #333;
+    border-right:1px solid #333;
 }
 </style>
 </head>
 
 <body>
     <div id="pagehead">
-        <h1>NationBrowse</h1>
-        <h2>{% block pagetitle %}National Overview{% endblock %}</h2>
+        <p style="float:right">
+            <a href="/sandbox/graphic%20query/graphic_query.html">QueryBuilder Demo</a>
+            &bull;
+            <a href="/static/matplotlib_tests.html">MatPlotLib Demo</a>
+        </p>
+        <h1><a href="/">NationBrowse</a></h1>
     </div>
+    <div id="pagecontainer">
+    <h2>{% block pagetitle %}National Overview{% endblock %}</h2>
     {% block body %}
     <p>Nothing to see here, move along.</p>
     {% endblock %}
+    </div>
 </body> 
 </html>

@@ -1,16 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Matplotlib dynamic image rendering tests</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" type="image/vnd.microsoft.icon" href="/static/favicon.ico"/>
+<link rel="icon" type="image/png" href="/static/favicon.png"/>
+<title> Matplotlib dynamic image rendering tests </title>
+
+<style type="text/css">
+html, body {
+    background: #999;
+    text-align: center;
+    margin:0;
+    padding:0;
+}
+h1,h2 {
+    margin:0;
+    padding:0;
+}
+#pagehead {
+    width: 100%;
+    text-align:left;
+    background: #000;
+    color: #fff;
+    height:45px;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+    border-bottom:1px solid #333;
+    font-family: "HelveticaNeue","Helvetica","Arial",sans-serif;
+}
+#pagehead a, #pagehead a:link, #pagehead a:visited {
+    color: #eee;
+}
+#pagehead h1 {
+    margin-left: 10px;
+    font-weight: normal;
+}
+#pagehead p {
+    margin-right: 10px;
+}
+#pagecontainer {
+    clear:both;
+    width: 800px;
+    margin:0 auto;
+    padding:1em 2em;
+    text-align:left;
+    background: #fff;
+    border-left:1px solid #333;
+    border-right:1px solid #333;
+}
+</style>
 </head>
 
 <body>
+    <div id="pagehead">
+        <p style="float:right">
+            <a href="/sandbox/graphic%20query/graphic_query.html">QueryBuilder Demo</a>
+            &bull;
+            <a href="/static/matplotlib_tests.html">MatPlotLib Demo</a>
+        </p>
+        <h1><a href="/">NationBrowse</a></h1>
+    </div>
+    <div id="pagecontainer">
+    <h2>MatPlotLib Graphs</h2>
 <p><a href="/graphs/boxplot_test.png"><img src="cached_for_presentation/boxplot_test.png"></a><br />
     Incidence boxplot for assault, murder, rape in Missouri (2008).</p>
 <p><a href="/graphs/scatterplot_test.png"><img src="cached_for_presentation/scatterplot_test.png"></a><br />
     U.S. States, plotted by Population Density vs Violent Crimes Reported.</p>
 <p><a href="/graphs/scatterhist_test.png"><img src="cached_for_presentation/scatterhist_test.png"></a><br />
     Random sample of 100 U.S. Counties, plotted by Median Income vs Violent Crime Rate (per 100k residents).</p>
-</body>
+    </div>
+</body> 
 </html>
