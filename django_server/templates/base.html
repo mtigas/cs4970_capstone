@@ -16,7 +16,7 @@ html, body {
 <body>
     <div id="pagehead">
         <h1>NationBrowse</h1>
-        <h2>National Overview</h2>
+        <h2>{% block pagetitle %}National Overview{% endblock %}</h2>
     </div>
     {% block body %}
     <p>Nothing to see here, move along.</p>

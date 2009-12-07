@@ -141,11 +141,12 @@ class RacePiechartNode(template.Node):
             
             # Add some CSS so the legends look right.
             # Throw in the <img> tag for the Google Chart.
-            return """<style type="text/css">
-                .graph_label_icon{width:1em;height:1em;display:block;float:left;clear:left;border:1px solid #444;margin-right:5px;}
-                .clear{clear:both}
-                </style>
-                <p><img src="%s"></p>%s""" % (google_graph_url, legend) 
+            #return """<style type="text/css">
+            #    .graph_label_icon{width:1em;height:1em;display:block;float:left;clear:left;border:1px solid #444;margin-right:5px;}
+            #    .clear{clear:both}
+            #    </style>
+            #    <p><img src="%s"></p>%s""" % (google_graph_url, legend) 
+            return """<img src="%s">""" % google_graph_url
         except Exception:
             from traceback import print_exc
             print_exc()
@@ -207,7 +208,7 @@ class AgeBarchartNode(template.Node):
             
             legend = ''
             for v in xrange(0,len(labels)):
-                legend += '\n%s: %s (%s%%)<br class="clear"/>' % (
+                legend += '\n<tr class="clear"><td><b>Age %s</b></td><td style="text-align:right">%s</td><td style="text-align:right">%s%%</td></tr>' % (
                     labels[v],
                     humanize.intcomma(values[v]),
                     percents[v]
@@ -215,11 +216,7 @@ class AgeBarchartNode(template.Node):
             
             # Add some CSS so the legends look right.
             # Throw in the <img> tag for the Google Chart.
-            return """<style type="text/css">
-                .graph_label_icon{width:1em;height:1em;display:block;float:left;clear:left;border:1px solid #444;margin-right:5px;}
-                .clear{clear:both}
-                </style>
-                <p><img src="%s"></p>%s""" % (google_graph_url, legend) 
+            return """<tr><td colspan="3"><img src="%s"></td></tr>%s""" % (google_graph_url, legend) 
         except Exception:
             from traceback import print_exc
             print_exc()

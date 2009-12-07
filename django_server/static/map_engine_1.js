@@ -83,7 +83,7 @@ jQuery(function() {
     	strokeWidth: 1,
     	strokeOpacity: 0.5,
     	fillColor : '#FFFFFF', // Should be overridden by data styles
-    	fillOpacity : 0.7,
+    	fillOpacity : 0.85,
     	pointRadius : 3,
     	strokeLinecap: "round"
     });
@@ -165,9 +165,9 @@ jQuery(function() {
         "per_capita_income", [
         [0,"#555555"],
         [1,"#DEEBF7"],
-        [10000,"#C6DBEF"],
-        [20000,"#9ECAE1"],
-        [30000,"#6BAED6"],
+        [20000,"#C6DBEF"],
+        [30000,"#9ECAE1"],
+        [40000,"#6BAED6"],
         [50000,"#4292C6"],
         [75000,"#2171B5"],
         [100000,"#084594"]
