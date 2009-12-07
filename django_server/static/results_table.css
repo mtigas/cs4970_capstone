@@ -1,0 +1,41 @@
+/* 
+	Classy yet somehow fancy
+	table style created by Radu Bilei
+	for Chris Heilmann's CSS Table Gallery
+	http://twitter.com/radubilei
+	http://icant.co.uk/csstablegallery
+*/
+
+table#result1,th,td	{	border:none;  border-collapse:collapse; font-family:corbel,'helvetica neue','trebuchet ms',arial,helvetica,sans-serif; font-size:1em; line-height:1.5em}
+table#result1		{	background:black; -webkit-border-radius:6px; -moz-border-radius:6px; border-radius:6px; -webkit-box-shadow:1px 1px 10px rgba(0,0,0,0.3); -moz-box-shadow:1px 1px 10px rgba(0,0,0,0.3)}
+#result1 caption		{	text-align:left; text-transform:uppercase; font-size:150%; font-weight:bold; padding:1em 0; color:black}
+
+#result1 thead, 
+#result1 tfoot			{	color:white; }
+
+#result1 thead th				{	padding:0.5em .5em; text-transform:uppercase; text-align:left; }
+#result1 thead th:first-child	{	width:10em; text-align:right; }
+
+
+
+#result1 tbody td,
+#result1 tbody th				{	font-size:100%; padding:0.5em .5em; text-align: right;  background-color:#e5e5e5; vertical-align:top}
+#result1 tbody th				{	color:#222;	text-align:right; background-image:url(tabel.png); background-repeat:repeat-y;}
+
+#result1 tbody tr.odd th, 
+#result1 tbody tr.odd td			{	background-color:#eee; color:#222}
+
+#result1 tfoot td,
+#result1 tfoot th				{	border:none; padding:0.5em .5em 1em; text-align: right; font-size:130%}
+
+#result1 table a:link	{	line-height:1em; color:black; display:inline-block; padding:3px 7px; margin:-3px -7px}
+#result1 table a:visited	{	color:#555}
+#result1 table a:hover	{	text-decoration:none; background:black; color:white; -webkit-border-radius:4px; -moz-border-radius:4px; border-radius:4px}
+
+#result1 ::-moz-selection{	background:#202020; color:white}
+#result1 ::selection		{	background:#202020; color:white}
+
+#result1 thead ::-moz-selection, 
+#result1 tfoot ::-moz-selection	{	background:white; color:#202020}
+#result1 thead ::selection, 
+#result1 tfoot ::selection		{	background:white; color:#202020}

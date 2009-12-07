@@ -3,6 +3,7 @@ from __future__ import division
 from django.http import HttpResponse,Http404
 from django.views.decorators.cache import cache_control
 from django.db.models.loading import AppCache 
+from django.contrib.humanize.templatetags.humanize import intcomma
 
 import string
 import json
@@ -133,10 +134,24 @@ def get_results(request):
                 qs_filters[f_model] = {}
             qs_filters[f_model][f_column] = (op, value)
     
-    test_output = "<table><tr>"
-    for table,fields in selected_fields.iteritems():
-        for f in fields:
-            test_output += "<th>%s</th>" % f
+    # ===== Output table header =====
+    test_output = '<link type="text/css" href="http://media.nationbrowse.com/results_table.css" rel="stylesheet" /><table id="result1"><tr>'
+    for table in place_models:
+        AppModel = models[table]
+        fields = selected_fields[table]
+        
+        for field in fields:
+            test_output += "<th>%s</th>" % field
+        
+        # ===== "joined" metadata tables =====
+        for join_table in data_models:
+            if not (join_table in ['placepopulation','crimedata','socialcharacteristics']):
+                continue
+            
+            data_fields = selected_fields[join_table]
+            for data_field in data_fields:
+                test_output += "<th>%s</th>" % data_field
+    
     test_output += "</tr>\n"
     
     for table in place_models:
@@ -146,7 +161,7 @@ def get_results(request):
         for item in AppModel.objects.only(*fields):
             row_output = "<tr>"
             for field in fields:
-                row_output += "<td>%s</td>" % getattr(item,field,None)
+                row_output += "<td>%s</td>" % intcomma(getattr(item,field,None))
                 
             # ===== Check filters =====
             skip = False
@@ -193,7 +208,7 @@ def get_results(request):
                 
                 data_fields = selected_fields[join_table]
                 for data_field in data_fields:
-                    row_output += "<td>%s</td>" % getattr(dataset,data_field,None)
+                    row_output += "<td>%s</td>" % intcomma(getattr(dataset,data_field,None))
             
             test_output += "%s</tr>\n" % row_output
     test_output += "</table>"
