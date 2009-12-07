@@ -417,7 +417,7 @@ function scream(){
 //alert("scream");
 
   var GET_STRING="";
-  var URL = "http://nationbrowse.com/querybuilder/get_columns/";
+  var URL = "/querybuilder/get_columns/";
   //create a get
 
   //gets the table names from the join set, puts into comma sepd string
@@ -628,7 +628,7 @@ http.send(null);*/
     }
     
     
-    var URL = "http://nationbrowse.com/querybuilder/get_results/";
+    var URL = "/querybuilder/get_results/";
     
     
 
@@ -657,15 +657,15 @@ http.send(null);*/
     
     GET_STRING+="&"+"filters=";
     GET_STRING+=window.selections;
-    alert(URL+"?"+GET_STRING);
+    //alert(URL+"?"+GET_STRING);
     jQuery.ajax({
       type:"GET",
       url:URL,
       data:GET_STRING,
       dataType:"text",
       success: function(data, status) {
-      	alert(data);
-      	alert(status);
+      	//alert(data);
+      	//alert(status);
             if(data==null){
               document.getElementById("results").innerHTML="Could not load columns..";
               return;
