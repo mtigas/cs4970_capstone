@@ -26,6 +26,8 @@ def nation_overview(request):
     response=render_to_response("homepage.html",{
         'place':nation,
         'demographics':getattr(nation.population_demographics,'__dict__',{}),
+        'socioeco_data':getattr(nation.socioeco_data,'__dict__',{}),
+        'crime_data':getattr(nation.crime_data,'__dict__',{}),
         'states':states,
         'place_type':"nation"
     },context_instance=RequestContext(request))

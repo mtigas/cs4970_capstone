@@ -89,6 +89,8 @@ def state_detail(request,slug):
             'title':str(place.name),
             'place':place,
             'demographics':getattr(place.population_demographics,'__dict__',{}),
+            'socioeco_data':getattr(place.socioeco_data,'__dict__',{}),
+            'crime_data':getattr(place.crime_data,'__dict__',{}),
             'place_type':"state"
         },context_instance=RequestContext(request))
         
@@ -110,6 +112,8 @@ def county_detail(request,state_abbr,name):
             'title':title,
             'place':place,
             'demographics':getattr(place.population_demographics,'__dict__',{}),
+            'socioeco_data':getattr(place.socioeco_data,'__dict__',{}),
+            'crime_data':getattr(place.crime_data,'__dict__',{}),
             'place_type':'county'
         },context_instance=RequestContext(request))
         

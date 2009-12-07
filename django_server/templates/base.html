@@ -6,9 +6,18 @@
 <link rel="icon" type="image/png" href="{{MEDIA_URL}}favicon.png"/>
 <title>{% block title %}NationBrowse{% endblock %}</title>
 {% block extrahead %}{% endblock %}
+<style type="text/css">
+html, body {
+    background: #fff;
+}
+</style>
 </head>
 
-<body> 
+<body>
+    <div id="pagehead">
+        <h1>NationBrowse</h1>
+        <h2>National Overview</h2>
+    </div>
     {% block body %}
     <p>Nothing to see here, move along.</p>
     {% endblock %}
