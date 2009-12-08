@@ -12,16 +12,15 @@ from django.views.decorators.cache import cache_control,never_cache
 
 from nationbrowse.places.models import State,County
 
-from threadutil import call_in_bg
-
-def seed_next_random():
+@never_cache
+def random_place(request):
     """
-    Generates a redirect view to a random Place object (State or County)
-    and caches it. Picking a random place is expensive on the DB and CPU since there
-    are over 40000 objects that it picks from, which strains the DB (since it causes
-    an iteration over the objects to select the ID).
+    If a random place is in the cache, use it and return that to the user.
+    If not, generate one right now.
     
-    See random_place() below, for notes on usage.
+    Before returning to the user, queue up a background task that generates
+    the next random place, to save DB/CPU usage when responding to user. (Prevents
+    this view from locking up while Django picks a suitable random object.)
     """
     response = None
     while not response:
@@ -41,40 +40,14 @@ def seed_next_random():
             if PlaceClass.__name__ == "County":
                 place = PlaceClass.objects.get(pk=rand_id)
                 url = reverse("places:county_detail",args=(place.state.abbr.lower(),urlencode(place.name.lower())),current_app="places")
-                call_in_bg(county_detail, (None, place.state.abbr.lower(),urlencode(place.name.lower())))
             else:
                 place = PlaceClass.objects.only('slug').get(pk=rand_id)
                 url = reverse("places:state_detail",args=(place.slug,),current_app="places")
-                call_in_bg(state_detail, (None, place.slug))
             response = HttpResponseRedirect(url)
         except:
             from traceback import print_exc
             print_exc()
             response = None
-    safe_set_cache("random_place",response,604800)
-    
-    return response
-
-@never_cache
-def random_place(request):
-    """
-    If a random place is in the cache, use it and return that to the user.
-    If not, generate one right now.
-    
-    Before returning to the user, queue up a background task that generates
-    the next random place, to save DB/CPU usage when responding to user. (Prevents
-    this view from locking up while Django picks a suitable random object.)
-    """
-    cache_key = "random_place"
-    response = safe_get_cache(cache_key)
-    
-    if not response:
-        response = seed_next_random()
-    
-    # Pre-generate the next random location.
-    if not USING_DUMMY_CACHE:
-        call_in_bg(seed_next_random)
-    
     return response
 
 @cache_control(public=True,max_age=604800)
@@ -118,8 +91,5 @@ def county_detail(request,state_abbr,name):
         },context_instance=RequestContext(request))
         
         safe_set_cache(cache_key,response,86400)
-        
-        if (not USING_DUMMY_CACHE) and (place.state):
-            call_in_bg(state_detail,(None,place.state.slug))
-
+    
     return response

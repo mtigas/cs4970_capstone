@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.conf import settings
 from django.utils.cache import get_max_age
-from django.utils.encoding import force_unicode
+from django.utils.encoding import smart_str
 
 class NginxMemcacheMiddleWare(object):
     """
@@ -38,6 +38,6 @@ class NginxMemcacheMiddleWare(object):
         
         # Set the item in cache.
         key = "%s:%s" % (prefix, path)
-        cache.set(key, force_unicode(response._get_content()), timeout)
+        cache.set(key, smart_str(response._get_content()), timeout)
         
         return response
