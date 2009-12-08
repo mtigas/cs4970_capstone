@@ -34,6 +34,6 @@ class NginxMemcacheMiddleWare(object):
         
         # Set the item in cache.
         key = "%s:%s" % (prefix, path)
-        cache.set(key, response.content, timeout)
+        cache.set(key, response._get_content(), timeout)
         
         return response
