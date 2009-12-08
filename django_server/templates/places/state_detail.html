@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load graphs places humanize safecache inline_jsmin %}
+{% load graphs places demographics humanize safecache inline_jsmin %}
 
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}{{ title }}{% endblock %}
@@ -209,25 +209,46 @@ Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_sour
 
         <hr />
         <h2>Demographics</h2>
-        <table><tr><th>Demographic</th><th>Population</th><th>%</th></tr>
-            <tr><td><b>Total population</b></td><td style="text-align:right">{{ demographics.total|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.total %}</td></tr>
-            <tr><td><b>Males</b></td><td style="text-align:right">{{ demographics.male|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.male %}</td></tr>
-            <tr><td><b>Females</b></td><td style="text-align:right">{{ demographics.female|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.female %}</td></tr>
+        <p>Max, mean, min, standard deviation, and variance calculated from the sample of the {{ place.children.count }} counties within {{ place }}.</p>
+        <table>
+            <tr>
+                <th>Demographic</th>
+                <th>Population</th>
+                <th style="text-align:center">%</th>
+                <th style="border-left:2px solid #999">Max</th>
+                <th>Mean</th>
+                <th>Min.</th>
+                <th>Std. Deviation</th>
+                <th>Variance</th>
+            </tr>
+            <tr><td><b>Total population</b></td><td style="text-align:right">{{ demographics.total|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.total %}</td>{% data_agg_columns place placepopulation total %}</tr>
+            <tr><td><b>Males</b></td><td style="text-align:right">{{ demographics.male|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.male %}</td>{% data_agg_columns place placepopulation male %}</tr>
+            <tr><td><b>Females</b></td><td style="text-align:right">{{ demographics.female|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.female %}</td>{% data_agg_columns place placepopulation female %}</tr>
             {% comment %}
             <tr><td><b>Urban population</b></td><td style="text-align:right">{{ demographics.urban|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.urban %}</td></tr>
             <tr><td><b>Rural population</b></td><td style="text-align:right">{{ demographics.rural|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.rural %}</td></tr>
             {% endcomment %}
-            <tr><td colspan="3"><hr /></td></tr>
-            <tr><td colspan="3">{% race_piechart place_type place.slug %}</td></tr>
-            <tr><td><b>Population of one race</b></td><td style="text-align:right">{{ demographics.onerace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(0, 0, 255);">&nbsp;</div> <b>White only</b></td><td style="text-align:right">{{ demographics.onerace_white|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_white %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(85, 85, 255);">&nbsp;</div> <b>Black only</b></td><td style="text-align:right">{{ demographics.onerace_black|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_black %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(153, 153, 17);">&nbsp;</div> <b>Native American only</b></td><td style="text-align:right">{{ demographics.onerace_amerindian|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_amerindian %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(0, 255, 0);">&nbsp;</div> <b>Asian only</b></td><td style="text-align:right">{{ demographics.onerace_asian|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_asian %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(255, 0, 255);">&nbsp;</div> <b>Pacific Islander only</b></td><td style="text-align:right">{{ demographics.onerace_pacislander|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_pacislander %}</td></tr>
-            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(255, 255, 0);">&nbsp;</div> <b>Other descent only</b></td><td style="text-align:right">{{ demographics.onerace_other|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_other %}</td></tr>
-            <tr class="clear"><td><div class="graph_label_icon" style="background-color: rgb(136, 136, 136);">&nbsp;</div> <b>Population of two-race descent</b></td><td style="text-align:right">{{ demographics.tworace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.tworace %}</td></tr>
-            <tr class="clear"><td><div class="graph_label_icon" style="background-color: rgb(136, 136, 136);">&nbsp;</div> <b>Population of three-race (or more) descent</b></td><td style="text-align:right">{{ demographics.threerace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.threerace %}</td></tr>
+            <tr><td colspan="8"><hr /></td></tr>
+            <tr><td colspan="8">{% race_piechart place_type place.slug %}</td></tr>
+            <tr>
+                <th>Demographic</th>
+                <th>Population</th>
+                <th style="text-align:center">%</th>
+                <th style="border-left:2px solid #999">Max</th>
+                <th>Mean</th>
+                <th>Min.</th>
+                <th>Std. Deviation</th>
+                <th>Variance</th>
+            </tr>
+            <tr><td><b>Population of one race</b></td><td style="text-align:right">{{ demographics.onerace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace %}</td>{% data_agg_columns place placepopulation onerace %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(0, 0, 255);">&nbsp;</div> <b>White only</b></td><td style="text-align:right">{{ demographics.onerace_white|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_white %}</td>{% data_agg_columns place placepopulation onerace_white %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(85, 85, 255);">&nbsp;</div> <b>Black only</b></td><td style="text-align:right">{{ demographics.onerace_black|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_black %}</td>{% data_agg_columns place placepopulation onerace_black %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(153, 153, 17);">&nbsp;</div> <b>Native American only</b></td><td style="text-align:right">{{ demographics.onerace_amerindian|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_amerindian %}</td>{% data_agg_columns place placepopulation onerace_amerindian %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(0, 255, 0);">&nbsp;</div> <b>Asian only</b></td><td style="text-align:right">{{ demographics.onerace_asian|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_asian %}</td>{% data_agg_columns place placepopulation onerace_asian %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(255, 0, 255);">&nbsp;</div> <b>Pacific Islander only</b></td><td style="text-align:right">{{ demographics.onerace_pacislander|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_pacislander %}</td>{% data_agg_columns place placepopulation onerace_pacislander %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><div class="graph_label_icon" style="background-color: rgb(255, 255, 0);">&nbsp;</div> <b>Other descent only</b></td><td style="text-align:right">{{ demographics.onerace_other|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.onerace_other %}</td>{% data_agg_columns place placepopulation onerace_other %}</tr>
+            <tr class="clear"><td><div class="graph_label_icon" style="background-color: rgb(136, 136, 136);">&nbsp;</div> <b>&hellip; two-race descent</b></td><td style="text-align:right">{{ demographics.tworace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.tworace %}</td>{% data_agg_columns place placepopulation tworace %}</tr>
+            <tr class="clear"><td><div class="graph_label_icon" style="background-color: rgb(136, 136, 136);">&nbsp;</div> <b>&hellip; three-race (or more) descent</b></td><td style="text-align:right">{{ demographics.threerace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.threerace %}</td>{% data_agg_columns place placepopulation threerace %}</tr>
             {% comment %} ACS 2008 only goes up to 3
             <tr><td><b>Population of four-race descent</b></td><td style="text-align:right">{{ demographics.fourrace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.fourrace %}</td></tr>
             <tr><td><b>Population of five-race descent</b></td><td style="text-align:right">{{ demographics.fiverace|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.fiverace %}</td></tr>
@@ -240,26 +261,73 @@ Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_sour
             <tr><td style="padding-left:2em"><b>Pacific Islander</b></td><td style="text-align:right">{{ demographics.pacislander|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.pacislander %}</td></tr>
             <tr><td style="padding-left:2em"><b>Other descent</b></td><td style="text-align:right">{{ demographics.other|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.other %}</td></tr>
             {% endcomment %}
-            <tr><td colspan="3"><hr /></td></tr>
+            <tr><td colspan="8"><hr /></td></tr>
             {% age_barchart place_type place.slug %}
+            <tr>
+                <th>Demographic</th>
+                <th>Population</th>
+                <th style="text-align:center">%</th>
+                <th style="border-left:2px solid #999">Max</th>
+                <th>Mean</th>
+                <th>Min.</th>
+                <th>Std. Deviation</th>
+                <th>Variance</th>
+            </tr>
+            <tr class="clear"><td><b>Age 0-4</b></td><td style="text-align:right">{{ demographics.age_0_4|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_0_4 %}</td>{% data_agg_columns place placepopulation age_0_4 %}</tr>
+            <tr class="clear"><td><b>Age 5-9</b></td><td style="text-align:right">{{ demographics.age_5_9|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_5_9 %}</td>{% data_agg_columns place placepopulation age_5_9 %}</tr>
+            <tr class="clear"><td><b>Age 10-14</b></td><td style="text-align:right">{{ demographics.age_10_14|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_10_14 %}</td>{% data_agg_columns place placepopulation age_10_14 %}</tr>
+            <tr class="clear"><td><b>Age 15-19</b></td><td style="text-align:right">{{ place.population_demographics.age_15_19|intcomma }}</td><td style="text-align:right">{% population_percent place place.population_demographics.age_15_19 %}</td><td colspan="5" style="text-align:center;border-left:2px solid #999">not available</td></tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 15-17</b></td><td style="text-align:right">{{ demographics.age_15_17|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_15_17 %}</td>{% data_agg_columns place placepopulation age_15_17 %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 18-19</b></td><td style="text-align:right">{{ demographics.age_18_19|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_18_19 %}</td>{% data_agg_columns place placepopulation age_18_19 %}</tr>
+            <tr class="clear"><td><b>Age 20-24</b></td><td style="text-align:right">{{ place.population_demographics.age_20_24|intcomma }}</td><td style="text-align:right">{% population_percent place place.population_demographics.age_20_24 %}</td><td colspan="5" style="text-align:center;border-left:2px solid #999">not available</td></tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 20</b></td><td style="text-align:right">{{ demographics.age_20|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_20 %}</td>{% data_agg_columns place placepopulation age_20 %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 21</b></td><td style="text-align:right">{{ demographics.age_21|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_21 %}</td>{% data_agg_columns place placepopulation age_21 %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 22_24</b></td><td style="text-align:right">{{ demographics.age_22_24|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_22_24 %}</td>{% data_agg_columns place placepopulation age_22_24 %}</tr>
+            <tr class="clear"><td><b>Age 25-29</b></td><td style="text-align:right">{{ demographics.age_25_29|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_25_29 %}</td>{% data_agg_columns place placepopulation age_25_29 %}</tr>
+            <tr class="clear"><td><b>Age 30-34</b></td><td style="text-align:right">{{ demographics.age_30_34|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_30_34 %}</td>{% data_agg_columns place placepopulation age_30_34 %}</tr>
+            <tr class="clear"><td><b>Age 35-39</b></td><td style="text-align:right">{{ demographics.age_35_39|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_35_39 %}</td>{% data_agg_columns place placepopulation age_35_39 %}</tr>
+            <tr class="clear"><td><b>Age 40-44</b></td><td style="text-align:right">{{ demographics.age_40_44|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_40_44 %}</td>{% data_agg_columns place placepopulation age_40_44 %}</tr>
+            <tr class="clear"><td><b>Age 45-49</b></td><td style="text-align:right">{{ demographics.age_45_49|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_45_49 %}</td>{% data_agg_columns place placepopulation age_45_49 %}</tr>
+            <tr class="clear"><td><b>Age 50-54</b></td><td style="text-align:right">{{ demographics.age_50_54|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_50_54 %}</td>{% data_agg_columns place placepopulation age_50_54 %}</tr>
+            <tr class="clear"><td><b>Age 55-59</b></td><td style="text-align:right">{{ demographics.age_55_59|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_55_59 %}</td>{% data_agg_columns place placepopulation age_55_59 %}</tr>
+            <tr class="clear"><td><b>Age 60-64</b></td><td style="text-align:right">{{ place.population_demographics.age_60_64|intcomma }}</td><td style="text-align:right">{% population_percent place place.population_demographics.age_60_64 %}</td><td colspan="5" style="text-align:center;border-left:2px solid #999">not available</td></tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 60-61</b></td><td style="text-align:right">{{ demographics.age_60_61|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_60_61 %}</td>{% data_agg_columns place placepopulation age_60_61 %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 62-64</b></td><td style="text-align:right">{{ demographics.age_62_64|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_62_64 %}</td>{% data_agg_columns place placepopulation age_62_64 %}</tr>
+            <tr class="clear"><td><b>Age 65-69</b></td><td style="text-align:right">{{ place.population_demographics.age_65_69|intcomma }}</td><td style="text-align:right">{% population_percent place place.population_demographics.age_65_69 %}</td><td colspan="5" style="text-align:center;border-left:2px solid #999">not available</td></tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 65-66</b></td><td style="text-align:right">{{ demographics.age_65_66|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_65_66 %}</td>{% data_agg_columns place placepopulation age_65_66 %}</tr>
+            <tr class="clear"><td style="padding-left:2em"><b>Age 67-69</b></td><td style="text-align:right">{{ demographics.age_67_69|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_67_69 %}</td>{% data_agg_columns place placepopulation age_67_69 %}</tr>
+            <tr class="clear"><td><b>Age 70-74</b></td><td style="text-align:right">{{ demographics.age_70_74|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_70_74 %}</td>{% data_agg_columns place placepopulation age_70_74 %}</tr>
+            <tr class="clear"><td><b>Age 75-79</b></td><td style="text-align:right">{{ demographics.age_75_79|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_75_79 %}</td>{% data_agg_columns place placepopulation age_75_79 %}</tr>
+            <tr class="clear"><td><b>Age 80-84</b></td><td style="text-align:right">{{ demographics.age_80_84|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_80_84 %}</td>{% data_agg_columns place placepopulation age_80_84 %}</tr>
+            <tr class="clear"><td><b>Age 85+</b></td><td style="text-align:right">{{ demographics.age_85_plus|intcomma }}</td><td style="text-align:right">{% population_percent place demographics.age_85_plus %}</td>{% data_agg_columns place placepopulation age_85_plus %}</tr>
+
         </table>
         <br class="clear"/>
 
         <p>Demographic data source: <a href="{{ place.population_demographics.source.url }}">{{ place.population_demographics.source }}</a></p>
         {% if place.socioeco_data %}<hr />
         <h2>Socio-economic data</h2>
-        <table><tr><th>Demographic</th><th>Population</th><th>%</th></tr>
-            <tr><td><b>Population (3 yrs or older) enrolled in school</b></td><td style="text-align:right">{{ socioeco_data.edu_in_school|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_in_school %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in preschool</b></td><td style="text-align:right">{{ socioeco_data.edu_preschool|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_preschool %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in kindergarten</b></td><td style="text-align:right">{{ socioeco_data.edu_kindergarten|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_kindergarten %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in grade 1-4</b></td><td style="text-align:right">{{ socioeco_data.edu_1_4|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_1_4 %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in grade 5-8</b></td><td style="text-align:right">{{ socioeco_data.edu_5_8|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_5_8 %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in grade 9-12</b></td><td style="text-align:right">{{ socioeco_data.edu_9_12|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_9_12 %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in college (undergraduate)</b></td><td style="text-align:right">{{ socioeco_data.edu_undergrad|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_undergrad %}</td></tr>
-            <tr><td style="padding-left:2em"><b>in graduate or professional school</b></td><td style="text-align:right">{{ socioeco_data.edu_postgrad|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_postgrad %}</td></tr>
-            <tr><td><b>Population (3 yrs or older)  <i>not</i> enrolled</b></td><td style="text-align:right">{{ socioeco_data.edu_not_in_school|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_not_in_school %}</td></tr>
-            <tr><td colspan="3"><hr /></td></tr>
+        <table><tr>
+                <th>Demographic</th>
+                <th>Population</th>
+                <th style="text-align:center">%</th>
+                <th style="border-left:2px solid #999">Max</th>
+                <th>Mean</th>
+                <th>Min.</th>
+                <th>Std. Deviation</th>
+                <th>Variance</th>
+            </tr>
+            <tr><td><b>Population (3+ yrs old) enrolled in school</b></td><td style="text-align:right">{{ socioeco_data.edu_in_school|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_in_school %}</td>{% data_agg_columns place socialcharacteristics edu_in_school %}</tr>
+            <tr><td style="padding-left:2em"><b>in preschool</b></td><td style="text-align:right">{{ socioeco_data.edu_preschool|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_preschool %}</td>{% data_agg_columns place socialcharacteristics edu_preschool %}</tr>
+            <tr><td style="padding-left:2em"><b>in kindergarten</b></td><td style="text-align:right">{{ socioeco_data.edu_kindergarten|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_kindergarten %}</td>{% data_agg_columns place socialcharacteristics edu_kindergarten %}</tr>
+            <tr><td style="padding-left:2em"><b>in grade 1-4</b></td><td style="text-align:right">{{ socioeco_data.edu_1_4|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_1_4 %}</td>{% data_agg_columns place socialcharacteristics edu_1_4 %}</tr>
+            <tr><td style="padding-left:2em"><b>in grade 5-8</b></td><td style="text-align:right">{{ socioeco_data.edu_5_8|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_5_8 %}</td>{% data_agg_columns place socialcharacteristics edu_5_8 %}</tr>
+            <tr><td style="padding-left:2em"><b>in grade 9-12</b></td><td style="text-align:right">{{ socioeco_data.edu_9_12|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_9_12 %}</td>{% data_agg_columns place socialcharacteristics edu_9_12 %}</tr>
+            <tr><td style="padding-left:2em"><b>in college (undergraduate)</b></td><td style="text-align:right">{{ socioeco_data.edu_undergrad|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_undergrad %}</td>{% data_agg_columns place socialcharacteristics edu_undergrad %}</tr>
+            <tr><td style="padding-left:2em"><b>in graduate or professional school</b></td><td style="text-align:right">{{ socioeco_data.edu_postgrad|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_postgrad %}</td>{% data_agg_columns place socialcharacteristics edu_postgrad %}</tr>
+            <tr><td><b>&hellip; <i>not</i> enrolled</b></td><td style="text-align:right">{{ socioeco_data.edu_not_in_school|intcomma }}</td><td style="text-align:right">{% population_percent place socioeco_data.edu_not_in_school %}</td>{% data_agg_columns place socialcharacteristics edu_not_in_school %}</tr>
         </table>
+        <br />
         <table><tr><th></th><th>Value</th></tr>
             <tr><td><b>Aggregate income</b></td><td style="text-align:right">${{ socioeco_data.aggregate_income|intcomma }}</td></tr>
             <tr><td><b>Per-capita income</b></td><td style="text-align:right">${{ socioeco_data.per_capita_income|intcomma }}</td></tr>
@@ -269,17 +337,25 @@ Geographic data source: <a href="{{ place.poly_source_url }}">{{ place.poly_sour
         {% endif %}
         {% if place.crime_data %}<hr />
         <h2>Crime data</h2>
-        <table><tr><th>Item</th><th>Value</th></tr>
-            <tr><td><b>Violent crimes reported</b></td><td style="text-align:right">{{ crime_data.violent_crime|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>murder and nonnegligent manslaughter</b></td><td style="text-align:right">{{ crime_data.murder|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>forcible rape</b></td><td style="text-align:right">{{ crime_data.rape|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>robber</b></td><td style="text-align:right">{{ crime_data.robbery|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>aggravated assault</b></td><td style="text-align:right">{{ crime_data.assault|intcomma }}</td></tr>
-            <tr><td colspan="2"><hr /></td></tr>
-            <tr><td><b>Property crimes reported</b></td><td style="text-align:right">{{ crime_data.property_crime|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>burglary</b></td><td style="text-align:right">{{ crime_data.burglary|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>larceny-theft</b></td><td style="text-align:right">{{ crime_data.larceny_theft|intcomma }}</td></tr>
-            <tr><td style="padding-left:2em"><b>motor vehicle theft</b></td><td style="text-align:right">{{ crime_data.auto_theft|intcomma }}</td></tr>
+        <table><tr>
+                <th>Item</th>
+                <th>Value</th>
+                <th style="border-left:2px solid #999">Max</th>
+                <th>Mean</th>
+                <th>Min.</th>
+                <th>Std. Deviation</th>
+                <th>Variance</th>
+            </tr>
+            <tr><td><b>Violent crimes reported</b></td><td style="text-align:right">{{ crime_data.violent_crime|intcomma }}</td>{% data_agg_columns place crimedata violent_crime %}</tr>
+            <tr><td style="padding-left:2em"><b>murder and nonnegligent manslaughter</b></td><td style="text-align:right">{{ crime_data.murder|intcomma }}</td>{% data_agg_columns place crimedata murder %}</tr>
+            <tr><td style="padding-left:2em"><b>forcible rape</b></td><td style="text-align:right">{{ crime_data.rape|intcomma }}</td>{% data_agg_columns place crimedata rape %}</tr>
+            <tr><td style="padding-left:2em"><b>robber</b></td><td style="text-align:right">{{ crime_data.robbery|intcomma }}</td>{% data_agg_columns place crimedata robbery %}</tr>
+            <tr><td style="padding-left:2em"><b>aggravated assault</b></td><td style="text-align:right">{{ crime_data.assault|intcomma }}</td>{% data_agg_columns place crimedata assault %}</tr>
+            <tr><td colspan="7"><hr /></td></tr>
+            <tr><td><b>Property crimes reported</b></td><td style="text-align:right">{{ crime_data.property_crime|intcomma }}</td>{% data_agg_columns place crimedata property_crime %}</tr>
+            <tr><td style="padding-left:2em"><b>burglary</b></td><td style="text-align:right">{{ crime_data.burglary|intcomma }}</td>{% data_agg_columns place crimedata burglary %}</tr>
+            <tr><td style="padding-left:2em"><b>larceny-theft</b></td><td style="text-align:right">{{ crime_data.larceny_theft|intcomma }}</td>{% data_agg_columns place crimedata larceny_theft %}</tr>
+            <tr><td style="padding-left:2em"><b>motor vehicle theft</b></td><td style="text-align:right">{{ crime_data.auto_theft|intcomma }}</td>{% data_agg_columns place crimedata auto_theft %}</tr>
         </table>
         <p>Crime data source: <a href="{{ place.crime_data.source.url }}">{{ place.crime_data.source }}</a></p>
         {% endif %}

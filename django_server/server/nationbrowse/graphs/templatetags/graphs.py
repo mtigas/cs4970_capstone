@@ -206,17 +206,24 @@ class AgeBarchartNode(template.Node):
             percents = map(lambda x: (x/total*100.0), values)
             percents = map(lambda x: "%.2f"%x, percents)
             
-            legend = ''
-            for v in xrange(0,len(labels)):
-                legend += '\n<tr class="clear"><td><b>Age %s</b></td><td style="text-align:right">%s</td><td style="text-align:right">%s%%</td></tr>' % (
-                    labels[v],
-                    humanize.intcomma(values[v]),
-                    percents[v]
-                )
+            #legend = ''
+            #for v in xrange(0,len(labels)):
+            #    legend += '\n<tr class="clear"><td><b>Age %s</b></td><td style="text-align:right">%s</td><td style="text-align:right">%s%%</td></tr>' % (
+            #        labels[v],
+            #        humanize.intcomma(values[v]),
+            #        percents[v]
+            #    )
+            #    print """<tr class="clear"><td><b>Age %s</b></td><td style="text-align:right">{{ place.population_demographics.%s }}</td><td style="text-align:right">{%% population_percent place population_demographics.%s %%}</td>{%% data_agg_columns place placepopulation %s %%}</tr>""" % (
+            #        labels[v],
+            #        field_names[v],
+            #        field_names[v],
+            #        field_names[v]
+            #    )
             
             # Add some CSS so the legends look right.
             # Throw in the <img> tag for the Google Chart.
-            return """<tr><td colspan="3"><img src="%s"></td></tr>%s""" % (google_graph_url, legend) 
+            #return """<tr><td colspan="3"><img src="%s"></td></tr>%s""" % (google_graph_url, legend) 
+            return """<tr><td colspan="8"><img src="%s"></td></tr>""" % (google_graph_url) 
         except Exception:
             from traceback import print_exc
             print_exc()
