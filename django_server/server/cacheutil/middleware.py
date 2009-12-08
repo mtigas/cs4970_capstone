@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.conf import settings
 from django.utils.cache import get_max_age
+from django.utils.encoding import force_unicode
 
 class NginxMemcacheMiddleWare(object):
     """
@@ -24,6 +25,9 @@ class NginxMemcacheMiddleWare(object):
         # The cache key prefix (should match what is in the site's nginx config)
         prefix = getattr(settings,"NGINX_CACHE_PREFIX","NG")
         
+        if response.has_header("Pragma") and ("no-cache" in response['Pragma']):
+            return response
+        
         # See the value of max-age and set timer on that. If not set,
         # use CACHE_MIDDLEWARE_SECONDS. If 0, do not cache.
         timeout = get_max_age(response)
@@ -34,6 +38,6 @@ class NginxMemcacheMiddleWare(object):
         
         # Set the item in cache.
         key = "%s:%s" % (prefix, path)
-        cache.set(key, response._get_content(), timeout)
+        cache.set(key, force_unicode(response._get_content()), timeout)
         
         return response
