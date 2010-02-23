@@ -107,7 +107,6 @@ def threedee_test(request):
             values.append(
                 (pop_density, float(county.socioeco_data.per_capita_income), float(county.crime_data.violent_crime))
             )
-        print values
         fig = threed_bar_chart(values,"Population Density","Per-Capita Income", "Violent Crimes")
         canvas=FigureCanvas(fig)
         response=HttpResponse(content_type='image/png')
