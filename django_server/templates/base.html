@@ -65,6 +65,25 @@ h1,h2 {
 #counties_data_pane table td, #states_data_pane table td {
     border: none !important;
 }
+
+p.siteabout {
+    font-size:.9em;
+    font-family:Palatino,Georgia,serif;
+    font-style:italic;
+    color:#777
+}
+p.siteabout a, p.siteabout a:link {
+    color: #333;
+    -webkit-transition-property:color;
+    -moz-transition-property:color;
+    transition-property:color;
+    -webkit-transition-duration:0.5s;
+    -moz-transition-duration:0.5s;
+    transition-duration:0.5s;
+}
+p.siteabout a:hover {
+    color: #aaa;
+}
 </style>
 </head>
 
@@ -77,9 +96,9 @@ h1,h2 {
         </p>
         <h1><a href="/">NationBrowse</a></h1>
     </div>
-    <p>NationBrowse was a semester-long capstone project by <a href="http://www.grahamg.org/">Graham Greenfield</a>, Jeremy Howard, Nick Roma, and <a href="http://mike.tig.as/">Mike Tigas</a>. You can <a href="http://mike.tig.as/blog/2010/02/22/nationbrowse/">read more about it here</a>.</p>
-    <hr />
     <div id="pagecontainer">
+    <p class="siteabout">NationBrowse was a semester-long capstone project by <a href="http://www.grahamg.org/">Graham Greenfield</a>, Jeremy Howard, Nick Roma, and <a href="http://mike.tig.as/">Mike Tigas</a>. You can <a href="http://mike.tig.as/blog/2010/02/22/nationbrowse/">read more about it here</a>.</p>
+    <hr />
     <h2>{% block pagetitle %}National Overview{% endblock %}</h2>
     {% block body %}
     <p>Nothing to see here, move along.</p>
