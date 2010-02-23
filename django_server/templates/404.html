@@ -1,11 +1,10 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<title>404</title>
-</head>
+{% extends "base.html" %}
 
-<body> 
+{% load graphs places demographics humanize safecache inline_jsmin %}
+
+{% block title %}Not Found | {{ block.super }}{% endblock %}
+{% block pagetitle %}Not Found{% endblock %}
+
+{% block body %}
     <p>Not found.</p>
-</body> 
-</html>
+{% endblock %}
