@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block meta_description %}U.S. Census maps and charts for {{ title }}.{% endblock %}
+{% block meta_keywords %}{{ place.name }},{{ place.long_name }},{{ place.state }},{{ place.state.abbr }},{{ block.super }}{% endblock %}
+
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}{{ title }}{% endblock %}
 

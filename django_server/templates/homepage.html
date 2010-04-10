@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load places graphs demographics humanize safecache inline_jsmin %}
+{% block meta_keywords %}United States,national,{{ block.super }}{% endblock %}
 
 {% block extrahead %}
 	<style type="text/css">

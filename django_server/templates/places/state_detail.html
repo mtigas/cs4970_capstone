@@ -2,6 +2,9 @@
 
 {% load graphs places demographics humanize safecache inline_jsmin %}
 
+{% block meta_description %}NationBrowse: U.S. Census maps and charts for {{ title }}.{% endblock %}
+{% block meta_keywords %}{{ place }},{{ place.abbr }},{{ block.super }}{% endblock %}
+
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}{{ title }}{% endblock %}
 
